@@ -107,6 +107,9 @@ int main(int argc, char* argv[])
   char *val;
   std::string sval="BLEND_HOME";
   val=std::getenv(sval.c_str());
+  if (val == NULL && std::getenv("CCP4")) {
+   val=std::string(std::getenv("CCP4")) + "/share/blend";
+  }
   if (val != NULL)
   {
    R_program1=val;
