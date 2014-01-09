@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <iostream>
 
-#ifdef _WIN32
+#ifdef _MSC_VER
 /* Compiling for Windows */
   #include <windows.h>
 #else
@@ -30,7 +30,7 @@ std::vector<FileNameTime> ListDir(const std::string& DirectoryName)
 {
   std::vector<FileNameTime>  filenames;
 
-#ifdef _WIN32
+#ifdef _MSC_VER
   /* Compiling for Windows */
   
   BOOL            fFinished;
@@ -108,7 +108,7 @@ std::vector<FileNameTime> ListDir(const std::string& DirectoryName)
 #endif
   return filenames;
 }
-#ifdef _WIN32
+#ifdef _MSC_VER
 //--------------------------------------------------------------
 time_t ModTime(const std::string& fname)
 {return 0;}

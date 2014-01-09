@@ -11,7 +11,7 @@
 #include "controls.hh"
 #include "hkl_unmerge.hh"
 #include "hkl_datatypes.hh"
-#include <range.hh>
+#include "range.hh"
 
 // Clipper
 #include <clipper/clipper.h>
