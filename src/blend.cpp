@@ -104,11 +104,11 @@ int main(int argc, char* argv[])
   std::string Python_program1;
   std::string Python_program2;
   std::string Python_program3;
-  char *val;
+  const char *val;
   std::string sval="BLEND_HOME";
   val=std::getenv(sval.c_str());
   if (val == NULL && std::getenv("CCP4")) {
-   val=std::string(std::getenv("CCP4")) + "/share/blend";
+   val = (std::string(std::getenv("CCP4")) + "/share/blend").c_str();
   }
   if (val != NULL)
   {
