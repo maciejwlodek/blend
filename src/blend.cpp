@@ -123,21 +123,21 @@ int main(int argc, char* argv[])
    char islash=*it,cslash='/';
    if (islash != cslash)
    {
-    R_program1=R_program1+"/src_R/blend1.R";
-    R_program2=R_program2+"/src_R/blend2.R";
-    R_program3=R_program3+"/src_R/blend3.R";
-    Python_program1=Python_program1+"/src_python/create_file_for_BLEND.py";
-    Python_program2=Python_program2+"/src_python/merge_clusters.py";
-    Python_program3=Python_program3+"/src_python/xds_to_mtz_list.py";
+    R_program1=R_program1+"/R/blend1.R";
+    R_program2=R_program2+"/R/blend2.R";
+    R_program3=R_program3+"/R/blend3.R";
+    Python_program1=Python_program1+"/python/create_file_for_BLEND.py";
+    Python_program2=Python_program2+"/python/merge_clusters.py";
+    Python_program3=Python_program3+"/python/xds_to_mtz_list.py";
    }
    else
    {
-    R_program1=R_program1+"src_R/blend1.R";
-    R_program2=R_program2+"src_R/blend2.R";
-    R_program3=R_program3+"src_R/blend3.R";
-    Python_program1=Python_program1+"src_python/create_file_for_BLEND.py";
-    Python_program2=Python_program2+"src_python/merge_clusters.py";
-    Python_program3=Python_program3+"src_python/xds_to_mtz_list.py";
+    R_program1=R_program1+"R/blend1.R";
+    R_program2=R_program2+"R/blend2.R";
+    R_program3=R_program3+"R/blend3.R";
+    Python_program1=Python_program1+"python/create_file_for_BLEND.py";
+    Python_program2=Python_program2+"python/merge_clusters.py";
+    Python_program3=Python_program3+"python/xds_to_mtz_list.py";
    }
   }
   else
