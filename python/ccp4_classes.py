@@ -3,9 +3,9 @@
 
 ## Modules and files needed
 import os,sys,string
-bhome=os.environ["BLEND_HOME"]                                            #  Directory where
-if bhome[-1] == "/": sys.path.append(os.path.join(bhome,"python"))    #  all python code
-if bhome[-1] != "/": sys.path.append(os.path.join(bhome,"/python"))   #  is stored
+#bhome=os.environ["BLEND_HOME"]                                            #  Directory where
+#if bhome[-1] == "/": sys.path.append(os.path.join(bhome,"python"))    #  all python code
+#if bhome[-1] != "/": sys.path.append(os.path.join(bhome,"/python"))   #  is stored
 from j_baseClasses import CExeCode
 
 ## Classes

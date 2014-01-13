@@ -8,9 +8,9 @@
 
 ## Modules needed
 import os,sys,string
-bhome=os.environ["BLEND_HOME"]                                            #  Directory where
-if bhome[-1] == "/": sys.path.append(os.path.join(bhome,"python"))    #  all python code
-if bhome[-1] != "/": sys.path.append(os.path.join(bhome,"/python"))   #  is stored
+#bhome=os.environ["BLEND_HOME"]                                            #  Directory where
+#if bhome[-1] == "/": sys.path.append(os.path.join(bhome,"python"))    #  all python code
+#if bhome[-1] != "/": sys.path.append(os.path.join(bhome,"/python"))   #  is stored
 from ccp4_functions import generate_generic_batch_file
 from ccp4_classes import RunGENERIC
 

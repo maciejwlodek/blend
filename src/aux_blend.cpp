@@ -145,13 +145,13 @@ std::vector<int> label_crystals(const std::vector<scala::hkl_unmerge_list>& hkl_
  for (int i=0;i < hkl_list.size();i++)
  {
   // Does dataset contain data?
-  if (hkl_list[i].IsEmpty() & crystal_flag_in[i] != 4) crystal_flag_out[i]=1;
+  if (hkl_list[i].IsEmpty() && crystal_flag_in[i] != 4) crystal_flag_out[i]=1;
 
   // Does dataset consists of multiple datasets or runs? (At the moment we do not accept this. For us 1 crystal = 1 dataset = 1 run)
   //std::cout << "Dataset " << i+1 << " number of runs " << hkl_list[i].num_runs() << std::endl;
   //std::cout << "Dataset " << i+1 << " number of datasets " << hkl_list[i].num_datasets() << std::endl;
-  if (hkl_list[i].num_runs() != 1 & crystal_flag_in[i] != 4) crystal_flag_out[i]=2;
-  if (hkl_list[i].num_datasets() != 1 & crystal_flag_in[i] != 4) crystal_flag_out[i]=3;
+  if (hkl_list[i].num_runs() != 1 && crystal_flag_in[i] != 4) crystal_flag_out[i]=2;
+  if (hkl_list[i].num_datasets() != 1 && crystal_flag_in[i] != 4) crystal_flag_out[i]=3;
  } 
 
  return crystal_flag_out;
