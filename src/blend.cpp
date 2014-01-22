@@ -1,5 +1,15 @@
 /************************************************************************************************************/
 /************************************************************************************************************/
+/********* blend.cpp
+/*********
+/********* Copyright (C) 2014 Diamond Light Source & Imperial College London
+/*********
+/********* Authors: James Foadi & Gwyndaf Evans
+/*********
+/********* This code is distributed under the BSD license, a copy of which is
+/********* included in the root directory of this package.
+/************************************************************************************************************/
+/************************************************************************************************************/
 // NEW IN VERSION 0.4.1  -  05/05/2013
 // - Linear Cell Variation (LCV) parameter introduced and printed inside dendrogram picture
 //

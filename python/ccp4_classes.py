@@ -1,4 +1,16 @@
 #!/usr/bin/python
+#***********************************************************************************************************
+#***********************************************************************************************************
+#********* ccp4_classes.py
+#*********
+#********* Copyright (C) 2014 Diamond Light Source & Imperial College London
+#*********
+#********* Authors: James Foadi & Gwyndaf Evans
+#*********
+#********* This code is distributed under the BSD license, a copy of which is
+#********* included in the root directory of this package.
+#************************************************************************************************************
+#************************************************************************************************************
 # A few classes needed to run CCP4 programs
 
 ## Modules and files needed

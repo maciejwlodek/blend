@@ -1,3 +1,15 @@
+#***********************************************************************************************************
+#***********************************************************************************************************
+#********* blend1.R
+#*********
+#********* Copyright (C) 2014 Diamond Light Source & Imperial College London
+#*********
+#********* Authors: James Foadi & Gwyndaf Evans
+#*********
+#********* This code is distributed under the BSD license, a copy of which is
+#********* included in the root directory of this package.
+#************************************************************************************************************
+#************************************************************************************************************
 # First R module of program BLEND (later to be replaced by C++ code)
 # It relies on files produced by blend.cpp.
 #

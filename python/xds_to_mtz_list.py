@@ -1,4 +1,16 @@
 #!/usr/bin/python
+#***********************************************************************************************************
+#***********************************************************************************************************
+#********* xds_to_mtz_list.py
+#*********
+#********* Copyright (C) 2014 Diamond Light Source & Imperial College London
+#*********
+#********* Authors: James Foadi & Gwyndaf Evans
+#*********
+#********* This code is distributed under the BSD license, a copy of which is
+#********* included in the root directory of this package.
+#************************************************************************************************************
+#************************************************************************************************************
 # Simple script to turn xds files of an input list for BLEND into mtz, and update the list.
 # This runs in the following way:
 #

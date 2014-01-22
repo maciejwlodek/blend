@@ -1,4 +1,16 @@
 #!/usr/bin/python
+#***********************************************************************************************************
+#***********************************************************************************************************
+#********* create_file_for_BLEND.py
+#*********
+#********* Copyright (C) 2014 Diamond Light Source & Imperial College London
+#*********
+#********* Authors: James Foadi & Gwyndaf Evans
+#*********
+#********* This code is distributed under the BSD license, a copy of which is
+#********* included in the root directory of this package.
+#************************************************************************************************************
+#************************************************************************************************************
 # Simple script to build input dat file for BLEND, starting from directories
 # This runs in the following way:
 #
