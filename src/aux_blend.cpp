@@ -462,7 +462,9 @@ void statistics_with_R(std::vector<scala::hkl_unmerge_list>& hkl_list,std::multi
  std::cout << "Performing statistical analysis (this might take a while!)........." << std::endl;
  int R_status;
  std::ostringstream R_command_line;
- R_command_line << "R --vanilla --slave --quiet < " << R_program;
+ //R_command_line << "R --vanilla --slave --quiet < " << R_program;
+ //R_command_line << "R CMD BATCH --slave --no-save --no-restore " << R_program;
+ R_command_line << "Rscript " << R_program;
  R_status=std::system((R_command_line.str()).c_str());   // The ostringstream object is first turned into a string and this into a cstring
  
  // Read and interpret content of file produced by R code

@@ -524,12 +524,16 @@ if (length(idx) > 0)
  }
  rownames(mergingStatistics) <- idx
 
- # Plot Rmeas vs Completeness
+ # Plot Rmeas vs Completeness (in both PNG and POSTSCRIPT formats)
  tmp <- is.na(mergingStatistics$Rmeas)
  ntmp <- sum(tmp)
  if (ntmp < length(mergingStatistics[,1]))
  {
   png("./merged_files/Rmeas_vs_Cmpl.png")
+  plot(mergingStatistics$Completeness,mergingStatistics$Rmeas,cex=3,xlab="Completeness",ylab="Rmeas")
+  text(mergingStatistics$Completeness,mergingStatistics$Rmeas,labels=rownames(mergingStatistics),cex=1)
+  emptyc <- dev.off()
+  postscript("./merged_files/Rmeas_vs_Cmpl.ps", width = 10, height = 10, paper = "a4")
   plot(mergingStatistics$Completeness,mergingStatistics$Rmeas,cex=3,xlab="Completeness",ylab="Rmeas")
   text(mergingStatistics$Completeness,mergingStatistics$Rmeas,labels=rownames(mergingStatistics),cex=1)
   emptyc <- dev.off()
@@ -581,3 +585,6 @@ if (length(idx) > 0)
  cat("aimless_001.log, aimless_002.log, etc : log files, one for each AIMLESS job.\n")
  cat("\n")
 }
+
+# Exit without saving
+q(save = "no", status = 0, runLast = FALSE) 

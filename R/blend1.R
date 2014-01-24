@@ -18,7 +18,7 @@
 
 
 # Load libraries and auxiliary files
-require(MASS)  ## For rlm (robust regression)
+require(MASS, quietly = TRUE, warn.conflicts = FALSE)  ## For rlm (robust regression)
 
 # Functions
 
@@ -950,10 +950,11 @@ for (i in 1:length(maindf[,1]))
 kk <- maxRatio(macropar[,2:7])
 msg <- sprintf("Linear Cell Variation: %6.2f %s",kk,"%")
 
-# Print out cluster tree pictures
+# Print out cluster tree pictures (in PNG and POSTSCRIPT formats)
 png(file="./tree.png",height=1000,width=1000)
-#plclust(npar.hc_ward,xlab="Individual datasets",ylab="Distances",main="All descriptors",sub="Ward Linkage")
-#plclust(npar.hc_ward,xlab="Individual datasets",ylab="Ward distance",main="",sub="")
+plclust(npar.hc_ward,xlab="Individual datasets",ylab="Ward distance",main=msg,sub="")
+emptyc <- dev.off()    # The "emptyc" is to collect the return value of dev.off(), so that it's not output
+postscript(file="./tree.ps", height = 10, width = 10, paper = "a4")
 plclust(npar.hc_ward,xlab="Individual datasets",ylab="Ward distance",main=msg,sub="")
 emptyc <- dev.off()    # The "emptyc" is to collect the return value of dev.off(), so that it's not output
 cat("Cluster analysis completed!\n")
@@ -1020,3 +1021,6 @@ cat("    \n")
 
 # Save image for next run of BLEND
 save.image(file="BLEND.RData")
+
+# Exit without saving
+q(save = "no", status = 0, runLast = FALSE)

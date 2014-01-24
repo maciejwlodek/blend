@@ -10,7 +10,14 @@
 /********* included in the root directory of this package.
 /************************************************************************************************************/
 /************************************************************************************************************/
-// NEW IN VERSION 0.4.1  -  05/05/2013
+// CHANGES IN VERSION 0.4.2 - 24/01/2014
+// - Fixed problem with execution of R in batch mode. This should now avoid the program to stop while is
+//   being executed from within CCP4 graphical interface. Execution of R scripts is now carried out using
+//   Rscript. Inside each R script q() with appropriate parameters have been included.
+// - Added plotting of dendrogram and Rmeas_vs_Completeness plots in postscript formats to be viewed from
+//   within the CCP4 graphical interface
+//
+// CHANGES IN VERSION 0.4.1  -  05/05/2013
 // - Linear Cell Variation (LCV) parameter introduced and printed inside dendrogram picture
 //
 // NEW IN VERSION 0.4.0  -  13/11/2012
@@ -460,7 +467,8 @@ int main(int argc, char* argv[])
    std::cout << std::endl;
    int R_status;
    std::ostringstream R_command_line;
-   R_command_line << "R --vanilla --slave --quiet < " << R_program2 << " --args " << dlevel_top << " " << dlevel_bottom;
+   //R_command_line << "R --vanilla --slave --quiet < " << R_program2 << " --args " << dlevel_top << " " << dlevel_bottom;
+   R_command_line << "Rscript " << R_program2 << " " << dlevel_top << " " << dlevel_bottom;
    R_status=std::system((R_command_line.str()).c_str());
    if (R_status != 0)
    {
@@ -495,7 +503,8 @@ int main(int argc, char* argv[])
    int R_status;
    std::ostringstream R_command_line,tmp;
    for (int i=0;i < arbitrary_datasets.size();i++) tmp << arbitrary_datasets[i] << " ";
-   R_command_line << "R --vanilla --slave --quiet < " << R_program3 << " --args " << tmp.str();
+   //R_command_line << "R --vanilla --slave --quiet < " << R_program3 << " --args " << tmp.str();
+   R_command_line << "Rscript " << R_program3 << " " << tmp.str();
    //std::cout << R_command_line.str() << std::endl;
    R_status=std::system((R_command_line.str()).c_str());
    if (R_status != 0)

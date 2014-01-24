@@ -664,3 +664,6 @@ cat("merged_001.mtz, merged_002.mtz, etc   : mtz files prior to scaling. One for
 cat("scaled_001.mtz, scaled_002.mtz, etc   : mtz scaled files. One for each group;\n")
 cat("aimless_001.log, aimless_002.log, etc : log files, one for each AIMLESS job.\n")
 cat("\n")
+
+# Exit without saving
+q(save = "no", status = 0, runLast = FALSE)
