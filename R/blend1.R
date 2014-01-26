@@ -13,7 +13,6 @@
 # First R module of program BLEND (later to be replaced by C++ code)
 # It relies on files produced by blend.cpp.
 #
-######### Version 0.4.1 - 05/05/2013 - James Foadi and Gwyndaf Evans #########
 #
 
 

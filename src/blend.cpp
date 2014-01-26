@@ -10,12 +10,19 @@
 /********* included in the root directory of this package.
 /************************************************************************************************************/
 /************************************************************************************************************/
-// CHANGES IN VERSION 0.4.2 - 24/01/2014
+// CHANGES IN VERSION 0.4.2 - 25/01/2014
 // - Fixed problem with execution of R in batch mode. This should now avoid the program to stop while is
 //   being executed from within CCP4 graphical interface. Execution of R scripts is now carried out using
 //   Rscript. Inside each R script q() with appropriate parameters have been included.
 // - Added plotting of dendrogram and Rmeas_vs_Completeness plots in postscript formats to be viewed from
-//   within the CCP4 graphical interface
+//   within the CCP4 graphical interface.
+// - Now it (hopefully) catches all AIMLESS execution errors and does not stop. AIMLESS log dumped in merged_files
+//   or combined_files directories even when AIMLESS fails.
+// - Fixed a bug in "merge_mtzs" (modules blend2.R and blend3.R) needed to take care of alternate indexing. Now
+//   also reference file goes through same procedure. POINTLESS won't stop because reference file is named
+//   differently from current file in cluster or selection.
+// - Eliminated cluster re-numbering in synthesis mode.
+// - End-of-program messages eliminated.
 //
 // CHANGES IN VERSION 0.4.1  -  05/05/2013
 // - Linear Cell Variation (LCV) parameter introduced and printed inside dendrogram picture
@@ -110,7 +117,7 @@ int main(int argc, char* argv[])
   std::cout << "##################################################################" << std::endl;
   std::cout << "##################################################################" << std::endl;
   std::cout << "##################################################################" << std::endl;
-  std::cout << "## BLEND - Version 0.4.1                                        ##" << std::endl;
+  std::cout << "## BLEND - Version 0.4.2                                        ##" << std::endl;
   std::cout << "##################################################################" << std::endl;
   std::cout << std::endl;
 

@@ -13,7 +13,6 @@
 # Second R module of program BLEND (later to be replaced by C++ code)
 # It relies on files produced by blend.cpp and blend1.R.
 #
-######### Version 0.4.1 - 05/05/2013 - James Foadi and Gwyndaf Evans #########
 #
 
 
@@ -81,7 +80,7 @@ altidx <- function(hklin,hklref,hklout)
 
  # Run program
  stringa <- "pointless < pointless_keywords.dat"
- exepointless <- system(stringa,intern=TRUE)
+ exepointless <- system(stringa,intern=TRUE, ignore.stderr = TRUE)
 
  # Delete keywords file
  emptyc <- file.remove("pointless_keywords.dat")
@@ -125,14 +124,14 @@ merge_mtzs <- function(mtz_list,selection,mtzout,pointless_keys,hklref)
   tmp <- trunc_and_renum(hklin,inibatch,finbatch,1,hklout) 
 
   # Do alternate indexing
-  if (imtz > 1)
-  {
+  #if (imtz > 1)
+  #{
    hklin <- hklout
    hklout <- paste("final",sfx,".mtz",sep="")
    mtzin <- c(mtzin,hklout)
    files_to_rm <- c(files_to_rm,hklout)
    tmp <- altidx(hklin,hklref,hklout)
-  }
+  #}
  }
 
  # Run Pointless to glue everything together under correct space group
@@ -256,18 +255,23 @@ merge_datasets <- function(mtz_names,selection,suffix,pointless_keys,aimless_key
   # Prepare command line for AIMLESS
   cat("Running AIMLESS on the merged file ...\n")
   stringa <- sprintf("aimless HKLIN merged.mtz HKLOUT sTrAnO.mtz < aimless_keywords.dat")
-  exeaimless <- system(stringa,intern=TRUE)
+  exeaimless <- system(stringa,intern=TRUE, ignore.stderr = TRUE)
 
   # Run AIMLESS
-  if (length(grep("Negative scale",exeaimless,fixed=TRUE)) != 0 |
-      length(grep("Failed in SETSCL",exeaimless,fixed=TRUE)) != 0 |
-      length(grep("Aimless:  *** No observations ***",exeaimless,fixed=TRUE)) != 0 |
-      length(grep("Too few observations",exeaimless,fixed=TRUE)) != 0 |
-      length(grep("ERROR in ScaleModel:",exeaimless,fixed=TRUE)) != 0)
+  nexeaimless <- length(exeaimless)
+  if (length(grep("End of aimless job,", exeaimless[(nexeaimless - 1)], fixed = TRUE)) == 0)
   {
    Mstats <- data.frame(Rmeas=c(NA,NA,NA),Rpim=c(NA,NA,NA),Completeness=c(NA,NA,NA),Multiplicity=c(NA,NA,NA),
                         LowRes=c(NA,NA,NA),HighRes=c(NA,NA,NA))
  
+   # Write out AIMLESS log
+   log_file <- paste(suffix[1],paste("aimless_",suffix[2],".log",sep=""),sep="/")
+   for (linea in exeaimless)
+   {
+    linea <- paste(linea,"\n",sep="")
+    cat(linea,file=log_file,append=TRUE)
+   }
+
    # Clean directory from unnecessary files
    dircontents <- system("ls",intern=TRUE)
    idx <- grep("ANOMPLOT",dircontents,fixed=TRUE)
@@ -376,32 +380,30 @@ merge_datasets <- function(mtz_names,selection,suffix,pointless_keys,aimless_key
   if (length(idx) != 0) for (jj in idx) file.remove(dircontents[jj])
   idx <- grep("sTrAnO.mtz",dircontents,fixed=TRUE)
   if (length(idx) != 0) file.remove(dircontents[idx])
-  #idx <- grep("aimless_keywords",dircontents,fixed=TRUE)
-  #if (length(idx) != 0) for (i in idx) file.remove(dircontents[i])
 
   return(list(Mstats,exeaimless))
  }
- if (length(fatal_error) != 0 |
-     length(grep("FATAL ERROR message:",exemerge,fixed=TRUE)) != 0 |
-     length(exemerge) == 0)
- {
-  exeaimless <- NULL
-  Mstats <- data.frame(Rmeas=c(NA,NA,NA),Rpim=c(NA,NA,NA),Completeness=c(NA,NA,NA),Multiplicity=c(NA,NA,NA),
-                       LowRes=c(NA,NA,NA),HighRes=c(NA,NA,NA))
-
-  # Remove files produced to merge mtz's
-  dircontents <- system("ls",intern=TRUE)
-  idx <- grep("rebatch",dircontents,fixed=TRUE)
-  if (length(idx) != 0) for (i in idx) file.remove(dircontents[i])
-  idx <- grep("mtzdump",dircontents,fixed=TRUE)
-  if (length(idx) != 0) for (i in idx) file.remove(dircontents[i])
-  idx <- grep("pointless",dircontents,fixed=TRUE)
-  if (length(idx) != 0) for (i in idx) file.remove(dircontents[i])
-  idx <- grep("reference",dircontents,fixed=TRUE)
-  if (length(idx) != 0) for (i in idx) file.remove(dircontents[i])
-
-  return(list(Mstats,exeaimless))
- }
+ #if (length(fatal_error) != 0 |
+ #    length(grep("FATAL ERROR message:",exemerge,fixed=TRUE)) != 0 |
+ #    length(exemerge) == 0)
+ #{
+ # exeaimless <- NULL
+ # Mstats <- data.frame(Rmeas=c(NA,NA,NA),Rpim=c(NA,NA,NA),Completeness=c(NA,NA,NA),Multiplicity=c(NA,NA,NA),
+ #                      LowRes=c(NA,NA,NA),HighRes=c(NA,NA,NA))
+ #
+ # # Remove files produced to merge mtz's
+ # dircontents <- system("ls",intern=TRUE)
+ # idx <- grep("rebatch",dircontents,fixed=TRUE)
+ # if (length(idx) != 0) for (i in idx) file.remove(dircontents[i])
+ # idx <- grep("mtzdump",dircontents,fixed=TRUE)
+ # if (length(idx) != 0) for (i in idx) file.remove(dircontents[i])
+ # idx <- grep("pointless",dircontents,fixed=TRUE)
+ # if (length(idx) != 0) for (i in idx) file.remove(dircontents[i])
+ # idx <- grep("reference",dircontents,fixed=TRUE)
+ # if (length(idx) != 0) for (i in idx) file.remove(dircontents[i])
+ #
+ # return(list(Mstats,exeaimless))
+ #}
 }
 
 
@@ -482,7 +484,7 @@ if (length(idx) > 0)
  # Ascii file with list of merging datasets
  clusters_list_file=paste(outdir,"CLUSTERS.info",sep="/")
  if (file.exists(clusters_list_file)) emptyc <- file.remove(clusters_list_file)
- 
+
  # Loop over all selected merging nodes and produce scaled datasets
  mergingStatistics <- data.frame()
  for (i in 1:length(idx))
@@ -491,13 +493,15 @@ if (length(idx) > 0)
  
   # Produce text related to specific cluster in CLUSTERs.info file
   cln <- groups[[1]][[j]]
-  messaggio <- paste("********* Cluster ",i,", composed of datasets ",sep="")
+  #messaggio <- paste("********* Cluster ",i,", composed of datasets ",sep="")
+  messaggio <- paste("********* Cluster ",j,", composed of datasets ",sep="")
   for (k in cln) messaggio <- paste(messaggio,k," ",sep="")
   messaggio <- paste(messaggio,"*********\n",sep="")
   cat(messaggio)
   if (length(cln) > 1)
   {
-   linea <- sprintf("********* Cluster %d *********\n",i)
+   #linea <- sprintf("********* Cluster %d *********\n",i)
+   linea <- sprintf("********* Cluster %d *********\n",j)
    cat(linea,file=clusters_list_file,append=T)
    for (k in cln)
    {
@@ -507,7 +511,8 @@ if (length(idx) > 0)
    }
   
    # Scale and merge datasets in this specific cluster
-   suffix <- c(outdir,sprintf("%03d",i))
+   #suffix <- c(outdir,sprintf("%03d",i))
+   suffix <- c(outdir,sprintf("%03d",j))
    tmp <- merge_datasets("FINAL_list_of_files.dat",selection=groups[[1]][[j]],suffix,pointless_keys,aimless_keys,
                          resomin=groups[[2]][[j]][1],resomax=groups[[2]][[j]][2],nref=idxref)
    cat(" Statistics for this group:\n")
@@ -515,8 +520,10 @@ if (length(idx) > 0)
    # Change row names for display purpose
    rownames(tmp[[1]]) <- c("Overall","InnerShell","OuterShell")
    print(tmp[[1]])
-   if (length(tmp[[2]]) == 0) warning(paste("No result could be produced for cluster ",i," due to a problem with POINTLESS",sep=""))
-   if (length(tmp[[2]]) != 0 & is.na(tmp[[1]][1,1])) warning(paste("No result could be produced for cluster ",i," due to a problem with AIMLESS",sep=""))
+   #if (length(tmp[[2]]) == 0) warning(paste("No result could be produced for cluster ",i," due to a problem with POINTLESS",sep=""))
+   if (length(tmp[[2]]) == 0) warning(paste("No result could be produced for cluster ",j," due to a problem with POINTLESS",sep=""))
+   #if (length(tmp[[2]]) != 0 & is.na(tmp[[1]][1,1])) warning(paste("No result could be produced for cluster ",i," due to a problem with AIMLESS",sep=""))
+   if (length(tmp[[2]]) != 0 & is.na(tmp[[1]][1,1])) warning(paste("No result could be produced for cluster ",j," due to a problem with AIMLESS",sep=""))
  
    # Collect merging statistics in data frame
    mergingStatistics <- rbind(mergingStatistics,tmp[[1]][1,])
@@ -540,7 +547,6 @@ if (length(idx) > 0)
  }
  
  # Sort mergingStatistics data frame according to highest completeness and lowest Rmeas
- #rownames(mergingStatistics) <- 1:length(mergingStatistics
  tmpdframe <- mergingStatistics
  mergingStatistics <- tmpdframe[order(tmpdframe$Rmeas,tmpdframe$Completeness,na.last=TRUE),]
 
@@ -571,19 +577,19 @@ if (length(idx) > 0)
  }
 
  # Final message for users
- cat("\n")
- cat("##################################################################\n")
- cat("##################################################################\n")
- cat("##################################################################\n")
- cat("  The following files have been created in directory merged_files:\n")
- cat("CLUSTERS.info                         : ascii file including details (file path, serial number and batch used) for each cluster selected;\n")
- cat("MERGING_STATISTICS.info               : ascii file including a table with merging statistics for each merged and/or scaled file, sorted\n")
- cat("                                        according to increasing values of Rmeas;\n")
- cat("Rmeas_vs_Cmpl.png                     : png image displaying Rmeas versus Completeness for all merged nodes\n")
- cat("merged_001.mtz, merged_002.mtz, etc   : mtz files prior to scaling. One for each cluster;\n")
- cat("scaled_001.mtz, scaled_002.mtz, etc   : mtz scaled files. One for each cluster;\n")
- cat("aimless_001.log, aimless_002.log, etc : log files, one for each AIMLESS job.\n")
- cat("\n")
+ #cat("\n")
+ #cat("##################################################################\n")
+ #cat("##################################################################\n")
+ #cat("##################################################################\n")
+ #cat("  The following files have been created in directory merged_files:\n")
+ #cat("CLUSTERS.info                         : ascii file including details (file path, serial number and batch used) for each cluster selected;\n")
+ #cat("MERGING_STATISTICS.info               : ascii file including a table with merging statistics for each merged and/or scaled file, sorted\n")
+ #cat("                                        according to increasing values of Rmeas;\n")
+ #cat("Rmeas_vs_Cmpl.png                     : png image displaying Rmeas versus Completeness for all merged nodes\n")
+ #cat("merged_001.mtz, merged_002.mtz, etc   : mtz files prior to scaling. One for each cluster;\n")
+ #cat("scaled_001.mtz, scaled_002.mtz, etc   : mtz scaled files. One for each cluster;\n")
+ #cat("aimless_001.log, aimless_002.log, etc : log files, one for each AIMLESS job.\n")
+ #cat("\n")
 }
 
 # Exit without saving

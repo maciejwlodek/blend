@@ -13,7 +13,6 @@
 # Third R module of program BLEND (later to be replaced by C++ code)
 # It relies on files produced by blend.cpp and blend1.R.
 #
-######### Version 0.4.1 - 05/05/2013 - James Foadi and Gwyndaf Evans #########
 #
 
 
@@ -81,7 +80,7 @@ altidx <- function(hklin,hklref,hklout)
 
  # Run program
  stringa <- "pointless < pointless_keywords.dat"
- exepointless <- system(stringa,intern=TRUE)
+ exepointless <- system(stringa,intern=TRUE, ignore.stderr = TRUE)
 
  # Delete keywords file
  if (file.exists("pointless_keywords.dat")) emptyc <- file.remove("pointless_keywords.dat")
@@ -125,14 +124,14 @@ merge_mtzs <- function(mtz_list,selection,mtzout,pointless_keys,hklref)
   tmp <- trunc_and_renum(hklin,inibatch,finbatch,1,hklout) 
 
   # Do alternate indexing
-  if (imtz > 1)
-  {
+  #if (imtz > 1)
+  #{
    hklin <- hklout
    hklout <- paste("final",sfx,".mtz",sep="")
    mtzin <- c(mtzin,hklout)
    files_to_rm <- c(files_to_rm,hklout)
    tmp <- altidx(hklin,hklref,hklout)
-  }
+  #}
  }
 
  # Run Pointless to glue everything together under correct space group
@@ -257,17 +256,22 @@ merge_datasets <- function(mtz_names,selection,suffix,pointless_keys,aimless_key
   # Prepare command line for AIMLESS
   cat("Running AIMLESS on the merged file ...\n")
   stringa <- sprintf("aimless HKLIN merged.mtz HKLOUT sTrAnO.mtz < aimless_keywords.dat")
-  exeaimless <- system(stringa,intern=TRUE)
+  exeaimless <- system(stringa,intern=TRUE, ignore.stderr = TRUE)
 
   # Run AIMLESS
-  if (length(grep("Negative scale",exeaimless,fixed=TRUE)) != 0 |
-      length(grep("Failed in SETSCL",exeaimless,fixed=TRUE)) != 0 |
-      length(grep("Aimless:  *** No observations ***",exeaimless,fixed=TRUE)) != 0 |
-      length(grep("Too few observations",exeaimless,fixed=TRUE)) != 0 |
-      length(grep("ERROR in ScaleModel:",exeaimless,fixed=TRUE)) != 0)
+  nexeaimless <- length(exeaimless)
+  if (length(grep("End of aimless job,", exeaimless[(nexeaimless - 1)], fixed = TRUE)) == 0)
   {
    Mstats <- data.frame(Rmeas=c(NA,NA,NA),Rpim=c(NA,NA,NA),Completeness=c(NA,NA,NA),Multiplicity=c(NA,NA,NA),
                         LowRes=c(NA,NA,NA),HighRes=c(NA,NA,NA))
+
+   # AIMLESS log
+   log_file <- paste(suffix[1],paste("aimless",suffix[2],".log",sep=""),sep="/")
+   for (linea in exeaimless)
+   {
+    linea <- paste(linea,"\n",sep="")
+    cat(linea,file=log_file,append=TRUE)
+   }
  
    # Clean directory from unnecessary files
    dircontents <- system("ls",intern=TRUE)
@@ -382,27 +386,27 @@ merge_datasets <- function(mtz_names,selection,suffix,pointless_keys,aimless_key
 
   return(list(Mstats,exeaimless))
  }
- if (length(fatal_error) != 0 |
-     length(grep("FATAL ERROR message:",exemerge,fixed=TRUE)) != 0 |
-     length(exemerge) == 0)
- {
-  exeaimless <- NULL
-  Mstats <- data.frame(Rmeas=c(NA,NA,NA),Rpim=c(NA,NA,NA),Completeness=c(NA,NA,NA),Multiplicity=c(NA,NA,NA),
-                       LowRes=c(NA,NA,NA),HighRes=c(NA,NA,NA))
-
-  # Remove files produced to merge mtz's
-  dircontents <- system("ls",intern=TRUE)
-  idx <- grep("rebatch",dircontents,fixed=TRUE)
-  if (length(idx) != 0) for (i in idx) file.remove(dircontents[i])
-  idx <- grep("mtzdump",dircontents,fixed=TRUE)
-  if (length(idx) != 0) for (i in idx) file.remove(dircontents[i])
-  idx <- grep("pointless",dircontents,fixed=TRUE)
-  if (length(idx) != 0) for (i in idx) file.remove(dircontents[i])
-  idx <- grep("reference",dircontents,fixed=TRUE)
-  if (length(idx) != 0) for (i in idx) file.remove(dircontents[i])
-
-  return(list(Mstats,exeaimless))
- }
+ #if (length(fatal_error) != 0 |
+ #    length(grep("FATAL ERROR message:",exemerge,fixed=TRUE)) != 0 |
+ #    length(exemerge) == 0)
+ #{
+ # exeaimless <- NULL
+ # Mstats <- data.frame(Rmeas=c(NA,NA,NA),Rpim=c(NA,NA,NA),Completeness=c(NA,NA,NA),Multiplicity=c(NA,NA,NA),
+ #                      LowRes=c(NA,NA,NA),HighRes=c(NA,NA,NA))
+ #
+ # # Remove files produced to merge mtz's
+ # dircontents <- system("ls",intern=TRUE)
+ # idx <- grep("rebatch",dircontents,fixed=TRUE)
+ # if (length(idx) != 0) for (i in idx) file.remove(dircontents[i])
+ # idx <- grep("mtzdump",dircontents,fixed=TRUE)
+ # if (length(idx) != 0) for (i in idx) file.remove(dircontents[i])
+ # idx <- grep("pointless",dircontents,fixed=TRUE)
+ # if (length(idx) != 0) for (i in idx) file.remove(dircontents[i])
+ # idx <- grep("reference",dircontents,fixed=TRUE)
+ # if (length(idx) != 0) for (i in idx) file.remove(dircontents[i])
+ #
+ # return(list(Mstats,exeaimless))
+ #}
 }
 
 
@@ -551,7 +555,7 @@ if (file.exists("BLEND_KEYWORDS.dat"))
  idxe <- length(contents)
  if ((idxe-idxs) > 0) for (line in contents[(idxs+1):idxe]) aimless_keys <- c(aimless_keys,line)
 }
- 
+
 # Produce scaled dataset
 ftail <- sprintf("_%03d",(length(gidx)+1))
 suffix <- c(outdir,ftail)
@@ -653,17 +657,17 @@ if (file.exists(outdir))
 }
 
 # Final lines
-cat("\n")
-cat("##################################################################\n")
-cat("##################################################################\n")
-cat("##################################################################\n")
-cat("  The following files have been created in directory combined_files:\n")
-cat("GROUPS.info                           : ascii file including details (file path, serial number and batch used) for each input group;\n")
-cat("MERGING_STATISTICS.info               : ascii file including a table with merging statistics for each merged and/or scaled file;\n")
-cat("merged_001.mtz, merged_002.mtz, etc   : mtz files prior to scaling. One for each group;\n")
-cat("scaled_001.mtz, scaled_002.mtz, etc   : mtz scaled files. One for each group;\n")
-cat("aimless_001.log, aimless_002.log, etc : log files, one for each AIMLESS job.\n")
-cat("\n")
+#cat("\n")
+#cat("##################################################################\n")
+#cat("##################################################################\n")
+#cat("##################################################################\n")
+#cat("  The following files have been created in directory combined_files:\n")
+#cat("GROUPS.info                           : ascii file including details (file path, serial number and batch used) for each input group;\n")
+#cat("MERGING_STATISTICS.info               : ascii file including a table with merging statistics for each merged and/or scaled file;\n")
+#cat("merged_001.mtz, merged_002.mtz, etc   : mtz files prior to scaling. One for each group;\n")
+#cat("scaled_001.mtz, scaled_002.mtz, etc   : mtz scaled files. One for each group;\n")
+#cat("aimless_001.log, aimless_002.log, etc : log files, one for each AIMLESS job.\n")
+#cat("\n")
 
 # Exit without saving
 q(save = "no", status = 0, runLast = FALSE)
