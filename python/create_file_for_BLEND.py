@@ -19,15 +19,15 @@
 
 
 ## Modules needed
-import os,sys,string
-#bhome=os.environ["BLEND_HOME"]                                            #  Directory where
+import os, sys, string, subprocess
+#bhome=os.environ["BLEND_HOME"]                                        #  Directory where
 #if bhome[-1] == "/": sys.path.append(os.path.join(bhome,"python"))    #  all python code
 #if bhome[-1] != "/": sys.path.append(os.path.join(bhome,"/python"))   #  is stored
-from ccp4_functions import generate_generic_batch_file
-from ccp4_classes import RunGENERIC
+#from ccp4_functions import generate_generic_batch_file
+#from ccp4_classes import RunGENERIC
 
 ## CCP4 programs used
-program_pointless="pointless"
+#program_pointless="pointless"
 
 ########################
 ######### MAIN #########
@@ -45,6 +45,7 @@ datapath=li[1]
 # Stop if input directory does not exist
 if os.path.isdir(datapath):
  mtz_names=os.listdir(datapath)
+ mtz_names.sort()
 else:
  raise SystemExit("The input directory does not exist")
 
@@ -67,31 +68,37 @@ for iname in range(len(mtz_names)):
   xdsin=string.join([os.path.join(datapath,name),"\n"],"")
   if not os.path.exists(xds_files_dir): os.mkdir(xds_files_dir)
   mtzout=os.path.join(xds_files_dir,newname)
-  
 
+  # Run POINTLESS to turn XDS files into MTZ files (this bit replace the following commented lines)
+  cmdline = 'pointless -c xdsin ' + xdsin.rstrip("\n") + ' hklout ' + mtzout.rstrip("\n")
+  try:
+   ttt = subprocess.check_output(cmdline, shell = True)
+  except subprocess.CalledProcessError:
+   raise SystemExit("Error has occurred while converting XDS file " + xdsin.rstrip("\n") + ".") 
+  
   # All temporary files will be deleted at the end of this script
-  files_to_delete=[]
+  #files_to_delete=[]
 
   # Create keyword file for pointless
-  batch_file=os.path.join(os.curdir,"pointless.com")
-  files_to_delete.append(batch_file)
-  keywords_list=["NAME PROJECT From XDS to MTZ  CRYSTAL Xtal  DATASET Data"]
-  keywords_list.append(string.join(["XDSIN",xdsin]))
-  keywords_list.append(string.join(["HKLOUT",mtzout]))
-  keywords_list.append("COPY")
-  generate_generic_batch_file(batch_file,keywords_list)
-  log_file=os.path.join(os.curdir,"pointless.log")
-  files_to_delete.append(log_file)
+  #batch_file=os.path.join(os.curdir,"pointless.com")
+  #files_to_delete.append(batch_file)
+  #keywords_list=["NAME PROJECT From XDS to MTZ  CRYSTAL Xtal  DATASET Data"]
+  #keywords_list.append(string.join(["XDSIN",xdsin]))
+  #keywords_list.append(string.join(["HKLOUT",mtzout]))
+  #keywords_list.append("COPY")
+  #generate_generic_batch_file(batch_file,keywords_list)
+  #log_file=os.path.join(os.curdir,"pointless.log")
+  #files_to_delete.append(log_file)
 
   # Run pointless
-  files_list=[""]
-  types_list=[""]
-  jobGENERIC=RunGENERIC(program_pointless,types_list,files_list,batch_file,log_file)
-  jobGENERIC.execute()
+  #files_list=[""]
+  #types_list=[""]
+  #jobGENERIC=RunGENERIC(program_pointless,types_list,files_list,batch_file,log_file)
+  #jobGENERIC.execute()
 
   # Get rid of unwanted files
-  for a in files_to_delete:
-   os.remove(a)
+  #for a in files_to_delete:
+  # os.remove(a)
 
   # Then list the new mtz file with the other
   lines.append(string.join([mtzout,"\n"],""))

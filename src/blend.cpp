@@ -23,6 +23,8 @@
 //   differently from current file in cluster or selection.
 // - Eliminated cluster re-numbering in synthesis mode.
 // - End-of-program messages eliminated.
+// - python execution replaced with ccp4-python
+// - Fixed a bug in the execution of POINTLESS to convert XDS files into MTZ files
 //
 // CHANGES IN VERSION 0.4.1  -  05/05/2013
 // - Linear Cell Variation (LCV) parameter introduced and printed inside dendrogram picture
@@ -206,7 +208,8 @@ int main(int argc, char* argv[])
     std::cout << "Checking if there are xds files to be converted in input list " << tmpstring << " ..." << std::endl;
     int Python_status;
     std::ostringstream Python_command_line;
-    Python_command_line << "python " << Python_program3 << " " << tmpstring;
+    //Python_command_line << "python " << Python_program3 << " " << tmpstring;
+    Python_command_line << "ccp4-python " << Python_program3 << " " << tmpstring;
     Python_status=std::system((Python_command_line.str()).c_str());
     filename="mtz_names.dat";
    }
@@ -216,7 +219,8 @@ int main(int argc, char* argv[])
     std::ostringstream Python_command_line;
     std::cout << std::endl;
     std::cout << "Checking if there are xds files to be converted in directory " << tmpstring << " ..." << std::endl;
-    Python_command_line << "python " << Python_program1 << " " << tmpstring;
+    //Python_command_line << "python " << Python_program1 << " " << tmpstring;
+    Python_command_line << "ccp4-python " << Python_program1 << " " << tmpstring;
     Python_status=std::system((Python_command_line.str()).c_str());
     filename="mtz_names.dat";
    }
