@@ -1,15 +1,22 @@
 /************************************************************************************************************/
 /************************************************************************************************************/
-/********* blend.cpp
-/*********
-/********* Copyright (C) 2014 Diamond Light Source & Imperial College London
-/*********
-/********* Authors: James Foadi & Gwyndaf Evans
-/*********
-/********* This code is distributed under the BSD license, a copy of which is
-/********* included in the root directory of this package.
+/********* blend.cpp                                                                                *********/
+/*********                                                                                          *********/
+/********* Copyright (C) 2014 Diamond Light Source & Imperial College London                        *********/
+/*********                                                                                          *********/
+/********* Authors: James Foadi & Gwyndaf Evans                                                     *********/
+/*********                                                                                          *********/
+/********* This code is distributed under the BSD license, a copy of which is                       *********/
+/********* included in the root directory of this package.                                          *********/
 /************************************************************************************************************/
 /************************************************************************************************************/
+// CHANGES IN VERSION 0.4.3 - 08/02/2014
+// - Now keywords are given via stdin, like other CCP4 programs. The three different sections for keywords
+//   are highlighted via presence of three keywords at the beginning of each line, BLENDK, POINTLESSK and
+//   AIMLESSK. For the first time, starting from this version, only 2 POINTLESS keywords (CHOOSE SPACEGROUP
+//   and TOLERANCE) and 2 AIMLESS keywords (RESO and SDCORR) are allowed.
+// - Added the "warn = -1" line to all R scripts. This should avoid warning issues contrasting with ccp4i.
+// - Program does not crash anymore if alternative indexing leads to issues of differing space groups.
 // CHANGES IN VERSION 0.4.2 - 25/01/2014
 // - Fixed problem with execution of R in batch mode. This should now avoid the program to stop while is
 //   being executed from within CCP4 graphical interface. Execution of R scripts is now carried out using
@@ -86,6 +93,8 @@
 // <string> is included in Output.hh
 // <sstream> is included in Output.hh
 #include <cstdlib>
+#include <boost/algorithm/string.hpp>
+using namespace boost::algorithm;
 
 
 /******************************************************/
@@ -119,7 +128,7 @@ int main(int argc, char* argv[])
   std::cout << "##################################################################" << std::endl;
   std::cout << "##################################################################" << std::endl;
   std::cout << "##################################################################" << std::endl;
-  std::cout << "## BLEND - Version 0.4.2                                        ##" << std::endl;
+  std::cout << "## BLEND - Version 0.4.3                                        ##" << std::endl;
   std::cout << "##################################################################" << std::endl;
   std::cout << std::endl;
 
@@ -166,7 +175,12 @@ int main(int argc, char* argv[])
     Python_program3=Python_program3+"python/xds_to_mtz_list.py";
    }
   }
-  else
+  if (val == NULL && !std::getenv("CCP4"))
+  {
+   int nerr=14;
+   throw nerr;
+  }
+  if (val != NULL && !std::getenv("CCP4"))
   {
    int nerr=15;
    throw nerr;
@@ -190,7 +204,7 @@ int main(int argc, char* argv[])
    throw nerr;
   }
   //if (mode_string != "-a" & mode_string != "-s")     // First argument after program name "blend" needs to be either "-a" or "-s"
-  if (mode_string != "-a" & mode_string != "-s" & mode_string != "-c")     // First argument after program name "blend" needs to be either "-a" 
+  if (mode_string != "-a" && mode_string != "-s" && mode_string != "-c")     // First argument after program name "blend" needs to be either "-a" 
                                                                            // or "-s", or "-c"
   {
    int nerr=1;
@@ -211,6 +225,11 @@ int main(int argc, char* argv[])
     //Python_command_line << "python " << Python_program3 << " " << tmpstring;
     Python_command_line << "ccp4-python " << Python_program3 << " " << tmpstring;
     Python_status=std::system((Python_command_line.str()).c_str());
+    if (Python_status != 0)
+    {
+     int nerr=16;
+     throw nerr;
+    }
     filename="mtz_names.dat";
    }
    if (icheck == 1)                 // Input mtz or xds files are included in a single directory
@@ -222,6 +241,11 @@ int main(int argc, char* argv[])
     //Python_command_line << "python " << Python_program1 << " " << tmpstring;
     Python_command_line << "ccp4-python " << Python_program1 << " " << tmpstring;
     Python_status=std::system((Python_command_line.str()).c_str());
+    if (Python_status != 0)
+    {
+     int nerr=16;
+     throw nerr;
+    }
     filename="mtz_names.dat";
    }
    if (icheck == -1)
@@ -267,8 +291,11 @@ int main(int argc, char* argv[])
   // Amend command line arguments for CCP4 initialization
   int ncorrect=0;
   if (runmode == 1) ncorrect=3;
-  if (runmode == 2 & dlevel_bottom < 0) ncorrect=3;
-  if (runmode == 2 & dlevel_bottom >= 0) ncorrect=4;
+  if (runmode == 2)
+  {
+   if (dlevel_bottom < 0) ncorrect=3;
+   if (dlevel_bottom >= 0) ncorrect=4;
+  }
   if (runmode == 3) ncorrect=arbitrary_datasets.size()+2;
   argc-=ncorrect;
   for (int i=0;i < argc;i++) argv[i]=argv[i+1]; 
@@ -289,6 +316,118 @@ int main(int argc, char* argv[])
    std::cout << "You are now running BLEND in analysis mode." << std::endl; 
    std::cout << std::endl;
    
+   // In order to line up BLEND with the way ccp4i works (with stdin passed keywords) this is what has been added
+
+   // Accepted keywords
+   std::vector<std::string> akeys, dvkeywdline;
+   akeys.push_back("NBIN");
+   dvkeywdline.push_back("NBIN      20");
+   akeys.push_back("RADFRAC");
+   dvkeywdline.push_back("RADFRAC   0.750");
+   akeys.push_back("ISIGI");
+   dvkeywdline.push_back("ISIGI     1.500");
+   akeys.push_back("CPARWT");
+   dvkeywdline.push_back("CPARWT    1.000");
+   akeys.push_back("DATAREF");
+   akeys.push_back("TOLERANCE");
+   akeys.push_back("CHOOSE");
+   akeys.push_back("RESO");
+   akeys.push_back("SDCOR");
+
+   // Load in keywords from standard input
+   // This is a way of reading lines from standard input and storing them into a string variable, line,
+   // until a "/n" (carriage return) is entered
+   int jflag;
+   std::string keywdline;
+   std::vector<std::string> vkeywdline;
+   std::string::size_type Idx;
+   std::cout << ">>>>> Input command lines <<<<<" << std::endl;
+   std::cout << std::endl;
+   getline(std::cin, keywdline);
+   trim(keywdline);
+   std::cout << keywdline << std::endl;
+   if (keywdline.substr(0,3) != "END" && keywdline.substr(0,3) != "GO" && keywdline != "")
+   {
+    jflag = 0;
+    for (unsigned int i = 0; i < akeys.size(); ++i)
+    {
+     Idx = keywdline.find(akeys[i]);
+     if (Idx != std::string::npos)
+     {
+      vkeywdline.push_back(keywdline.substr(Idx));
+      jflag = 1;
+     }
+    }
+    if (jflag == 0) std::cout << "'" << keywdline << "' is not a valid keyword entry." << std::endl;
+   }
+   //while (keywdline != "END" && keywdline != "GO" && keywdline != "" && keywdline[keywdline.size() - 1] == 0)
+   std::string old_keywdline = "";
+   while (keywdline != "END" && keywdline != "GO" && keywdline != old_keywdline && keywdline != "")
+   {
+    old_keywdline = keywdline;
+    getline(std::cin, keywdline);
+    trim(keywdline);
+    std::cout << keywdline << std::endl;
+    if (keywdline.substr(0,3) != "END" && keywdline.substr(0,3) != "GO" && keywdline != "")
+    {
+     jflag = 0;
+     for (unsigned int i = 0; i < akeys.size(); ++i)
+     {
+      Idx = keywdline.find(akeys[i]);
+      if (Idx != std::string::npos)
+      {
+       vkeywdline.push_back(keywdline.substr(Idx));
+       jflag = 1;
+      }
+     }
+    if (jflag == 0) std::cout << "'" << keywdline << "' is not a valid keyword entry." << std::endl;
+    }
+   }
+   std::cout << ">>>>>     End of input    <<<<<" << std::endl;
+   std::cout << std::endl;
+
+   // Output to old-format BLEND_KEYWORDS.dat
+   std::ofstream keywd_ostream("BLEND_KEYWORDS.dat",std::ios::out);
+   keywd_ostream << "BLEND KEYWORDS" << std::endl;
+   for (int i = 0; i < 4; ++i)
+   {
+    int k = 0;
+    for (unsigned int j = 0; j < vkeywdline.size(); ++j)
+    {
+     Idx = vkeywdline[j].find(akeys[i]);
+     if (Idx != std::string::npos)
+     {
+      k = 1;
+      keywd_ostream << vkeywdline[j] << std::endl;
+     }
+    }
+    if (k == 0) keywd_ostream << dvkeywdline[i] << std::endl;
+   }
+   for (unsigned int j = 0; j < vkeywdline.size(); ++j)
+   {
+    Idx = vkeywdline[j].find(akeys[4]);
+    if (Idx != std::string::npos) keywd_ostream << vkeywdline[j] << std::endl;
+   }
+   keywd_ostream << "POINTLESS KEYWORDS" << std::endl;
+   for (int i = 5; i < 7; ++i)
+   {
+    for (unsigned int j = 0; j < vkeywdline.size(); ++j)
+    {
+     Idx = vkeywdline[j].find(akeys[i]);
+     if (Idx != std::string::npos) keywd_ostream << vkeywdline[j] << std::endl;
+    }
+   }
+   keywd_ostream << "AIMLESS KEYWORDS" << std::endl;
+   for (int i = 7; i < 9; ++i)
+   {
+    for (unsigned int j = 0; j < vkeywdline.size(); ++j)
+    {
+     Idx = vkeywdline[j].find(akeys[i]);
+     if (Idx != std::string::npos) keywd_ostream << vkeywdline[j] << std::endl;
+    }
+   }
+   keywd_ostream.close();
+
    // Load crystals in unmerged data structures
    std::vector<scala::hkl_unmerge_list> hkl_list=load_crystals(filename,runmode);   // This is the correct expression for a copy constructor. Defining hkl_list first
                                                                                     // and then using hkl_list=load_crystals(filename) doesn't work. Ultimately this is
@@ -351,9 +490,10 @@ int main(int argc, char* argv[])
    scala::CrystalType crystal_type;
    clipper::Spacegroup cspacegroup;
    clipper::Spgr_descr cspgr_descr;
-   size_t lnum;
+   //size_t lnum;
+   int lnum;
    std::string blatsymb;
-   for (int i=0;i < hkl_list.size();i++)
+   for (unsigned int i=0;i < hkl_list.size();i++)
    {
     if (crystal_flag[i] == 0)
     {
@@ -405,7 +545,7 @@ int main(int argc, char* argv[])
     else
     {
      int flag=0;
-     for (int i=0;i < spacegroup_class.size();i++)
+     for (unsigned int i=0;i < spacegroup_class.size();i++)
      {
       if (pos_cs->first == spacegroup_class[i]) flag=1;
      }
@@ -420,7 +560,7 @@ int main(int argc, char* argv[])
    {
     std::cout << "These datasets are partitioned in " << spacegroup_class.size() << " groups." << std::endl;
    } 
-   for (int i=0;i < spacegroup_class.size();i++)
+   for (unsigned int i=0;i < spacegroup_class.size();i++)
    {
     if (spacegroup_class[i] == 0) 
     {
@@ -452,6 +592,9 @@ int main(int argc, char* argv[])
     statistics_with_R(hkl_list,sg_to_crystal,spacegroup_class,crystal_flag,R_program1);
    }
 
+   // Delete BLEND_KEYWORDS.dat before termination
+   if (remove("BLEND_KEYWORDS.dat") != 0) std::cout << "Warning! Unable to remove file 'BLEND_KEYWORDS.dat'." << std::endl;
+
    // End of BLEND - Analysis mode
    std::cout << std::endl;
    std::cout << "##################################################################" << std::endl;
@@ -472,6 +615,118 @@ int main(int argc, char* argv[])
    std::cout << "You are now running BLEND in synthesis mode." << std::endl; 
    std::cout << std::endl;
 
+   // In order to line up BLEND with the way ccp4i works (with stdin passed keywords) this is what has been added
+
+   // Accepted keywords
+   std::vector<std::string> akeys, dvkeywdline;
+   akeys.push_back("NBIN");
+   dvkeywdline.push_back("NBIN      20");
+   akeys.push_back("RADFRAC");
+   dvkeywdline.push_back("RADFRAC   0.750");
+   akeys.push_back("ISIGI");
+   dvkeywdline.push_back("ISIGI     1.500");
+   akeys.push_back("CPARWT");
+   dvkeywdline.push_back("CPARWT    1.000");
+   akeys.push_back("DATAREF");
+   akeys.push_back("TOLERANCE");
+   akeys.push_back("CHOOSE");
+   akeys.push_back("RESO");
+   akeys.push_back("SDCOR");
+
+   // Load in keywords from standard input
+   // This is a way of reading lines from standard input and storing them into a string variable, line,
+   // until a "/n" (carriage return) is entered
+   int jflag;
+   std::string keywdline;
+   std::vector<std::string> vkeywdline;
+   std::string::size_type Idx;
+   std::cout << ">>>>> Input command lines <<<<<" << std::endl;
+   std::cout << std::endl;
+   getline(std::cin, keywdline);
+   trim(keywdline);
+   std::cout << keywdline << std::endl;
+   if (keywdline.substr(0,3) != "END" && keywdline.substr(0,3) != "GO" && keywdline != "")
+   {
+    jflag = 0;
+    for (unsigned int i = 0; i < akeys.size(); ++i)
+    {
+     Idx = keywdline.find(akeys[i]);
+     if (Idx != std::string::npos)
+     {
+      vkeywdline.push_back(keywdline.substr(Idx));
+      jflag = 1;
+     }
+    }
+    if (jflag == 0) std::cout << "'" << keywdline << "' is not a valid keyword entry." << std::endl;
+   }
+   //while (keywdline != "END" && keywdline != "GO" && keywdline != "" && keywdline[keywdline.size() - 1] == 0)
+   std::string old_keywdline = "";
+   while (keywdline != "END" && keywdline != "GO" && keywdline != old_keywdline && keywdline != "")
+   {
+    old_keywdline = keywdline;
+    getline(std::cin, keywdline);
+    trim(keywdline);
+    std::cout << keywdline << std::endl;
+    if (keywdline.substr(0,3) != "END" && keywdline.substr(0,3) != "GO" && keywdline != "")
+    {
+     jflag = 0;
+     for (unsigned int i = 0; i < akeys.size(); ++i)
+     {
+      Idx = keywdline.find(akeys[i]);
+      if (Idx != std::string::npos)
+      {
+       vkeywdline.push_back(keywdline.substr(Idx));
+       jflag = 1;
+      }
+     }
+    if (jflag == 0) std::cout << "'" << keywdline << "' is not a valid keyword entry." << std::endl;
+    }
+   }
+   std::cout << ">>>>>     End of input    <<<<<" << std::endl;
+   std::cout << std::endl;
+
+   // Output to old-format BLEND_KEYWORDS.dat
+   std::ofstream keywd_ostream("BLEND_KEYWORDS.dat",std::ios::out);
+   keywd_ostream << "BLEND KEYWORDS" << std::endl;
+   for (int i = 0; i < 4; ++i)
+   {
+    int k = 0;
+    for (unsigned int j = 0; j < vkeywdline.size(); ++j)
+    {
+     Idx = vkeywdline[j].find(akeys[i]);
+     if (Idx != std::string::npos)
+     {
+      k = 1;
+      keywd_ostream << vkeywdline[j] << std::endl;
+     }
+    }
+    if (k == 0) keywd_ostream << dvkeywdline[i] << std::endl;
+   }
+   for (unsigned int j = 0; j < vkeywdline.size(); ++j)
+   {
+    Idx = vkeywdline[j].find(akeys[4]);
+    if (Idx != std::string::npos) keywd_ostream << vkeywdline[j] << std::endl;
+   }
+   keywd_ostream << "POINTLESS KEYWORDS" << std::endl;
+   for (int i = 5; i < 7; ++i)
+   {
+    for (unsigned int j = 0; j < vkeywdline.size(); ++j)
+    {
+     Idx = vkeywdline[j].find(akeys[i]);
+     if (Idx != std::string::npos) keywd_ostream << vkeywdline[j] << std::endl;
+    }
+   }
+   keywd_ostream << "AIMLESS KEYWORDS" << std::endl;
+   for (int i = 7; i < 9; ++i)
+   {
+    for (unsigned int j = 0; j < vkeywdline.size(); ++j)
+    {
+     Idx = vkeywdline[j].find(akeys[i]);
+     if (Idx != std::string::npos) keywd_ostream << vkeywdline[j] << std::endl;
+    }
+   }
+   keywd_ostream.close();
+
    // Run R code
    std::cout << std::endl;
    std::cout << "Running R code to read statistical analysis from a previous run of BLEND and produce information on clusters..." << std::endl; 
@@ -486,6 +741,9 @@ int main(int argc, char* argv[])
     int nerr=13;
     throw nerr;
    }
+
+   // Delete BLEND_KEYWORDS.dat before termination
+   if (remove("BLEND_KEYWORDS.dat") != 0) std::cout << "Warning! Unable to remove file 'BLEND_KEYWORDS.dat'." << std::endl;
 
    // End of BLEND - Synthesis mode
    std::cout << std::endl;
@@ -507,13 +765,125 @@ int main(int argc, char* argv[])
    std::cout << "You are now running BLEND in combination mode." << std::endl; 
    std::cout << std::endl;
 
+   // In order to line up BLEND with the way ccp4i works (with stdin passed keywords) this is what has been added
+
+   // Accepted keywords
+   std::vector<std::string> akeys, dvkeywdline;
+   akeys.push_back("NBIN");
+   dvkeywdline.push_back("NBIN      20");
+   akeys.push_back("RADFRAC");
+   dvkeywdline.push_back("RADFRAC   0.750");
+   akeys.push_back("ISIGI");
+   dvkeywdline.push_back("ISIGI     1.500");
+   akeys.push_back("CPARWT");
+   dvkeywdline.push_back("CPARWT    1.000");
+   akeys.push_back("DATAREF");
+   akeys.push_back("TOLERANCE");
+   akeys.push_back("CHOOSE");
+   akeys.push_back("RESO");
+   akeys.push_back("SDCOR");
+
+   // Load in keywords from standard input
+   // This is a way of reading lines from standard input and storing them into a string variable, line,
+   // until a "/n" (carriage return) is entered
+   int jflag;
+   std::string keywdline;
+   std::vector<std::string> vkeywdline;
+   std::string::size_type Idx;
+   std::cout << ">>>>> Input command lines <<<<<" << std::endl;
+   std::cout << std::endl;
+   getline(std::cin, keywdline);
+   trim(keywdline);
+   std::cout << keywdline << std::endl;
+   if (keywdline.substr(0,3) != "END" && keywdline.substr(0,3) != "GO" && keywdline != "")
+   {
+    jflag = 0;
+    for (unsigned int i = 0; i < akeys.size(); ++i)
+    {
+     Idx = keywdline.find(akeys[i]);
+     if (Idx != std::string::npos)
+     {
+      vkeywdline.push_back(keywdline.substr(Idx));
+      jflag = 1;
+     }
+    }
+    if (jflag == 0) std::cout << "'" << keywdline << "' is not a valid keyword entry." << std::endl;
+   }
+   //while (keywdline != "END" && keywdline != "GO" && keywdline != "" && keywdline[keywdline.size() - 1] == 0)
+   std::string old_keywdline = "";
+   while (keywdline != "END" && keywdline != "GO" && keywdline != old_keywdline && keywdline != "")
+   {
+    old_keywdline = keywdline;
+    getline(std::cin, keywdline);
+    trim(keywdline);
+    std::cout << keywdline << std::endl;
+    if (keywdline.substr(0,3) != "END" && keywdline.substr(0,3) != "GO" && keywdline != "")
+    {
+     jflag = 0;
+     for (unsigned int i = 0; i < akeys.size(); ++i)
+     {
+      Idx = keywdline.find(akeys[i]);
+      if (Idx != std::string::npos)
+      {
+       vkeywdline.push_back(keywdline.substr(Idx));
+       jflag = 1;
+      }
+     }
+    if (jflag == 0) std::cout << "'" << keywdline << "' is not a valid keyword entry." << std::endl;
+    }
+   }
+   std::cout << ">>>>>     End of input    <<<<<" << std::endl;
+   std::cout << std::endl;
+
+   // Output to old-format BLEND_KEYWORDS.dat
+   std::ofstream keywd_ostream("BLEND_KEYWORDS.dat",std::ios::out);
+   keywd_ostream << "BLEND KEYWORDS" << std::endl;
+   for (int i = 0; i < 4; ++i)
+   {
+    int k = 0;
+    for (unsigned int j = 0; j < vkeywdline.size(); ++j)
+    {
+     Idx = vkeywdline[j].find(akeys[i]);
+     if (Idx != std::string::npos)
+     {
+      k = 1;
+      keywd_ostream << vkeywdline[j] << std::endl;
+     }
+    }
+    if (k == 0) keywd_ostream << dvkeywdline[i] << std::endl;
+   }
+   for (unsigned int j = 0; j < vkeywdline.size(); ++j)
+   {
+    Idx = vkeywdline[j].find(akeys[4]);
+    if (Idx != std::string::npos) keywd_ostream << vkeywdline[j] << std::endl;
+   }
+   keywd_ostream << "POINTLESS KEYWORDS" << std::endl;
+   for (int i = 5; i < 7; ++i)
+   {
+    for (unsigned int j = 0; j < vkeywdline.size(); ++j)
+    {
+     Idx = vkeywdline[j].find(akeys[i]);
+     if (Idx != std::string::npos) keywd_ostream << vkeywdline[j] << std::endl;
+    }
+   }
+   keywd_ostream << "AIMLESS KEYWORDS" << std::endl;
+   for (int i = 7; i < 9; ++i)
+   {
+    for (unsigned int j = 0; j < vkeywdline.size(); ++j)
+    {
+     Idx = vkeywdline[j].find(akeys[i]);
+     if (Idx != std::string::npos) keywd_ostream << vkeywdline[j] << std::endl;
+    }
+   }
+   keywd_ostream.close();
+
    // Run R code
    std::cout << std::endl;
    std::cout << "Running R code to read statistical analysis from a previous run of BLEND and produce information on clusters..." << std::endl; 
    std::cout << std::endl;
    int R_status;
    std::ostringstream R_command_line,tmp;
-   for (int i=0;i < arbitrary_datasets.size();i++) tmp << arbitrary_datasets[i] << " ";
+   for (unsigned int i=0;i < arbitrary_datasets.size();i++) tmp << arbitrary_datasets[i] << " ";
    //R_command_line << "R --vanilla --slave --quiet < " << R_program3 << " --args " << tmp.str();
    R_command_line << "Rscript " << R_program3 << " " << tmp.str();
    //std::cout << R_command_line.str() << std::endl;
@@ -523,6 +893,9 @@ int main(int argc, char* argv[])
     int nerr=13;
     throw nerr;
    }
+
+   // Delete BLEND_KEYWORDS.dat before termination
+   if (remove("BLEND_KEYWORDS.dat") != 0) std::cout << "Warning! Unable to remove file 'BLEND_KEYWORDS.dat'." << std::endl;
 
    // End of BLEND - Synthesis mode
    std::cout << std::endl;
@@ -592,7 +965,17 @@ int main(int argc, char* argv[])
   if (nerr == 14)
   {
    std::cerr << "\n USER ERROR!\n"
-             << "Environment variable BLEND_HOME has not been set up." << std::endl;
+             << "Environment variables BLEND_HOME and CCP4 have not been set up." << std::endl;
+  }
+  if (nerr == 15)
+  {
+   std::cerr << "\n USER ERROR!\n"
+             << "Environment variable CCP4 has not been set up." << std::endl;
+  }
+  if (nerr == 16)
+  {
+   std::cerr << "\n EXECUTION ERROR!\n"
+             << "An error occurred in the execution of Python code associated with BLEND. Please, report this to J. Foadi" << std::endl;
   }
  }
 

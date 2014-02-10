@@ -590,6 +590,8 @@ maxRatio <- function(cpar)
 ####################################################################
 ####################################################################
 
+# To avoid warning messages set warn to a negative value 
+options(warn = -1)
 
 # Fix global parameters here (default values)
 nbin <- 20                    # Number of bins for dynamic and overall Wilson plots

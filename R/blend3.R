@@ -114,9 +114,7 @@ merge_mtzs <- function(mtz_list,selection,mtzout,pointless_keys,hklref)
 
   # Truncate batches
   itmp <- selection[imtz]+1
-  #if (itmp > length(blist)) inibatch <- -1
   if (itmp > blist[length(blist)]) inibatch <- -1
-  #if (itmp <= length(blist)) inibatch <- blist[(selection[imtz]+1)]
   if (itmp <= blist[length(blist)]) inibatch <- itmp
   finbatch <- blist[length(blist)]
   hklout <- paste("new",sfx,".mtz",sep="")
@@ -124,14 +122,25 @@ merge_mtzs <- function(mtz_list,selection,mtzout,pointless_keys,hklref)
   tmp <- trunc_and_renum(hklin,inibatch,finbatch,1,hklout) 
 
   # Do alternate indexing
-  #if (imtz > 1)
-  #{
-   hklin <- hklout
-   hklout <- paste("final",sfx,".mtz",sep="")
-   mtzin <- c(mtzin,hklout)
-   files_to_rm <- c(files_to_rm,hklout)
-   tmp <- altidx(hklin,hklref,hklout)
-  #}
+  hklin <- hklout
+  hklout <- paste("final",sfx,".mtz",sep="")
+  mtzin <- c(mtzin,hklout)
+  files_to_rm <- c(files_to_rm,hklout)
+  tmp <- altidx(hklin,hklref,hklout)
+  
+  # Return NULL if space group of reference file is incompatible with space group of any of current files
+  exealtidx <- grep("$$ <!--SUMMARY_END-->",tmp,fixed=TRUE)
+  if (length(exealtidx) == 0)
+  {
+   messaggio <- "Reference file is incompatible with some data sets of this cluster.\n"
+   cat(messaggio)
+   exepointless <- NULL
+
+   # Clean directory from unnecessary files
+   for (a in files_to_rm) if (file.exists(a)) file.remove(a)
+
+   return(exepointless)
+  }
  }
 
  # Run Pointless to glue everything together under correct space group
@@ -242,11 +251,11 @@ merge_datasets <- function(mtz_names,selection,suffix,pointless_keys,aimless_key
      length(exemerge) != 0)
  {
   # Rename merged.mtz
-  linea <- paste(suffix[1],paste("merged",suffix[2],".mtz",sep=""),sep="/")
+  linea <- paste(suffix[1],paste("merged_",suffix[2],".mtz",sep=""),sep="/")
   file.copy(from="merged.mtz",to=linea)
 
   # Rename POINTLESS log
-  log_file <- paste(suffix[1],paste("pointless",suffix[2],".log",sep=""),sep="/")
+  log_file <- paste(suffix[1],paste("pointless_",suffix[2],".log",sep=""),sep="/")
   for (linea in exemerge)
   {
    linea <- paste(linea,"\n",sep="")
@@ -266,7 +275,7 @@ merge_datasets <- function(mtz_names,selection,suffix,pointless_keys,aimless_key
                         LowRes=c(NA,NA,NA),HighRes=c(NA,NA,NA))
 
    # AIMLESS log
-   log_file <- paste(suffix[1],paste("aimless",suffix[2],".log",sep=""),sep="/")
+   log_file <- paste(suffix[1],paste("aimless_",suffix[2],".log",sep=""),sep="/")
    for (linea in exeaimless)
    {
     linea <- paste(linea,"\n",sep="")
@@ -343,9 +352,9 @@ merge_datasets <- function(mtz_names,selection,suffix,pointless_keys,aimless_key
                        LowRes=LowResos_values,HighRes=HighResos_values)
 
   # Rename sTrAnO.mtz write AIMLESS log file
-  linea <- paste(suffix[1],paste("scaled",suffix[2],".mtz",sep=""),sep="/")
+  linea <- paste(suffix[1],paste("scaled_",suffix[2],".mtz",sep=""),sep="/")
   file.copy(from="sTrAnO.mtz",to=linea)
-  log_file <- paste(suffix[1],paste("aimless",suffix[2],".log",sep=""),sep="/")
+  log_file <- paste(suffix[1],paste("aimless_",suffix[2],".log",sep=""),sep="/")
   for (linea in exeaimless)
   {
    linea <- paste(linea,"\n",sep="")
@@ -381,32 +390,16 @@ merge_datasets <- function(mtz_names,selection,suffix,pointless_keys,aimless_key
   if (length(idx) != 0) for (jj in idx) file.remove(dircontents[jj])
   idx <- grep("sTrAnO.mtz",dircontents,fixed=TRUE)
   if (length(idx) != 0) file.remove(dircontents[idx])
-  #idx <- grep("aimless_keywords",dircontents,fixed=TRUE)
-  #if (length(idx) != 0) for (i in idx) file.remove(dircontents[i])
 
   return(list(Mstats,exeaimless))
  }
- #if (length(fatal_error) != 0 |
- #    length(grep("FATAL ERROR message:",exemerge,fixed=TRUE)) != 0 |
- #    length(exemerge) == 0)
- #{
- # exeaimless <- NULL
- # Mstats <- data.frame(Rmeas=c(NA,NA,NA),Rpim=c(NA,NA,NA),Completeness=c(NA,NA,NA),Multiplicity=c(NA,NA,NA),
- #                      LowRes=c(NA,NA,NA),HighRes=c(NA,NA,NA))
- #
- # # Remove files produced to merge mtz's
- # dircontents <- system("ls",intern=TRUE)
- # idx <- grep("rebatch",dircontents,fixed=TRUE)
- # if (length(idx) != 0) for (i in idx) file.remove(dircontents[i])
- # idx <- grep("mtzdump",dircontents,fixed=TRUE)
- # if (length(idx) != 0) for (i in idx) file.remove(dircontents[i])
- # idx <- grep("pointless",dircontents,fixed=TRUE)
- # if (length(idx) != 0) for (i in idx) file.remove(dircontents[i])
- # idx <- grep("reference",dircontents,fixed=TRUE)
- # if (length(idx) != 0) for (i in idx) file.remove(dircontents[i])
- #
- # return(list(Mstats,exeaimless))
- #}
+ else
+ {
+  Mstats <- data.frame(Rmeas=c(NA,NA,NA),Rpim=c(NA,NA,NA),Completeness=c(NA,NA,NA),Multiplicity=c(NA,NA,NA),
+                       LowRes=c(NA,NA,NA),HighRes=c(NA,NA,NA))
+  
+  return(list(Mstats,exemerge))
+ }
 }
 
 
@@ -420,6 +413,9 @@ merge_datasets <- function(mtz_names,selection,suffix,pointless_keys,aimless_key
 
 # Load content of previous R run
 load("BLEND.RData",.GlobalEnv)
+
+# To avoid warning messages set warn to a negative value 
+options(warn = -1)
 
 # Retrieve value from command line
 args <- commandArgs(trailingOnly=TRUE)
@@ -545,7 +541,6 @@ if (file.exists("BLEND_KEYWORDS.dat"))
   jdx <- which(nchar(tmp[[1]]) != 0)
   idxref <- as.integer(tmp[[1]][jdx[length(jdx)]])
  }
- #if (length(tmp) == 0) idxref <- 1
  messaggio <- paste("Reference dataset used in case alternate indexing is needed: ",idxref,"\n",sep="")
  cat(messaggio)
  cat("\n")
@@ -557,7 +552,7 @@ if (file.exists("BLEND_KEYWORDS.dat"))
 }
 
 # Produce scaled dataset
-ftail <- sprintf("_%03d",(length(gidx)+1))
+ftail <- sprintf("%03d",(length(gidx)+1))
 suffix <- c(outdir,ftail)
 tmp <- merge_datasets("FINAL_list_of_files.dat",selection=cln,suffix,pointless_keys,aimless_keys,
                       resomax=resosel,nref=idxref)

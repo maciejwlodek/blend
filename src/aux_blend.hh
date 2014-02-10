@@ -1,13 +1,13 @@
 /************************************************************************************************************/
 /************************************************************************************************************/
-/********* aux_blend.hh
-/*********
-/********* Copyright (C) 2014 Diamond Light Source & Imperial College London
-/*********
-/********* Authors: James Foadi & Gwyndaf Evans
-/*********
-/********* This code is distributed under the BSD license, a copy of which is
-/********* included in the root directory of this package.
+/********* aux_blend.hh                                                                             *********/
+/*********                                                                                          *********/
+/********* Copyright (C) 2014 Diamond Light Source & Imperial College London                        *********/
+/*********                                                                                          *********/
+/********* Authors: James Foadi & Gwyndaf Evans                                                     *********/           
+/*********                                                                                          *********/
+/********* This code is distributed under the BSD license, a copy of which is                       *********/
+/********* included in the root directory of this package.                                          *********/
 /************************************************************************************************************/
 /************************************************************************************************************/
 // Module containing functions to be used in conjunction with blend.cpp
