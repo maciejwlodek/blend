@@ -626,7 +626,7 @@ if (file.exists("BLEND_KEYWORDS.dat"))
   for (slt in slm)
   {
    jdx <- which(nchar(slt) != 0)
-   if (length(jdx) != 2) stop("Wrongly formatted BLEND_KEYWORDS.dat file")
+   #if (length(jdx) != 2) stop("Wrongly formatted BLEND_KEYWORDS.dat file")
    tmp <- rbind(tmp,data.frame(I(slt[jdx[1]]),I(slt[jdx[2]])))             # "I()" to avoid data frame turning characters into factors
   }
 

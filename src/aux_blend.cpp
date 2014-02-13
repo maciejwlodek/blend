@@ -1,13 +1,13 @@
 /************************************************************************************************************/
 /************************************************************************************************************/
-/********* aux_blend.cpp
-/*********
-/********* Copyright (C) 2014 Diamond Light Source & Imperial College London
-/*********
-/********* Authors: James Foadi & Gwyndaf Evans
-/*********
-/********* This code is distributed under the BSD license, a copy of which is
-/********* included in the root directory of this package.
+/********* aux_blend.cpp                                                                            *********/
+/*********                                                                                          *********/
+/********* Copyright (C) 2014 Diamond Light Source & Imperial College London                        *********/
+/*********                                                                                          *********/
+/********* Authors: James Foadi & Gwyndaf Evans                                                     *********/
+/*********                                                                                          *********/
+/********* This code is distributed under the BSD license, a copy of which is                       *********/
+/********* included in the root directory of this package.                                          *********/
 /************************************************************************************************************/
 /************************************************************************************************************/
 //
@@ -104,7 +104,7 @@ std::vector<scala::hkl_unmerge_list> load_crystals(std::string filename,int runm
  // Loop over input mtz files.
  std::cout << std::endl;
  std::cout << "Loading datasets from all valid reflection files ........." << std::endl;
- for (int i=0;i < mtz_file.size();i++)
+ for (unsigned int i=0;i < mtz_file.size();i++)
  {
   // MTZ valid or not
   bool fileread;
@@ -131,7 +131,7 @@ std::vector<scala::hkl_unmerge_list> load_crystals(std::string filename,int runm
   //std::string new_filename=ofilename.str();
   std::string new_filename="NEW_list_of_files.dat";
   std::ofstream new_file(new_filename.c_str(),std::ios::out);
-  for (int i=0;i < mtz_file.size();i++)
+  for (unsigned int i=0;i < mtz_file.size();i++)
   {
    new_file << mtz_file[i] << std::endl;
   }
@@ -154,7 +154,7 @@ std::vector<int> label_crystals(const std::vector<scala::hkl_unmerge_list>& hkl_
  std::vector<int> crystal_flag_out(crystal_flag_in);   // Way to copy all elements of a vector container
 
  // Loop over all datasets
- for (int i=0;i < hkl_list.size();i++)
+ for (unsigned int i=0;i < hkl_list.size();i++)
  {
   // Does dataset contain data?
   if (hkl_list[i].IsEmpty() && crystal_flag_in[i] != 4) crystal_flag_out[i]=1;
@@ -218,7 +218,7 @@ void output_summary_table(std::vector<scala::hkl_unmerge_list>& hkl_list,std::mu
  std::pair<std::multimap<int,int>::iterator,std::multimap<int,int>::iterator> pos_pair;
 
  // Loop over different bravais lattices
- for (int i=0;i < spacegroup_class.size();i++)
+ for (unsigned int i=0;i < spacegroup_class.size();i++)
  {
   if (spacegroup_class[i] != 0)
   {
@@ -376,7 +376,7 @@ void statistics_with_R(std::vector<scala::hkl_unmerge_list>& hkl_list,std::multi
  std::pair<std::multimap<int,int>::iterator,std::multimap<int,int>::iterator> pos_pair;
 
  // Loop over different space groups
- for (int i=0;i < spacegroup_class.size();i++)
+ for (unsigned int i=0;i < spacegroup_class.size();i++)
  {
   if (spacegroup_class[i] != 0)
   {
@@ -434,7 +434,7 @@ void statistics_with_R(std::vector<scala::hkl_unmerge_list>& hkl_list,std::multi
        int nBatch=observation.Batch();
        int nBatch_serial=hkl_list[pos_cs->second].batch_serial(nBatch);
        scala::Batch batch=hkl_list[pos_cs->second].batch(nBatch_serial);
-       CMtz::MTZBAT batchmtz=batch.batchdata();
+       //CMtz::MTZBAT batchmtz=batch.batchdata();
        std::string rispo="N";
 
        // Find average coordinates corresponding to different parts on detector   
@@ -466,6 +466,11 @@ void statistics_with_R(std::vector<scala::hkl_unmerge_list>& hkl_list,std::multi
  //R_command_line << "R CMD BATCH --slave --no-save --no-restore " << R_program;
  R_command_line << "Rscript " << R_program;
  R_status=std::system((R_command_line.str()).c_str());   // The ostringstream object is first turned into a string and this into a cstring
+ if (R_status != 0)
+ {
+  int nerr=13;
+  throw nerr;
+ }
  
  // Read and interpret content of file produced by R code
  //filename="forBLEND.dat";
@@ -573,7 +578,7 @@ std::vector< std::vector<float> > build_overlaps_matrix(std::vector<scala::hkl_u
  }
  
  // Work out off-diagonal elements of the overlaps matrix; upper triangle
- int isym;
+ //int isym;
  scala::reflection this_refl1,this_refl2;
  scala::Hkl hkl1;
  for (int irow=0;irow < msize-1;irow++)

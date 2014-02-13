@@ -36,8 +36,8 @@ import os,sys,string, subprocess
 # Extract input from command line
 li=sys.argv
 
-# Stop if less or more than 1 word in command line
-if len(li) != 2: raise SystemExit("Wrong command-line input")
+# Stop if less or more than 2 words in command line
+if len(li) > 3: raise SystemExit("Wrong command-line input")
 
 # Read all file names from input file
 file=open(li[1],'r')
@@ -46,6 +46,16 @@ file.close()
 mtz_names=[]
 for line in filecontents:
  if len(string.split(line,"\n")[0]) != 0: mtz_names.append(string.split(line,"\n")[0])
+
+# Second word in command line is LAUEGROUP line
+if len(li) == 3:
+ lauegroup = li[2].strip()
+ if lauegroup == "": lauegroup = None
+else:
+ lauegroup = None
+if lauegroup is not None:
+ ltmp = lauegroup.split()[1].upper()
+ if ltmp == "AUTO": lauegroup = "AUTO"
 
 # List with xds look up table information
 xds_lu=[]
@@ -68,11 +78,25 @@ for iname in range(len(mtz_names)):
   mtzout=os.path.join(xds_files_dir,newname)
 
   # Run POINTLESS to turn XDS files into MTZ files (this bit replace the following commented lines)
-  cmdline = 'pointless -c xdsin ' + xdsin.rstrip("\n") + ' hklout ' + mtzout.rstrip("\n")
+  if lauegroup == "AUTO":
+   partline = "TOLERANCE  100\n" + "END\n"
+  elif lauegroup is None:
+   partline = None
+  else:
+   partline = "TOLERANCE  100\n" + lauegroup + "\n" + "END\n"
+  if partline is None:
+   cmdline = 'pointless -c xdsin ' + xdsin.rstrip("\n") + ' hklout ' + mtzout.rstrip("\n")
+  else:
+   cmdline = 'pointless xdsin ' + xdsin.rstrip("\n") + ' hklout ' + mtzout.rstrip("\n") + ' <<eof-pointless\n' + partline + 'eof-pointless'
+  pout = string.join(["pointless_", "%03d" % (iname+1), ".log"],"")
+  pout = os.path.join(xds_files_dir, pout)
+  fileP = open(pout, 'w')
   try:
-   ttt = subprocess.check_output(cmdline, shell = True)
+   ttt = subprocess.Popen(cmdline, shell = True, stdout = fileP)
+   return_code = ttt.wait()   #!!! Important !!! Without wait() the shell launching this program can carry on without these results.
   except subprocess.CalledProcessError:
    raise SystemExit("Error has occurred while converting XDS file " + xdsin.rstrip("\n") + ".")
+  fileP.close()
 
   # All temporary files will be deleted at the end of this script
   #files_to_delete=[]
