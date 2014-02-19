@@ -18,6 +18,8 @@
 //   files and convert these into MTZ files with the new space group (and eventually modified cell
 //   parameters). Alternatively the user can impose his/her own choice for LAUEGROUP.
 // - POINTLESS log file are saved in xds_files directory, so that one can check what went on at this stage.
+// - Fixed a bug in both blend2.R and blend3.R (in merge_mtzs) that caused the first dataset to be considered
+//   twice.
 // CHANGES IN VERSION 0.4.3 - 08/02/2014
 // - Now keywords are given via stdin, like other CCP4 programs. The three different sections for keywords
 //   are highlighted via presence of three keywords at the beginning of each line, BLEND, POINTLESS and

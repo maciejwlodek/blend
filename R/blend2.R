@@ -101,7 +101,8 @@ merge_mtzs <- function(mtz_list,selection,mtzout,pointless_keys,hklref)
  #    3) do alternate indexing;
  #    4) glue all mtz together into a single mtz
 
- mtzin <- "new_001.mtz"
+ #mtzin <- "new_001.mtz"                        !!!!!!!!!!!!!!!!!
+ mtzin <- c()
  for (imtz in 1:length(mtz_list))
  {
   # Serial number appended to mtz file
