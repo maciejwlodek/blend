@@ -373,6 +373,9 @@ nparWilson <- function(listBplots,cn,nref=1,cumprob=0.95)
  wpar <- matrix(listBplots[[1]][[3]],nrow=1,byrow=TRUE)
  for (i in 2:length(listBplots)) wpar <- rbind(wpar,matrix(listBplots[[i]][[3]],nrow=1,byrow=TRUE))
 
+ # Replace Na's if they (alas!) appear in wpar
+ wpar <- interpolateNA(listBplots[[1]][[2]],wpar)
+
  # Principal Component Analysis to reduce dimensionality
  model <- prcomp(wpar,scale=TRUE)
  smod <- summary(model)
@@ -583,6 +586,104 @@ maxRatio <- function(cpar)
  mbc <- max(distRatio(dbc))
 
  return(max(mab,mac,mbc))
+}
+
+find_nodes_coords <- function(clst, clns)
+{
+ # Number of objects
+ nobj <- length(clst$merge[,1]) + 1
+
+ # x coordinates for individual objects
+ xobj <- clns[[nobj - 1]]
+ #print(xobj)
+
+ # Go through nodes formation
+ x <- numeric(nobj - 1)
+ y <- numeric(nobj - 1)
+ for (i in 1:length(clst$merge[,1]))
+ {
+  #print(clns[[i]])
+  ele1 <- clst$merge[i,1]
+  ele2 <- clst$merge[i,2]
+  if (ele1 < 0 & ele2 < 0)
+  {
+   idx1 <- match(abs(ele1), xobj)
+   idx2 <- match(abs(ele2), xobj)
+   x[i] <- 0.5 * (idx1 + idx2)
+   y[i] <- clst$height[i]
+  }
+  if (ele1 < 0 & ele2 > 0)
+  {
+   idx1 <- match(abs(ele1), xobj)
+   idx2 <- x[ele2]
+   x[i] <- 0.5 * (idx1 + idx2)
+   y[i] <- clst$height[i]
+  }
+  if (ele1 > 0 & ele2 < 0)
+  {
+   idx1 <- x[ele1]
+   idx2 <- match(abs(ele2), xobj)
+   x[i] <- 0.5 * (idx1 + idx2)
+   y[i] <- clst$height[i]
+  }
+  if (ele1 > 0 & ele2 > 0)
+  {
+   idx1 <- x[ele1]
+   idx2 <- x[ele2]
+   x[i] <- 0.5 * (idx1 + idx2)
+   y[i] <- clst$height[i]
+  }
+ }
+
+ return(list(x=x,y=y))
+}
+
+# The following function, at present, uses a very crude and badly-thought interpolation.
+# It needs more investigations and proper fixing. It is used wherever prcomp is called
+interpolateNA <- function(x,M)
+{
+ # Extract rows and columns
+ tmp <- dim(M)
+ m <- tmp[1]
+ n <- tmp[2]
+
+ # Find rows where there are NA's
+ na_rows <- c()
+ for (i in 1:m)
+ {
+  jfl <- 0
+  for (j in 1:n)
+  {
+   if (is.na(M[i,j])) jfl <- 1
+  }
+  if (jfl == 1) na_rows <- c(na_rows,i)
+ }
+
+ # Return unchanged M if no NA's found
+ if (length(na_rows) == 0) return(M)
+
+ # Mend each "NA's-containing" row with an interpolated value
+ for (i in na_rows)
+ {
+  # Find out positions of NA and their complement
+  idx <- which(is.na(M[i,]))
+  jdx <- which(!is.na(M[i,]))
+
+  # 10-degree polynomial interpolation
+  xr <- x[jdx]
+  yr <- M[i,jdx]
+  model <- lm(yr~poly(xr,degree=10))
+  xp <- x
+  yp <- predict(model,list(xr=xp))
+
+  # If interpolated NA values are negative, replace with 0.1
+  for (j in idx) if (yp[j] < 0) yp[j] <- 0.1
+
+  # Replacing NA values in original array
+  M[i,idx] <- yp[idx]
+ }
+
+ return(M)
 }
 ####################################################################
 ####################################################################
@@ -941,6 +1042,36 @@ npar.hc_ward <- hclust(distAll,method="ward")
 #a <- max(dMat)/npar.hc_ward$height[length(npar.hc_ward$height)]
 #tmp <- a*npar.hc_ward$height
 #$npar.hc_ward$height <- tmp
+
+# Dendrogram and resolution information are stored in list groups
+groups <- treeToList(npar.hc_ward,lowresos,highresos)
+
+# Calculate LCV values for all nodes of dendrogram
+LCV_values <- c()
+for (cn in groups[[1]])
+{
+ LCV_values <- c(LCV_values, maxRatio(macropar[cn,2:7]))
+}
+
+# Output merging nodes table to an ascii file
+nTable <- "./CLUSTERS.txt"
+if (file.exists(nTable)) emptyc <- file.remove(nTable)
+linea <- "                               \n"
+cat(linea,file=nTable)
+linea <- " Cluster     Number of         Cluster         LCV      Datasets\n"
+cat(linea,file=nTable,append=TRUE)
+linea <- "  Number      Datasets          Height                  ID\n"
+cat(linea,file=nTable,append=TRUE)
+linea <- "                               \n"
+cat(linea,file=nTable,append=TRUE)
+for (i in 1:length(groups[[1]]))
+{
+ linea <- paste(sprintf("     %03d           %3d         %7.3f     %7.2f    ",
+                i,length(groups[[1]][[i]]),npar.hc_ward$height[i],LCV_values[i]),"  ",paste(groups[[1]][[i]],collapse=" "),"\n",sep="")
+ cat(linea,file=nTable,append=TRUE)
+}
+
+# Print dendrogram with LCV values annotated (in PNG and POSTSCRIPT formats)
 VV <- c()
 for (i in 1:length(maindf[,1]))
 {
@@ -951,12 +1082,23 @@ for (i in 1:length(maindf[,1]))
 kk <- maxRatio(macropar[,2:7])
 msg <- sprintf("Linear Cell Variation: %6.2f %s",kk,"%")
 
-# Print out cluster tree pictures (in PNG and POSTSCRIPT formats)
 png(file="./tree.png",height=1000,width=1000)
-plclust(npar.hc_ward,xlab="Individual datasets",ylab="Ward distance",main=msg,sub="")
+#plclust(npar.hc_ward,xlab="Individual datasets",ylab="Ward distance",main=msg,sub="")
+plot(npar.hc_ward,xlab="Individual datasets",ylab="Ward distance",main=msg,sub="",col.main="red",cex.main=2,col.lab="blue",cex.lab=2)
+nodesxy <- find_nodes_coords(npar.hc_ward,groups[[1]])
+idx <- (length(LCV_values)-4):(length(LCV_values)-1)
+labelsxy <- c()
+for (i in 1:length(LCV_values))
+{
+ stmp <- sprintf("%6.2f",LCV_values[i])
+ labelsxy <- c(labelsxy,stmp)
+}
+text(nodesxy$x[idx],nodesxy$y[idx],labels=labelsxy[idx],adj=c(0,-0.5),col="red",cex=1.5)
 emptyc <- dev.off()    # The "emptyc" is to collect the return value of dev.off(), so that it's not output
 postscript(file="./tree.ps", height = 10, width = 10, paper = "a4")
-plclust(npar.hc_ward,xlab="Individual datasets",ylab="Ward distance",main=msg,sub="")
+#plclust(npar.hc_ward,xlab="Individual datasets",ylab="Ward distance",main=msg,sub="")
+plot(npar.hc_ward,xlab="Individual datasets",ylab="Ward distance",main=msg,sub="",col.main="red",cex.main=2,col.lab="blue",cex.lab=2)
+text(nodesxy$x[idx],nodesxy$y[idx],labels=labelsxy[idx],adj=c(0,-0.5),col="red",cex=1.5)
 emptyc <- dev.off()    # The "emptyc" is to collect the return value of dev.off(), so that it's not output
 cat("Cluster analysis completed!\n")
 
@@ -985,25 +1127,6 @@ for (i in 1:length(filenames[,1]))
   linea <- sprintf("%-130s %5.0f %5.0f %5.0f %5.0f %6.3f\n",filenames[i,],NA,NA,NA,NA,NA)
  }
  cat(linea,file="./FINAL_list_of_files.dat",append=T)
-}
-
-# Output merging nodes table to an ascii file
-groups <- treeToList(npar.hc_ward,lowresos,highresos)
-nTable <- "./CLUSTERS.txt"
-if (file.exists(nTable)) emptyc <- file.remove(nTable)
-linea <- "                               \n"
-cat(linea,file=nTable)
-linea <- " Cluster     Number of         Cluster      Datasets\n"
-cat(linea,file=nTable,append=TRUE)
-linea <- "  Number      Datasets          Height      ID\n"
-cat(linea,file=nTable,append=TRUE)
-linea <- "                               \n"
-cat(linea,file=nTable,append=TRUE)
-for (i in 1:length(groups[[1]]))
-{
- linea <- paste(sprintf("     %03d           %3d         %7.3f    ",
-                i,length(groups[[1]][[i]]),npar.hc_ward$height[i]),"  ",paste(groups[[1]][[i]],collapse=" "),"\n",sep="")
- cat(linea,file=nTable,append=TRUE)
 }
 
 # Output message for user

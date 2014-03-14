@@ -1,4 +1,4 @@
-/************************************************************************************************************/
+///************************************************************************************************************/
 /************************************************************************************************************/
 /********* blend.cpp                                                                                *********/
 /*********                                                                                          *********/
@@ -10,6 +10,13 @@
 /********* included in the root directory of this package.                                          *********/
 /************************************************************************************************************/
 /************************************************************************************************************/
+// CHANGES IN VERSION 0.5.1 - 13/03/2014
+// - Computing LCV for all nodes in the dendrogram. Top 5 nodes display LCV values in the dendrogram.
+// - Added in log file proper CCP4 banner stuff and tags in log file to have tables and plots properly
+//   handled by the new CCP4 log viewer.
+// - Temporarily mended a problem in R function nparWilson, when matrix wpar has Na's. The present solution
+//   is to interpolate these values using a 10-degree polynomial. This is not satisfactory and I will later
+//   research more on missing data handling. 
 // CHANGES IN VERSION 0.5.0 - 12/02/2014
 // - A new keyword, BLEND LAUEGROUP  [space group or laue group, POINTLESS style], has been added. This
 //   allows the laue group of input XDS files to be decided by the user. If no LAUEGROUP line is used,
@@ -18,8 +25,7 @@
 //   files and convert these into MTZ files with the new space group (and eventually modified cell
 //   parameters). Alternatively the user can impose his/her own choice for LAUEGROUP.
 // - POINTLESS log file are saved in xds_files directory, so that one can check what went on at this stage.
-// - Fixed a bug in both blend2.R and blend3.R (in merge_mtzs) that caused the first dataset to be considered
-//   twice.
+// - LCV values for all merging nodes are tabulated in "CLUSTERS.txt" file.
 // CHANGES IN VERSION 0.4.3 - 08/02/2014
 // - Now keywords are given via stdin, like other CCP4 programs. The three different sections for keywords
 //   are highlighted via presence of three keywords at the beginning of each line, BLEND, POINTLESS and
@@ -111,12 +117,14 @@ using namespace boost::algorithm;
 // Stuff inherited from Phil Evans
 /******************************************************/
 #include "Output.hh"
+#include "version.hh"
 #include "hkl_unmerge.hh"
 
 /******************************************************/
 // Other crystallographic libraries
 /******************************************************/
 #include <clipper/clipper.h>
+#include <ccp4/ccp4_program.h>
 
 /******************************************************/
 // Stuff created by James Foadi
@@ -130,18 +138,39 @@ using namespace boost::algorithm;
 /******************************************************/
 int main(int argc, char* argv[])
 {
+ // Initial stuff (CCP4 initialization, banner, etc)
+ int nargc=1;
+ CCP4::ccp4fyp(nargc, argv);      // To avoid ccp4fyp to complain about stuff like "-a" we only feed program name in ccp4 iniialization
+ CCP4::ccp4ProgramName(PROGRAM_NAME.c_str());
+ std::string rcsdate = "$Date: "+std::string(PROGRAM_DATE2)+"$";
+ CCP4::ccp4RCSDate(rcsdate.c_str());
+ CCP4::ccp4_prog_vers(PROGRAM_VERSION.c_str());
+
+ // Banner with HTML style
+ std::cout << "<B><FONT COLOR='#FF0000'><!--SUMMARY_BEGIN-->" << std::endl;
+ std::cout << std::endl;
+ CCP4::ccp4_banner();
+ std::cout << std::endl;
+ std::cout << "<!--SUMMARY_END--></FONT></B>" << std::endl;
+
+ // References section
+
+ std::cout << std::endl;
+ std::cout << "$TEXT:Reference1: $$ Main reference $$" << std::endl; 
+ std::cout << "   'Clustering procedures for the optimal selection of data sets" << std::endl;
+ std::cout << "    from multiple crystals in macromolecular crystallography':" << std::endl;
+ std::cout << "    J. Foadi, P. Aller, Y. Alguel, A. Cameron, D. Axford, R.L. Owen, W. Armour, D.G. Waterman, S. Iwata and G. Evans, (2013)" << std::endl;
+ std::cout << "    Acta Crystallogr. D69, 1617-1632" << std::endl;
+
+ std::cout << std::endl;
+ std::cout << "$$" << std::endl;
+ std::cout << "$SUMMARY :Reference1:  $$ Blend: $$" << std::endl;
+ std::cout << ":TEXT:Reference1: $$" << std::endl;
+ std::cout << std::endl;
+ std::cout << "$$" << std::endl;
 
  try
  {
-  // Initial banner
-  std::cout << std::endl;
-  std::cout << "##################################################################" << std::endl;
-  std::cout << "##################################################################" << std::endl;
-  std::cout << "##################################################################" << std::endl;
-  std::cout << "## BLEND - Version 0.5.0                                        ##" << std::endl;
-  std::cout << "##################################################################" << std::endl;
-  std::cout << std::endl;
-
   // Get BLEND_HOME environment variable (used to find R and Python code)
   std::string R_program1;
   std::string R_program2;
@@ -659,16 +688,16 @@ int main(int argc, char* argv[])
   std::cout.setf(std::ios::fixed);
 
   // Amend command line arguments for CCP4 initialization
-  int ncorrect=0;
-  if (runmode == 1) ncorrect=3;
-  if (runmode == 2)
-  {
-   if (dlevel_bottom < 0) ncorrect=3;
-   if (dlevel_bottom >= 0) ncorrect=4;
-  }
-  if (runmode == 3) ncorrect=arbitrary_datasets.size()+2;
-  argc-=ncorrect;
-  for (int i=0;i < argc;i++) argv[i]=argv[i+1]; 
+  //int ncorrect=0;
+  //if (runmode == 1) ncorrect=3;
+  //if (runmode == 2)
+  //{
+  // if (dlevel_bottom < 0) ncorrect=3;
+  // if (dlevel_bottom >= 0) ncorrect=4;
+  //}
+  //if (runmode == 3) ncorrect=arbitrary_datasets.size()+2;
+  //argc-=ncorrect;
+  //for (int i=0;i < argc;i++) argv[i]=argv[i+1]; 
 
   // Analysis mode
   if (runmode == 1)
@@ -678,10 +707,14 @@ int main(int argc, char* argv[])
    std::vector<std::string> mtzin_name;
 
    // Start CCP4 before anything else.
-   CCP4::ccp4fyp(argc,argv);
+   //CCP4::ccp4fyp(argc,argv);
    //CCP4::ccp4_banner();
    std::cout << std::endl;
+   std::cout << "<B><FONT COLOR='#FF0000'><!--SUMMARY_BEGIN-->" << std::endl;
+   std::cout << std::endl;
    std::cout << "You are now running BLEND in analysis mode." << std::endl; 
+   std::cout << std::endl;
+   std::cout << "<!--SUMMARY_END--></FONT></B>" << std::endl;
    std::cout << std::endl;
    
    // Load crystals in unmerged data structures
@@ -865,10 +898,14 @@ int main(int argc, char* argv[])
   if (runmode == 2)
   {
    // Start CCP4 before anything else.
-   CCP4::ccp4fyp(argc,argv);
+   //CCP4::ccp4fyp(argc,argv);
    //CCP4::ccp4_banner();
    std::cout << std::endl;
+   std::cout << "<B><FONT COLOR='#FF0000'><!--SUMMARY_BEGIN-->" << std::endl;
+   std::cout << std::endl;
    std::cout << "You are now running BLEND in synthesis mode." << std::endl; 
+   std::cout << std::endl;
+   std::cout << "<!--SUMMARY_END--></FONT></B>" << std::endl;
    std::cout << std::endl;
 
    // Run R code
@@ -903,10 +940,14 @@ int main(int argc, char* argv[])
   if (runmode == 3)
   {
    // Start CCP4 before anything else.
-   CCP4::ccp4fyp(argc,argv);
+   //CCP4::ccp4fyp(argc,argv);
    //CCP4::ccp4_banner();
    std::cout << std::endl;
+   std::cout << "<B><FONT COLOR='#FF0000'><!--SUMMARY_BEGIN-->" << std::endl;
+   std::cout << std::endl;
    std::cout << "You are now running BLEND in combination mode." << std::endl; 
+   std::cout << std::endl;
+   std::cout << "<!--SUMMARY_END--></FONT></B>" << std::endl;
    std::cout << std::endl;
 
    // Run R code

@@ -3,10 +3,13 @@
 #ifndef PROGRAM_VERSION_HEADER
 #define PROGRAM_VERSION_HEADER
 
-#define PROGRAM_NAME     std::string("POINTLESS")
-#define PROGRAM_VERSION  "1.6.4"
-#define PROGRAM_DATE     "17th August 2011"
-#define PROGRAM_DATE2    "2011/08/17"
+//#define PROGRAM_NAME     std::string("POINTLESS")
+#define PROGRAM_NAME     std::string("BLEND")
+//#define PROGRAM_VERSION  "1.6.4"
+#define PROGRAM_VERSION  std::string("0.5.1")
+//#define PROGRAM_DATE     "17th August 2011"
+//#define PROGRAM_DATE2    "2011/08/17"
+#define PROGRAM_DATE2    "2014/03/13"
 #define PROGRAM_EXPIRES  bool(false)
 #define EXPIRE_DAY       int(1)
 #define EXPIRE_MONTH     int(1)

@@ -25,6 +25,7 @@
 #include "numbercomplete.hh"
 #include "util.hh"               // This also includes cmath
 #include <clipper/clipper.h>
+#include <ccp4/ccp4_program.h>
 #include <iomanip>
 #include <dirent.h>
 

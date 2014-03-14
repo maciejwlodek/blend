@@ -238,6 +238,17 @@ void output_summary_table(std::vector<scala::hkl_unmerge_list>& hkl_list,std::mu
   summary_file << "==============|=============================================================|=============|===========|================|=====================|=============|"
                << std::endl;
 
+  // Suff for loggraph, etc
+  std::cout << std::endl;
+  std::cout << "$TABLE: Summary of type I parameters :" << std::endl;
+  std::cout << "$GRAPHS:        Cell Parameters   : N : 1, 2, 3, 4, 5, 6, 7 :" << std::endl;
+  std::cout << "       :        Cell Volume       : N : 1, 8 :" << std::endl; 
+  std::cout << "       :        Mosaicity         : N : 1, 9 :" << std::endl; 
+  std::cout << "$$" << std::endl;
+  std::cout << "Crystal  a  b  c  alpha  beta  gamma  Cell_Volume  Mosaicity  Resolution(low)  Resolution(high)  Wavelength  $$" << std::endl;    
+  std::cout << "$$" << std::endl;      // Part of this table carries on further down in code
+
+
   // Pair of iterators pointing at beginning and end of values (crystals) with same key (spacegroup number)
   pos_pair=sg_to_crystal.equal_range(spacegroup_class[i]);
   for (pos_cs=pos_pair.first;pos_cs != pos_pair.second;++pos_cs)
@@ -317,8 +328,27 @@ void output_summary_table(std::vector<scala::hkl_unmerge_list>& hkl_list,std::mu
                                                               //<< " " << std::setw(5) << std::setprecision(1) << bin_completeness[1] << "  "
                                                               //<< " " << std::setw(5) << std::setprecision(1) << bin_completeness[2] << "  |"
                                                               << std::endl;
+
+    // For loggraph, etc
+    std::cout << "  " << std::setw(10) << pos_cs->second+1 << std::setw(10) << std::setprecision(3) << unitcell.UnitCell()[0]
+                                                           << std::setw(10) << std::setprecision(3) << unitcell.UnitCell()[1]
+                                                           << std::setw(10) << std::setprecision(3) << unitcell.UnitCell()[2]
+                                                           << std::setw(9) << std::setprecision(2) << unitcell.UnitCell()[3]
+                                                           << std::setw(9) << std::setprecision(2) << unitcell.UnitCell()[4]
+                                                           << std::setw(9) << std::setprecision(2) << unitcell.UnitCell()[5]
+                                                           << std::setw(11) << std::setprecision(2) << ccell.volume()
+                                                           << std::setw(9) << std::setprecision(5) << dataset.Mosaicity()
+                                                           << std::setw(7) << std::setprecision(3) << resorange.ResLow()
+                                                           << std::setw(7) << std::setprecision(3) << resorange.ResHigh()
+                                                           << std::setw(10) << std::setprecision(5) << wlength
+                                                           << std::endl;
    }
   }
+
+  // For loggraph, etc
+  std::cout << "$$" << std::endl;
+  std::cout << std::endl;
+
   summary_file << "==============|=============================================================|=============|===========|================|=====================|=============|"
                << std::endl;
   summary_file << "\n\n" << std::endl;
