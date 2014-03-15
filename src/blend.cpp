@@ -141,10 +141,10 @@ int main(int argc, char* argv[])
  // Initial stuff (CCP4 initialization, banner, etc)
  int nargc=1;
  CCP4::ccp4fyp(nargc, argv);      // To avoid ccp4fyp to complain about stuff like "-a" we only feed program name in ccp4 iniialization
- CCP4::ccp4ProgramName(PROGRAM_NAME.c_str());
- std::string rcsdate = "$Date: "+std::string(PROGRAM_DATE2)+"$";
+ CCP4::ccp4ProgramName(BLEND_PROGRAM_NAME.c_str());
+ std::string rcsdate = "$Date: "+std::string(BLEND_PROGRAM_DATE2)+"$";
  CCP4::ccp4RCSDate(rcsdate.c_str());
- CCP4::ccp4_prog_vers(PROGRAM_VERSION.c_str());
+ CCP4::ccp4_prog_vers(BLEND_PROGRAM_VERSION.c_str());
 
  // Banner with HTML style
  std::cout << "<B><FONT COLOR='#FF0000'><!--SUMMARY_BEGIN-->" << std::endl;
