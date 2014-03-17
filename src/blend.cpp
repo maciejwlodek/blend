@@ -172,48 +172,9 @@ int main(int argc, char* argv[])
  try
  {
   // Get BLEND_HOME environment variable (used to find R and Python code)
-  std::string R_program1;
-  std::string R_program2;
-  std::string R_program3;
-  std::string Python_program1;
-  std::string Python_program2;
-  std::string Python_program3;
   const char *val;
   std::string sval="BLEND_HOME";
   val=std::getenv(sval.c_str());
-  if (val == NULL && std::getenv("CCP4")) {
-   val = (std::string(std::getenv("CCP4")) + "/share/blend").c_str();
-  }
-  if (val != NULL)
-  {
-   R_program1=val;
-   R_program2=val;
-   R_program3=val;
-   Python_program1=val;
-   Python_program2=val;
-   Python_program3=val;
-   std::string::iterator it=R_program1.end();
-   it--;
-   char islash=*it,cslash='/';
-   if (islash != cslash)
-   {
-    R_program1=R_program1+"/R/blend1.R";
-    R_program2=R_program2+"/R/blend2.R";
-    R_program3=R_program3+"/R/blend3.R";
-    Python_program1=Python_program1+"/python/create_file_for_BLEND.py";
-    Python_program2=Python_program2+"/python/merge_clusters.py";
-    Python_program3=Python_program3+"/python/xds_to_mtz_list.py";
-   }
-   else
-   {
-    R_program1=R_program1+"R/blend1.R";
-    R_program2=R_program2+"R/blend2.R";
-    R_program3=R_program3+"R/blend3.R";
-    Python_program1=Python_program1+"python/create_file_for_BLEND.py";
-    Python_program2=Python_program2+"python/merge_clusters.py";
-    Python_program3=Python_program3+"python/xds_to_mtz_list.py";
-   }
-  }
   if (val == NULL && !std::getenv("CCP4"))
   {
    int nerr=14;
@@ -224,6 +185,17 @@ int main(int argc, char* argv[])
    int nerr=15;
    throw nerr;
   }
+  std::string home;
+  if (val != NULL)
+    home = val;
+  else
+    home = std::string(std::getenv("CCP4")) + "/share/blend";
+  std::string R_program1 = home+"/R/blend1.R";
+  std::string R_program2 = home+"/R/blend2.R";
+  std::string R_program3 = home+"/R/blend3.R";
+  std::string Python_program1 = home+"/python/create_file_for_BLEND.py";
+  std::string Python_program2 = home+"/python/merge_clusters.py";
+  std::string Python_program3 = home+"/python/xds_to_mtz_list.py";
 
   // Check comand line input is well formatted
   int runmode=0;
