@@ -130,6 +130,13 @@ using namespace boost::algorithm;
 // Stuff created by James Foadi
 /******************************************************/
 #include "aux_blend.hh"
+#ifdef _WIN32
+// for windows
+ int Rscp = 1;
+#else
+// for other systems
+ int Rscp = 0;
+#endif
 
 
 
@@ -850,7 +857,7 @@ int main(int argc, char* argv[])
    if (hkl_list.size() > 1)
    {
     std::cout << "Building R files ........." << std::endl;
-    statistics_with_R(hkl_list,sg_to_crystal,spacegroup_class,crystal_flag,R_program1);
+    statistics_with_R(hkl_list,sg_to_crystal,spacegroup_class,crystal_flag,R_program1,Rscp);
    }
 
    // Delete BLEND_KEYWORDS.dat before termination
@@ -887,7 +894,14 @@ int main(int argc, char* argv[])
    int R_status;
    std::ostringstream R_command_line;
    //R_command_line << "R --vanilla --slave --quiet < " << R_program2 << " --args " << dlevel_top << " " << dlevel_bottom;
-   R_command_line << "Rscript " << R_program2 << " " << dlevel_top << " " << dlevel_bottom;
+   if (Rscp == 0)
+   {
+    R_command_line << "Rscript " << R_program2 << " " << dlevel_top << " " << dlevel_bottom;
+   }
+   else
+   {
+    R_command_line << "Rscript.exe " << R_program2 << " " << dlevel_top << " " << dlevel_bottom;
+   }
    R_status=std::system((R_command_line.str()).c_str());
    if (R_status != 0)
    {
@@ -930,7 +944,14 @@ int main(int argc, char* argv[])
    std::ostringstream R_command_line,tmp;
    for (unsigned int i=0;i < arbitrary_datasets.size();i++) tmp << arbitrary_datasets[i] << " ";
    //R_command_line << "R --vanilla --slave --quiet < " << R_program3 << " --args " << tmp.str();
-   R_command_line << "Rscript " << R_program3 << " " << tmp.str();
+   if (Rscp == 0)
+   {
+    R_command_line << "Rscript " << R_program3 << " " << tmp.str();
+   }
+   else
+   {
+    R_command_line << "Rscript.exe " << R_program3 << " " << tmp.str();
+   }
    //std::cout << R_command_line.str() << std::endl;
    R_status=std::system((R_command_line.str()).c_str());
    if (R_status != 0)

@@ -39,7 +39,7 @@ std::vector<int> label_crystals(const std::vector<scala::hkl_unmerge_list>&,std:
 void output_summary_table(std::vector<scala::hkl_unmerge_list>&,std::multimap<int,int>,std::vector<int>,std::vector<int>);
 
 // Create ascii data files for R
-void statistics_with_R(std::vector<scala::hkl_unmerge_list>&,std::multimap<int,int>,std::vector<int>,std::vector<int>,std::string);
+void statistics_with_R(std::vector<scala::hkl_unmerge_list>&,std::multimap<int,int>,std::vector<int>,std::vector<int>,std::string,int);
 
 // Create matrix of reciprocal space overlaps between couples of crystal datasets
 std::vector< std::vector<float> > build_overlaps_matrix(std::vector<scala::hkl_unmerge_list>&,std::vector<int>);

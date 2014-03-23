@@ -360,7 +360,7 @@ void output_summary_table(std::vector<scala::hkl_unmerge_list>& hkl_list,std::mu
 
 // Function to output ascii files to be read by R (produced in Mode 1)
 void statistics_with_R(std::vector<scala::hkl_unmerge_list>& hkl_list,std::multimap<int,int> sg_to_crystal,
-                          std::vector<int> spacegroup_class,std::vector<int> crystal_flag,std::string R_program)
+                          std::vector<int> spacegroup_class,std::vector<int> crystal_flag,std::string R_program,int Rscp)
 {
  // Build map container for bravais lattice number to symbol correspondence
  std::map<int,std::string> bl_number_to_symbol;
@@ -494,7 +494,14 @@ void statistics_with_R(std::vector<scala::hkl_unmerge_list>& hkl_list,std::multi
  std::ostringstream R_command_line;
  //R_command_line << "R --vanilla --slave --quiet < " << R_program;
  //R_command_line << "R CMD BATCH --slave --no-save --no-restore " << R_program;
- R_command_line << "Rscript " << R_program;
+ if (Rscp == 0)
+ {  
+  R_command_line << "Rscript " << R_program;
+ }
+ else
+ {
+  R_command_line << "Rscript.exe " << R_program;
+ }
  R_status=std::system((R_command_line.str()).c_str());   // The ostringstream object is first turned into a string and this into a cstring
  if (R_status != 0)
  {
