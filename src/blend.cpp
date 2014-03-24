@@ -17,6 +17,9 @@
 // - Temporarily mended a problem in R function nparWilson, when matrix wpar has Na's. The present solution
 //   is to interpolate these values using a 10-degree polynomial. This is not satisfactory and I will later
 //   research more on missing data handling. 
+// - Now the "merged_*.mtz" files are called, more appropriately, "unscaled_*.mtz"
+// - Added 2 more keywords for AIMLESS: ANOMALOUS and SCALES. They have to be used similarly to those in AIMLESS.
+// - Final sorting in MERGING_STATISTICS.info is on decreasing Completeness first, and increasing Rmeas second.
 // CHANGES IN VERSION 0.5.0 - 12/02/2014
 // - A new keyword, BLEND LAUEGROUP  [space group or laue group, POINTLESS style], has been added. This
 //   allows the laue group of input XDS files to be decided by the user. If no LAUEGROUP line is used,
@@ -248,6 +251,8 @@ int main(int argc, char* argv[])
    akeys.push_back("CHOOSE");
    akeys.push_back("RESO");
    akeys.push_back("SDCOR");
+   akeys.push_back("ANOMALOUS");
+   akeys.push_back("SCALES");
 
    // Load in keywords from standard input
    // This is a way of reading lines from standard input and storing them into a string variable, line,
@@ -336,7 +341,7 @@ int main(int argc, char* argv[])
     }
    }
    keywd_ostream << "AIMLESS KEYWORDS" << std::endl;
-   for (int i = 8; i < 10; ++i)
+   for (int i = 8; i < 12; ++i)
    {
     for (unsigned int j = 0; j < vkeywdline.size(); ++j)
     {
@@ -418,6 +423,8 @@ int main(int argc, char* argv[])
    akeys.push_back("CHOOSE");
    akeys.push_back("RESO");
    akeys.push_back("SDCOR");
+   akeys.push_back("ANOMALOUS");
+   akeys.push_back("SCALES");
 
    // Load in keywords from standard input
    // This is a way of reading lines from standard input and storing them into a string variable, line,
@@ -506,7 +513,7 @@ int main(int argc, char* argv[])
     }
    }
    keywd_ostream << "AIMLESS KEYWORDS" << std::endl;
-   for (int i = 8; i < 10; ++i)
+   for (int i = 8; i < 12; ++i)
    {
     for (unsigned int j = 0; j < vkeywdline.size(); ++j)
     {
@@ -558,6 +565,8 @@ int main(int argc, char* argv[])
    akeys.push_back("CHOOSE");
    akeys.push_back("RESO");
    akeys.push_back("SDCOR");
+   akeys.push_back("ANOMALOUS");
+   akeys.push_back("SCALES");
 
    // Load in keywords from standard input
    // This is a way of reading lines from standard input and storing them into a string variable, line,
@@ -646,7 +655,7 @@ int main(int argc, char* argv[])
     }
    }
    keywd_ostream << "AIMLESS KEYWORDS" << std::endl;
-   for (int i = 8; i < 10; ++i)
+   for (int i = 8; i < 12; ++i)
    {
     for (unsigned int j = 0; j < vkeywdline.size(); ++j)
     {

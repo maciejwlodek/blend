@@ -227,23 +227,25 @@ void output_summary_table(std::vector<scala::hkl_unmerge_list>& hkl_list,std::mu
   // Header for each space group
   pos_bl=bl_number_to_symbol.find(spacegroup_class[i]);
   summary_file << "         BRAVAIS LATTICE NUMBER " << spacegroup_class[i] << ": (" << pos_bl->second << ")\n" << std::endl;
-  summary_file << "==============|=============================================================|=============|===========|================|=====================|=============|"
+  summary_file << "==============|=============================================================|=============|=++==========|================|=====================|=============|"
                << std::endl;
-  summary_file << "              |                              CELL                           |             |           |   RESOLUTION   | CRYSTAL TO DETECTOR |             |"
+  summary_file << "              |                              CELL                           |             |             |   RESOLUTION   | CRYSTAL TO DETECTOR |             |"
                << std::endl;
-  summary_file << "  CRYSTAL N.  |                                                             | CELL VOLUME | MOSAICITY |     RANGE      |                     | WAVELENGTH  |"
+  summary_file << "  CRYSTAL N.  |                                                             | CELL VOLUME | MOSAICITY   |     RANGE      |                     | WAVELENGTH  |"
                << std::endl;
-  summary_file << "              |       a         b         c      alpha    beta     gamma    |             |           | Low       High |      DISTANCE       |             |"
+  summary_file << "              |       a         b         c      alpha    beta     gamma    |             |             | Low       High |      DISTANCE       |             |"
                << std::endl;
-  summary_file << "==============|=============================================================|=============|===========|================|=====================|=============|"
+  summary_file << "==============|=============================================================|=============|=============|================|=====================|=============|"
                << std::endl;
 
   // Suff for loggraph, etc
   std::cout << std::endl;
   std::cout << "$TABLE: Summary of type I parameters :" << std::endl;
-  std::cout << "$GRAPHS:        Cell Parameters   : N : 1, 2, 3, 4, 5, 6, 7 :" << std::endl;
-  std::cout << "       :        Cell Volume       : N : 1, 8 :" << std::endl; 
-  std::cout << "       :        Mosaicity         : N : 1, 9 :" << std::endl; 
+  //std::cout << "$GRAPHS:        Cell Parameters   : N : 1, 2, 3, 4, 5, 6, 7 :" << std::endl;
+  std::cout << "$GRAPHS:        Cell Parameters (a,     b,    c)     : N : 1, 2, 3, 4 :" << std::endl;
+  std::cout << "       :        Cell Parameters (alpha, beta, gamma) : N : 1, 5, 6, 7 :" << std::endl;
+  std::cout << "       :        Cell Volume                          : N : 1, 8 :" << std::endl; 
+  std::cout << "       :        Mosaicity                            : N : 1, 9 :" << std::endl; 
   std::cout << "$$" << std::endl;
   std::cout << "Crystal  a  b  c  alpha  beta  gamma  Cell_Volume  Mosaicity  Resolution(low)  Resolution(high)  Wavelength  $$" << std::endl;    
   std::cout << "$$" << std::endl;      // Part of this table carries on further down in code
@@ -318,7 +320,7 @@ void output_summary_table(std::vector<scala::hkl_unmerge_list>& hkl_list,std::mu
                                                               << std::setw(9) << std::setprecision(2) << unitcell.UnitCell()[4]
                                                               << std::setw(9) << std::setprecision(2) << unitcell.UnitCell()[5] << "    |"
                                                               << " " << std::setw(11) << std::setprecision(2) << ccell.volume() << " |"
-                                                              << std::setw(9) << std::setprecision(5) << dataset.Mosaicity() << "  |"
+                                                              << std::setw(11) << std::setprecision(5) << dataset.Mosaicity() << "  |"
                                                               << std::setw(7) << std::setprecision(3) << resorange.ResLow() << " "
                                                               << std::setw(7) << std::setprecision(3) << resorange.ResHigh() << " |       "
                                                               << std::setw(7) << std::setprecision(2) << ctoddist << "       |"
@@ -336,10 +338,10 @@ void output_summary_table(std::vector<scala::hkl_unmerge_list>& hkl_list,std::mu
                                                            << std::setw(9) << std::setprecision(2) << unitcell.UnitCell()[3]
                                                            << std::setw(9) << std::setprecision(2) << unitcell.UnitCell()[4]
                                                            << std::setw(9) << std::setprecision(2) << unitcell.UnitCell()[5]
-                                                           << std::setw(11) << std::setprecision(2) << ccell.volume()
-                                                           << std::setw(9) << std::setprecision(5) << dataset.Mosaicity()
-                                                           << std::setw(7) << std::setprecision(3) << resorange.ResLow()
-                                                           << std::setw(7) << std::setprecision(3) << resorange.ResHigh()
+                                                           << " " << std::setw(11) << std::setprecision(2) << ccell.volume()
+                                                           << std::setw(11) << std::setprecision(5) << dataset.Mosaicity()
+                                                           << std::setw(9) << std::setprecision(3) << resorange.ResLow()
+                                                           << std::setw(9) << std::setprecision(3) << resorange.ResHigh()
                                                            << std::setw(10) << std::setprecision(5) << wlength
                                                            << std::endl;
    }
@@ -349,7 +351,7 @@ void output_summary_table(std::vector<scala::hkl_unmerge_list>& hkl_list,std::mu
   std::cout << "$$" << std::endl;
   std::cout << std::endl;
 
-  summary_file << "==============|=============================================================|=============|===========|================|=====================|=============|"
+  summary_file << "==============|=============================================================|=============|=============|================|=====================|=============|"
                << std::endl;
   summary_file << "\n\n" << std::endl;
   }
@@ -434,7 +436,7 @@ void statistics_with_R(std::vector<scala::hkl_unmerge_list>& hkl_list,std::multi
                                                              << std::setw(9) << std::setprecision(2) << unitcell.UnitCell()[3]
                                                              << std::setw(9) << std::setprecision(2) << unitcell.UnitCell()[4]
                                                              << std::setw(9) << std::setprecision(2) << unitcell.UnitCell()[5]
-                                                             << std::setw(9) << std::setprecision(5) << dataset.Mosaicity()
+                                                             << std::setw(11) << std::setprecision(5) << dataset.Mosaicity()
                                                              << std::setw(12) << std::setprecision(2) << ctoddist
                                                              << std::setw(10) << std::setprecision(5) << wlength
                                                              << std::endl;

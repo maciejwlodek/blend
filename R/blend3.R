@@ -244,7 +244,8 @@ merge_datasets <- function(mtz_names,selection,suffix,pointless_keys,aimless_key
  # Run POINTLESS and AIMLESS
  mtz_list <- indata[selection,1]
  sele <- indata[selection,3]
- cat("Merging multiple mtz into a single mtz ...\n")
+ #cat("Merging multiple mtz into a single mtz ...\n")
+ cat("Collating multiple mtz into a single mtz ...\n")
  exemerge <- merge_mtzs(mtz_list=mtz_list,selection=sele,mtzout="merged.mtz",pointless_keys=pointless_keys,hklref=hklref)
  fatal_error <- grep("#-------------",exemerge,fixed=TRUE)
  if (length(fatal_error) == 0 &
@@ -252,7 +253,8 @@ merge_datasets <- function(mtz_names,selection,suffix,pointless_keys,aimless_key
      length(exemerge) != 0)
  {
   # Rename merged.mtz
-  linea <- paste(suffix[1],paste("merged_",suffix[2],".mtz",sep=""),sep="/")
+  #linea <- paste(suffix[1],paste("merged_",suffix[2],".mtz",sep=""),sep="/")
+  linea <- paste(suffix[1],paste("unscaled_",suffix[2],".mtz",sep=""),sep="/")
   file.copy(from="merged.mtz",to=linea)
 
   # Rename POINTLESS log
@@ -264,7 +266,8 @@ merge_datasets <- function(mtz_names,selection,suffix,pointless_keys,aimless_key
   }
 
   # Prepare command line for AIMLESS
-  cat("Running AIMLESS on the merged file ...\n")
+  #cat("Running AIMLESS on the merged file ...\n")
+  cat("Running AIMLESS on the unscaled file ...\n")
   stringa <- sprintf("aimless HKLIN merged.mtz HKLOUT sTrAnO.mtz < aimless_keywords.dat")
   exeaimless <- system(stringa,intern=TRUE, ignore.stderr = TRUE)
 
@@ -542,7 +545,7 @@ if (file.exists("BLEND_KEYWORDS.dat"))
   jdx <- which(nchar(tmp[[1]]) != 0)
   idxref <- as.integer(tmp[[1]][jdx[length(jdx)]])
  }
- messaggio <- paste("Reference dataset used in case alternate indexing is needed: ",idxref,"\n",sep="")
+ messaggio <- paste("Reference dataset used in case alternative indexing is needed: ",idxref,"\n",sep="")
  cat(messaggio)
  cat("\n")
 
