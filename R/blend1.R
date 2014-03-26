@@ -1113,6 +1113,11 @@ if (file.exists("forR_macropar.dat")) emptyc <- file.remove("forR_macropar.dat")
 # Write file with batch information and original crystal number
 filenames <- read.table("./NEW_list_of_files.dat",as.is=c(1))
 emptyc <- file.remove("./NEW_list_of_files.dat")
+for (ii in 1:length(filenames[,1]))
+{
+ stmp <- normalizePath(filenames$V1[ii])
+ filenames$V1[ii] <- stmp
+}
 if (file.exists("FINAL_list_of_files.dat")) emptyc <- file.remove("FINAL_list_of_files.dat")
 idx <- match(1:length(filenames[,1]),maindf$cn) 
 for (i in 1:length(filenames[,1]))

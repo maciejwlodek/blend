@@ -45,12 +45,13 @@ filecontents=file.readlines()
 file.close()
 mtz_names=[]
 for line in filecontents:
- if len(string.split(line,"\n")[0]) != 0: mtz_names.append(string.split(line,"\n")[0])
+ #if len(string.split(line,"\n")[0]) != 0: mtz_names.append(string.split(line,"\n")[0])
+ if len(string.split(line,"\n")[0]) != 0: mtz_names.append(os.path.abspath(string.split(line,"\n")[0]))
 
 # Second word in command line is LAUEGROUP line
 if len(li) == 3:
  lauegroup = li[2].strip()
- if lauegroup == "": lauegroup = None
+ if lauegroup == "" or lauegroup == "''": lauegroup = None
 else:
  lauegroup = None
 if lauegroup is not None:
@@ -75,7 +76,8 @@ for iname in range(len(mtz_names)):
   xds_lu.append(lu)
   xdsin=string.join([os.path.join(name),"\n"],"")
   if not os.path.exists(xds_files_dir): os.mkdir(xds_files_dir)
-  mtzout=os.path.join(xds_files_dir,newname)
+  #mtzout=os.path.join(xds_files_dir,newname)
+  mtzout=os.path.abspath(os.path.join(xds_files_dir,newname))
 
   # Run POINTLESS to turn XDS files into MTZ files (this bit replace the following commented lines)
   if lauegroup == "AUTO":

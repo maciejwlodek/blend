@@ -45,6 +45,9 @@ datapath=li[1]
 # Stop if input directory does not exist
 if os.path.isdir(datapath):
  mtz_names=os.listdir(datapath)
+ for i in range(len(mtz_names)):
+  f = os.path.abspath(os.path.join(datapath,mtz_names[i]))
+  mtz_names[i] = f
  mtz_names.sort()
 else:
  raise SystemExit("The input directory does not exist")
@@ -52,7 +55,7 @@ else:
 # Second word in command line is LAUEGROUP line
 if len(li) == 3:
  lauegroup = li[2].strip()
- if lauegroup == "": lauegroup = None
+ if lauegroup == "" or lauegroup == "''": lauegroup = None
 else:
  lauegroup = None
 if lauegroup is not None:
@@ -77,7 +80,8 @@ for iname in range(len(mtz_names)):
   xds_lu.append(lu)
   xdsin=string.join([os.path.join(datapath,name),"\n"],"")
   if not os.path.exists(xds_files_dir): os.mkdir(xds_files_dir)
-  mtzout=os.path.join(xds_files_dir,newname)
+  #mtzout=os.path.join(xds_files_dir,newname)
+  mtzout=os.path.abspath(os.path.join(xds_files_dir,newname))
 
   # Run POINTLESS to turn XDS files into MTZ files (this bit replace the following commented lines)
   if lauegroup == "AUTO":
