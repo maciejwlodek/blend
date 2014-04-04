@@ -544,21 +544,21 @@ if (file.exists(outdir))
 
   # Check whether groups described in GROUPS.info matches files contained in combined_files
   if (length(lidx) != 2*length(glist)) warning("Number of groups described in file GROUPS.info does not match number of files in directory combined_files")
-  for (i in 1:length(glist))
-  {
-   if (length(glist[[i]]) == length(cln))
-   {
-    somma <- sum(glist[[i]] == cln)
-    if (somma == length(cln)) 
-    {
-     messaggio <- "You have already merged and scaled this group:  "
-     mtmp <- ""
-     for (nn in cln) mtmp <- paste(mtmp,nn," ",sep="")
-     messaggio <- paste(messaggio,mtmp,"\n",sep="")
-     stop(messaggio)
-    }
-   }
-  }
+  #for (i in 1:length(glist))
+  #{
+  # if (length(glist[[i]]) == length(cln))
+  # {
+  #  somma <- sum(glist[[i]] == cln)
+  #  if (somma == length(cln)) 
+  #  {
+  #   messaggio <- "You have already merged and scaled this group:  "
+  #   mtmp <- ""
+  #   for (nn in cln) mtmp <- paste(mtmp,nn," ",sep="")
+  #   messaggio <- paste(messaggio,mtmp,"\n",sep="")
+  #   stop(messaggio)
+  #  }
+  # }
+  #}
  }
 
  # Load content of MERGING_STATISTICS.info, if it exists
@@ -680,6 +680,27 @@ if (file.exists(outdir))
    cat(linea,file=mtmp,append=T)
   }
  }
+
+ # Extract CC1/2 and Mn2 and add them to tmp (other statistics)
+
+ # Extract CC1/2
+ gCC12 <- grep("from half-dataset correlation CC(1/2)",tmp[[2]],fixed=TRUE)
+ lineCC12 <- tmp[[2]][gCC12][1]
+ stmp <- strsplit(lineCC12,">")[[1]][2]
+ stmp <- strsplit(stmp,"=")
+ stmp <- gsub("\\s","",stmp[[1]][2])
+ CC12 <- as.numeric(substr(stmp,1,(nchar(stmp)-1)))
+ 
+ # Extract Mn2
+ gMn2 <- grep("from Mn(I/sd) >  2.00:",tmp[[2]],fixed=TRUE)
+ lineMn2 <- tmp[[2]][gMn2][1]
+ stmp <- strsplit(lineMn2,"=")[[1]][2]
+ stmp <- gsub("\\s","",stmp)
+ Mn2 <- as.numeric(substr(stmp,1,(nchar(stmp)-1)))
+ 
+ extra_tmp <- data.frame(CC12=CC12,Mn2=Mn2)
+
+ logdframe <- data.frame()
  if (!exists("merging_statistics_info"))
  {
   mtmp <- paste(outdir,"/MERGING_STATISTICS.info",sep="")
@@ -695,33 +716,57 @@ if (file.exists(outdir))
   cat(linea,file=mtmp,append=TRUE) 
   linea <- "                            \n"
   cat(linea,file=mtmp,append=TRUE)
-  linea <- sprintf("   Group Number      Rmeas       Rpim    Completeness    Multiplicity   Lowest Resolution     Highest Resolution\n")
+  linea <- sprintf("   Group                     Comple-    Multi-     Reso     Reso      Reso\n")
   cat(linea,file=mtmp,append=T)
-  linea <- sprintf("            %3d   %8.5f   %8.5f          %6.2f          %6.2f             %7.3f                %7.3f\n",
-                   (length(gidx)+1),tmp[[1]][1,1],tmp[[1]][1,2],tmp[[1]][1,3],tmp[[1]][1,4],tmp[[1]][1,5],tmp[[1]][1,6])
+  linea <- sprintf("  Number    Rmeas     Rpim   teness    plicity    CC1/2   Mn(I/sd)     Max\n")
+  cat(linea,file=mtmp,append=T)
+  #linea <- sprintf("     %3d  %7.3f  %7.3f   %6.2f     %6.2f  %7.2f   %7.2f  %7.2f\n",
+  linea <- sprintf("     %3d  %7.3f  %7.3f   %6.2f     %6.2f  %7.2f   %7.2f  %7.2f\n",
+                   (length(gidx)+1),tmp[[1]][1,1],tmp[[1]][1,2],tmp[[1]][1,3],tmp[[1]][1,4],extra_tmp[1,1],extra_tmp[1,2],tmp[[1]][1,6])
   cat(linea,file=mtmp,append=TRUE)
+  logdframe <- rbind(logdframe,cbind(tmp[[1]][1,c(1,2,3,4)],extra_tmp[1,],tmp[[1]][1,6]))
+  print(logdframe)
  }
  if (exists("merging_statistics_info"))
  {
   mtmp <- paste(outdir,"/MERGING_STATISTICS.info",sep="")
-  linea <- sprintf("            %3d   %8.5f   %8.5f          %6.2f          %6.2f             %7.3f                %7.3f\n",
-                   (length(gidx)+1),tmp[[1]][1,1],tmp[[1]][1,2],tmp[[1]][1,3],tmp[[1]][1,4],tmp[[1]][1,5],tmp[[1]][1,6])
+  linea <- sprintf("     %3d  %7.3f  %7.3f   %6.2f     %6.2f  %7.2f   %7.2f  %7.2f\n",
+                  (length(gidx)+1),tmp[[1]][1,1],tmp[[1]][1,2],tmp[[1]][1,3],tmp[[1]][1,4],extra_tmp[1,1],extra_tmp[1,2],tmp[[1]][1,6])
   cat(linea,file=mtmp,append=TRUE)
+  logdframe <- rbind(logdframe,read.table(mtmp,skip=8))
  }
 }
 
-# Final lines
-#cat("\n")
-#cat("##################################################################\n")
-#cat("##################################################################\n")
-#cat("##################################################################\n")
-#cat("  The following files have been created in directory combined_files:\n")
-#cat("GROUPS.info                           : ascii file including details (file path, serial number and batch used) for each input group;\n")
-#cat("MERGING_STATISTICS.info               : ascii file including a table with merging statistics for each merged and/or scaled file;\n")
-#cat("merged_001.mtz, merged_002.mtz, etc   : mtz files prior to scaling. One for each group;\n")
-#cat("scaled_001.mtz, scaled_002.mtz, etc   : mtz scaled files. One for each group;\n")
-#cat("aimless_001.log, aimless_002.log, etc : log files, one for each AIMLESS job.\n")
-#cat("\n")
+# Output for logview
+tmpdframe <- logdframe
+logdframe <- tmpdframe[order(-tmpdframe[,4],tmpdframe[,2],na.last=TRUE),]
+linea <- sprintf("$TABLE: Overall merging statistics and completeness :\n")                                                  # For logview
+cat(linea)                                                                                                                   # For logview
+linea <- sprintf("$GRAPHS:        Overall merging statistics   : N : 1, 3, 4 :\n")                                           # For logview
+cat(linea)                                                                                                                   # For logview
+linea <- sprintf("       :        Overall completeness         : N : 1, 5 :\n")                                              # For logview
+cat(linea)                                                                                                                   # For logview
+linea <- sprintf("       :        Resolutions (CC1/2, Mn2, Max): N : 1, 7, 8, 9 :\n")                                              # For logview
+cat(linea)                                                                                                                   # For logview
+linea <- sprintf("$$\n")                                                                                                     # For logview
+cat(linea)                                                                                                                   # For logview
+linea <- sprintf(" Index  Cluster    Rmeas     Rpim   Compl.   Multip.   Res_CC1/2    Res_Mn(I/sd)   Res_Max  $$\n")                    # For logview
+cat(linea)
+linea <- sprintf("$$\n")                                                                                                     # For logview
+cat(linea)                                                                                                                   # For logview
+for (i in 1:length(logdframe[,1]))
+{
+ linea2 <- sprintf("   %3d      %3d  %7.3f  %7.3f  %6.2f    %6.2f      %7.2f        %7.2f    %7.2f\n",
+                  i,
+                  as.integer(rownames(logdframe)[i]),
+                  logdframe[i,2],logdframe[i,3],logdframe[i,4],logdframe[i,5],
+                  logdframe[i,7],logdframe[i,8],logdframe[i,6])
+ cat(linea2)                                                                                                                 # For logview
+}
+linea <- sprintf("$$\n")                                                                                                     # For logview
+cat(linea)                                                                                                                   # For logview
+linea <- sprintf("\n")                                                                                                       # For logview
+cat(linea)
 
 # Exit without saving
 q(save = "no", status = 0, runLast = FALSE)

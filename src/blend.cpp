@@ -23,6 +23,10 @@
 // - Modified / Added a few lines of code to allow code to run smoothly in both Windows and Linux / Os X systems.
 // - All files including list of data (mtz or hkl) are now reported with absolute paths.
 // - Added 1 keyword for AIMLESS: EXCLUDE BATCH. This has to be used similarly to the one in AIMLESS.
+// - Blocked a few lines of code for the combination mode which stopped execution every time the user wanted
+//   to run a same combination.
+// - Added final merging statistics to log file (synthesis and combination modes) so that they may be viewed
+//   with logview.
 // CHANGES IN VERSION 0.5.0 - 12/02/2014
 // - A new keyword, BLEND LAUEGROUP  [space group or laue group, POINTLESS style], has been added. This
 //   allows the laue group of input XDS files to be decided by the user. If no LAUEGROUP line is used,

@@ -570,6 +570,7 @@ if (length(idx) > 0)
    suffix <- c(outdir,sprintf("%03d",j))
    tmp <- merge_datasets("FINAL_list_of_files.dat",selection=groups[[1]][[j]],suffix,pointless_keys,aimless_keys,
                          resomin=groups[[2]][[j]][1],resomax=groups[[2]][[j]][2],nref=idxref,rwin=rwin)
+   #if (i == 1) print(tmp)
    cat(" Statistics for this group:\n")
 
    # Change row names for display purpose
@@ -578,8 +579,23 @@ if (length(idx) > 0)
    if (length(tmp[[2]]) == 0) warning(paste("No result could be produced for cluster ",j," due to a problem with POINTLESS",sep=""))
    if (length(tmp[[2]]) != 0 & is.na(tmp[[1]][1,1])) warning(paste("No result could be produced for cluster ",j," due to a problem with AIMLESS",sep=""))
  
+   # Extract CC1/2
+   gCC12 <- grep("from half-dataset correlation CC(1/2)",tmp[[2]],fixed=TRUE)
+   lineCC12 <- tmp[[2]][gCC12][1]
+   stmp <- strsplit(lineCC12,">")[[1]][2]
+   stmp <- strsplit(stmp,"=")
+   stmp <- gsub("\\s","",stmp[[1]][2])
+   CC12 <- as.numeric(substr(stmp,1,(nchar(stmp)-1)))
+
+   # Extract Reso Mn(I/sd)
+   gMn12 <- grep("from Mn(I/sd) >  2.00:",tmp[[2]],fixed=TRUE)
+   lineMn12 <- tmp[[2]][gMn12][1]
+   stmp <- strsplit(lineMn12,"=")[[1]][2]
+   stmp <- gsub("\\s","",stmp)
+   Mn12 <- as.numeric(substr(stmp,1,(nchar(stmp)-1)))
+   
    # Collect merging statistics in data frame
-   mergingStatistics <- rbind(mergingStatistics,tmp[[1]][1,])
+   mergingStatistics <- rbind(mergingStatistics,data.frame(tmp[[1]][1,],CC12=CC12,Mn12=Mn12))
   }
  }
  rownames(mergingStatistics) <- idx
@@ -604,7 +620,7 @@ if (length(idx) > 0)
  #mergingStatistics <- tmpdframe[order(tmpdframe$Rmeas,tmpdframe$Completeness,na.last=TRUE),]
  mergingStatistics <- tmpdframe[order(-tmpdframe$Completeness,tmpdframe$Rmeas,na.last=TRUE),]
 
- # Output final table
+ # Output final table (output to log file as well)
  merging_statistics_file=paste(outdir,"MERGING_STATISTICS.info",sep="/")
  if (file.exists(merging_statistics_file)) emptyc <- file.remove(merging_statistics_file)
  linea <- sprintf("######################################################################################################################\n")
@@ -619,16 +635,46 @@ if (length(idx) > 0)
  cat(linea,file=merging_statistics_file,append=T)
  linea <- "                            \n"
  cat(linea,file=merging_statistics_file,append=T)
- linea <- sprintf(" Cluster Number      Rmeas       Rpim    Completeness    Multiplicity   Lowest Resolution     Highest Resolution\n")
+ linea <- sprintf(" Cluster                     Comple-    Multi-     Reso     Reso      Reso\n")
  cat(linea,file=merging_statistics_file,append=T)
+ linea <- sprintf("  Number    Rmeas     Rpim   teness    plicity    CC1/2   Mn(I/sd)     Max\n")
+ cat(linea,file=merging_statistics_file,append=T)
+ linea <- sprintf("\n")                                                                                                       # For logview
+ cat(linea)                                                                                                                   # For logview
+ linea <- sprintf("\n")                                                                                                       # For logview
+ cat(linea)                                                                                                                   # For logview
+ linea <- sprintf("$TABLE: Overall merging statistics and completeness :\n")                                                  # For logview
+ cat(linea)                                                                                                                   # For logview
+ linea <- sprintf("$GRAPHS:        Overall merging statistics   : N : 1, 3, 4 :\n")                                           # For logview
+ cat(linea)                                                                                                                   # For logview
+ linea <- sprintf("       :        Overall completeness         : N : 1, 5 :\n")                                              # For logview
+ cat(linea)                                                                                                                   # For logview
+ linea <- sprintf("       :        Resolutions (CC1/2, Mn2, Max): N : 1, 7, 8, 9 :\n")                                              # For logview
+ cat(linea)                                                                                                                   # For logview
+ linea <- sprintf("$$\n")                                                                                                     # For logview
+ cat(linea)                                                                                                                   # For logview
+ linea <- sprintf(" Index  Cluster    Rmeas     Rpim   Compl.   Multip.   Res_CC1/2    Res_Mn(I/sd)   Res_Max  $$\n")                    # For logview
+ cat(linea)                                                                                                                   # For logview
+ linea <- sprintf("$$\n")                                                                                                     # For logview
+ cat(linea)                                                                                                                   # For logview
  for (i in 1:length(mergingStatistics[,1]))
  {
-  linea <- sprintf("            %3d   %8.5f   %8.5f          %6.2f          %6.2f             %7.3f                %7.3f\n",
+  linea <- sprintf("     %3d  %7.3f  %7.3f   %6.2f     %6.2f  %7.2f   %7.2f  %7.2f\n",
                    as.integer(rownames(mergingStatistics)[i]),
                    mergingStatistics[i,1],mergingStatistics[i,2],mergingStatistics[i,3],mergingStatistics[i,4],
-                   mergingStatistics[i,5],mergingStatistics[i,6])
+                   mergingStatistics[i,7],mergingStatistics[i,8],mergingStatistics[i,6])
   cat(linea,file=merging_statistics_file,append=T)
+  linea2 <- sprintf("   %3d      %3d  %7.3f  %7.3f  %6.2f    %6.2f      %7.2f        %7.2f    %7.2f\n",
+                   i,
+                   as.integer(rownames(mergingStatistics)[i]),
+                   mergingStatistics[i,1],mergingStatistics[i,2],mergingStatistics[i,3],mergingStatistics[i,4],
+                   mergingStatistics[i,7],mergingStatistics[i,8],mergingStatistics[i,6])
+  cat(linea2)                                                                                                                 # For logview
  }
+ linea <- sprintf("$$\n")                                                                                                     # For logview
+ cat(linea)                                                                                                                   # For logview
+ linea <- sprintf("\n")                                                                                                       # For logview
+ cat(linea)                                                                                                                   # For logview
 
  # Final message for users
  #cat("\n")
