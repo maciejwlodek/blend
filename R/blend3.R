@@ -720,12 +720,10 @@ if (file.exists(outdir))
   cat(linea,file=mtmp,append=T)
   linea <- sprintf("  Number    Rmeas     Rpim   teness    plicity    CC1/2   Mn(I/sd)     Max\n")
   cat(linea,file=mtmp,append=T)
-  #linea <- sprintf("     %3d  %7.3f  %7.3f   %6.2f     %6.2f  %7.2f   %7.2f  %7.2f\n",
   linea <- sprintf("     %3d  %7.3f  %7.3f   %6.2f     %6.2f  %7.2f   %7.2f  %7.2f\n",
                    (length(gidx)+1),tmp[[1]][1,1],tmp[[1]][1,2],tmp[[1]][1,3],tmp[[1]][1,4],extra_tmp[1,1],extra_tmp[1,2],tmp[[1]][1,6])
   cat(linea,file=mtmp,append=TRUE)
-  logdframe <- rbind(logdframe,cbind(tmp[[1]][1,c(1,2,3,4)],extra_tmp[1,],tmp[[1]][1,6]))
-  print(logdframe)
+  logdframe <- rbind(logdframe,cbind(1,tmp[[1]][1,c(1,2,3,4)],extra_tmp[1,],tmp[[1]][1,6]))
  }
  if (exists("merging_statistics_info"))
  {
@@ -739,7 +737,8 @@ if (file.exists(outdir))
 
 # Output for logview
 tmpdframe <- logdframe
-logdframe <- tmpdframe[order(-tmpdframe[,4],tmpdframe[,2],na.last=TRUE),]
+if (length(logdframe[,1]) > 1) logdframe <- tmpdframe[order(-tmpdframe[,4],tmpdframe[,2],na.last=TRUE),]
+if (length(logdframe[,1]) == 1) rownames(logdframe) <- "1"                                                                   # Fix logdframe temporarily
 linea <- sprintf("$TABLE: Overall merging statistics and completeness :\n")                                                  # For logview
 cat(linea)                                                                                                                   # For logview
 linea <- sprintf("$GRAPHS:        Overall merging statistics   : N : 1, 3, 4 :\n")                                           # For logview
@@ -750,17 +749,15 @@ linea <- sprintf("       :        Resolutions (CC1/2, Mn2, Max): N : 1, 7, 8, 9 
 cat(linea)                                                                                                                   # For logview
 linea <- sprintf("$$\n")                                                                                                     # For logview
 cat(linea)                                                                                                                   # For logview
-linea <- sprintf(" Index  Cluster    Rmeas     Rpim   Compl.   Multip.   Res_CC1/2    Res_Mn(I/sd)   Res_Max  $$\n")                    # For logview
+linea <- sprintf(" Index    Group    Rmeas     Rpim   Compl.   Multip.   Res_CC1/2    Res_Mn(I/sd)   Res_Max  $$\n")                    # For logview
 cat(linea)
 linea <- sprintf("$$\n")                                                                                                     # For logview
 cat(linea)                                                                                                                   # For logview
 for (i in 1:length(logdframe[,1]))
 {
+ j <- as.integer(rownames(logdframe)[i])
  linea2 <- sprintf("   %3d      %3d  %7.3f  %7.3f  %6.2f    %6.2f      %7.2f        %7.2f    %7.2f\n",
-                  i,
-                  as.integer(rownames(logdframe)[i]),
-                  logdframe[i,2],logdframe[i,3],logdframe[i,4],logdframe[i,5],
-                  logdframe[i,7],logdframe[i,8],logdframe[i,6])
+                   i,logdframe[i,1],logdframe[i,2],logdframe[i,3],logdframe[i,4],logdframe[i,5],logdframe[i,7],logdframe[i,8],logdframe[i,6])
  cat(linea2)                                                                                                                 # For logview
 }
 linea <- sprintf("$$\n")                                                                                                     # For logview
