@@ -1035,7 +1035,12 @@ if (length(fullc) == 0) distAll <- nparW.dist
 if (length(fullc) != 0) distAll <- cparweight*nparC.dist+(1-cparweight)*nparW.dist
 
 # Cluster analysis
-npar.hc_ward <- hclust(distAll,method="ward")
+tmp <- R.Version()
+if (as.numeric(tmp[[6]]) >= 3 & as.numeric(tmp[[7]]) >= 1) {
+ npar.hc_ward <- hclust(distAll,method="ward.D")
+} else {
+ npar.hc_ward <- hclust(distAll,method="ward")
+}
 
 # Before plotting out dendrogram, rescale heights linearly to cell variation.
 #dMat <- evaluateMaxChange(maindf)
@@ -1086,7 +1091,8 @@ png(file="./tree.png",height=1000,width=1000)
 #plclust(npar.hc_ward,xlab="Individual datasets",ylab="Ward distance",main=msg,sub="")
 plot(npar.hc_ward,xlab="Individual datasets",ylab="Ward distance",main=msg,sub="",col.main="red",cex.main=2,col.lab="blue",cex.lab=2)
 nodesxy <- find_nodes_coords(npar.hc_ward,groups[[1]])
-idx <- (length(LCV_values)-4):(length(LCV_values)-1)
+if (length(LCV_values) > 5) idx <- (length(LCV_values)-4):(length(LCV_values)-1)
+if (length(LCV_values) <= 5) idx <- 1:(length(LCV_values)-1)
 labelsxy <- c()
 for (i in 1:length(LCV_values))
 {
