@@ -1087,25 +1087,29 @@ for (i in 1:length(maindf[,1]))
 kk <- maxRatio(macropar[,2:7])
 msg <- sprintf("Linear Cell Variation: %6.2f %s",kk,"%")
 
-png(file="./tree.png",height=1000,width=1000)
-#plclust(npar.hc_ward,xlab="Individual datasets",ylab="Ward distance",main=msg,sub="")
-plot(npar.hc_ward,xlab="Individual datasets",ylab="Ward distance",main=msg,sub="",col.main="red",cex.main=2,col.lab="blue",cex.lab=2)
-nodesxy <- find_nodes_coords(npar.hc_ward,groups[[1]])
-if (length(LCV_values) > 5) idx <- (length(LCV_values)-4):(length(LCV_values)-1)
-if (length(LCV_values) <= 5) idx <- 1:(length(LCV_values)-1)
-labelsxy <- c()
-for (i in 1:length(LCV_values))
+if (length(npar.hc_ward$height) > 1)
 {
- stmp <- sprintf("%6.2f",LCV_values[i])
- labelsxy <- c(labelsxy,stmp)
+ png(file="./tree.png",height=1000,width=1000)
+ #plclust(npar.hc_ward,xlab="Individual datasets",ylab="Ward distance",main=msg,sub="")
+ plot(npar.hc_ward,xlab="Individual datasets",ylab="Ward distance",main=msg,sub="",col.main="red",cex.main=2,col.lab="blue",cex.lab=2)
+ nodesxy <- find_nodes_coords(npar.hc_ward,groups[[1]])
+ if (length(LCV_values) > 5) idx <- (length(LCV_values)-4):(length(LCV_values)-1)
+ if (length(LCV_values) <= 5) idx <- 1:(length(LCV_values)-1)
+ labelsxy <- c()
+ for (i in 1:length(LCV_values))
+ {
+  stmp <- sprintf("%6.2f",LCV_values[i])
+  labelsxy <- c(labelsxy,stmp)
+ }
+ text(nodesxy$x[idx],nodesxy$y[idx],labels=labelsxy[idx],adj=c(0,-0.5),col="red",cex=1.5)
+ emptyc <- dev.off()    # The "emptyc" is to collect the return value of dev.off(), so that it's not output
+ postscript(file="./tree.ps", height = 10, width = 10, paper = "a4")
+ #plclust(npar.hc_ward,xlab="Individual datasets",ylab="Ward distance",main=msg,sub="")
+ plot(npar.hc_ward,xlab="Individual datasets",ylab="Ward distance",main=msg,sub="",col.main="red",cex.main=2,col.lab="blue",cex.lab=2)
+ text(nodesxy$x[idx],nodesxy$y[idx],labels=labelsxy[idx],adj=c(0,-0.5),col="red",cex=1.5)
+ emptyc <- dev.off()    # The "emptyc" is to collect the return value of dev.off(), so that it's not output
 }
-text(nodesxy$x[idx],nodesxy$y[idx],labels=labelsxy[idx],adj=c(0,-0.5),col="red",cex=1.5)
-emptyc <- dev.off()    # The "emptyc" is to collect the return value of dev.off(), so that it's not output
-postscript(file="./tree.ps", height = 10, width = 10, paper = "a4")
-#plclust(npar.hc_ward,xlab="Individual datasets",ylab="Ward distance",main=msg,sub="")
-plot(npar.hc_ward,xlab="Individual datasets",ylab="Ward distance",main=msg,sub="",col.main="red",cex.main=2,col.lab="blue",cex.lab=2)
-text(nodesxy$x[idx],nodesxy$y[idx],labels=labelsxy[idx],adj=c(0,-0.5),col="red",cex=1.5)
-emptyc <- dev.off()    # The "emptyc" is to collect the return value of dev.off(), so that it's not output
+if (length(npar.hc_ward$height) == 1) cat("WARNING! No plot of dendrogram available as there is only 1 node. For cluster height refer to file 'CLUSTERS.txt'\n")
 cat("Cluster analysis completed!\n")
 
 # Remove "refs_*_*.dat" files and "forR_raddam.dat" file
