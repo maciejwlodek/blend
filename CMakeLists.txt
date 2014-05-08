@@ -41,4 +41,5 @@ add_executable(blend ${BLEND_SOURCES})
 target_link_libraries(blend ${CCP4_LIBRARIES})
 install(TARGETS blend DESTINATION bin)
 install(DIRECTORY python R DESTINATION share/blend/)
+install(FILES license.txt DESTINATION share/blend/)
 
