@@ -588,7 +588,7 @@ maxRatio <- function(cpar)
  return(max(mab,mac,mbc))
 }
 
-find_nodes_coords <- function(clst, clns)
+find_nodes_coords <- function(clst, clns, cn)
 {
  # Number of objects
  nobj <- length(clst$merge[,1]) + 1
@@ -607,14 +607,17 @@ find_nodes_coords <- function(clst, clns)
   ele2 <- clst$merge[i,2]
   if (ele1 < 0 & ele2 < 0)
   {
-   idx1 <- match(abs(ele1), xobj)
-   idx2 <- match(abs(ele2), xobj)
+   #idx1 <- match(abs(ele1), xobj)
+   #idx2 <- match(abs(ele2), xobj)
+   idx1 <- match(cn[abs(ele1)], xobj)
+   idx2 <- match(cn[abs(ele2)], xobj)
    x[i] <- 0.5 * (idx1 + idx2)
    y[i] <- clst$height[i]
   }
   if (ele1 < 0 & ele2 > 0)
   {
-   idx1 <- match(abs(ele1), xobj)
+   #idx1 <- match(abs(ele1), xobj)
+   idx1 <- match(cn[abs(ele1)], xobj)
    idx2 <- x[ele2]
    x[i] <- 0.5 * (idx1 + idx2)
    y[i] <- clst$height[i]
@@ -622,7 +625,8 @@ find_nodes_coords <- function(clst, clns)
   if (ele1 > 0 & ele2 < 0)
   {
    idx1 <- x[ele1]
-   idx2 <- match(abs(ele2), xobj)
+   #idx2 <- match(abs(ele2), xobj)
+   idx2 <- match(cn[abs(ele2)], xobj)
    x[i] <- 0.5 * (idx1 + idx2)
    y[i] <- clst$height[i]
   }
@@ -1055,7 +1059,9 @@ groups <- treeToList(npar.hc_ward,lowresos,highresos)
 LCV_values <- c()
 for (cn in groups[[1]])
 {
- LCV_values <- c(LCV_values, maxRatio(macropar[cn,2:7]))
+ idx <- match(cn,macropar$cn)
+ #LCV_values <- c(LCV_values, maxRatio(macropar[cn,2:7]))
+ LCV_values <- c(LCV_values, maxRatio(macropar[idx,2:7]))
 }
 
 # Output merging nodes table to an ascii file
@@ -1092,7 +1098,7 @@ if (length(npar.hc_ward$height) > 1)
  png(file="./tree.png",height=1000,width=1000)
  #plclust(npar.hc_ward,xlab="Individual datasets",ylab="Ward distance",main=msg,sub="")
  plot(npar.hc_ward,xlab="Individual datasets",ylab="Ward distance",main=msg,sub="",col.main="red",cex.main=2,col.lab="blue",cex.lab=2)
- nodesxy <- find_nodes_coords(npar.hc_ward,groups[[1]])
+ nodesxy <- find_nodes_coords(npar.hc_ward,groups[[1]],macropar$cn)
  if (length(LCV_values) > 5) idx <- (length(LCV_values)-4):(length(LCV_values)-1)
  if (length(LCV_values) <= 5) idx <- 1:(length(LCV_values)-1)
  labelsxy <- c()
