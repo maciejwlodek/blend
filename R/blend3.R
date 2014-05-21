@@ -456,6 +456,117 @@ merge_datasets <- function(mtz_names,selection,suffix,pointless_keys,aimless_key
  }
 }
 
+# Function to interpret input for the combination mode.
+# 1) individual numbers, like 2 4 8 17 etc., simply means that the group is formed of individual data sets: "2 4 8 17"
+# 2) individual numbers separated by commas, like 2,4,8,17, means: "2 4 8 17"
+# 3) numbers separated by "-" means a range, like 12-16, means: "12 13 14 15 16"
+# 4) combination of the above, like 1 3 4-9 12,16, means: "1 3 4 5 6 7 8 9 12 16"
+# 5) one number within square bracket means add elements of a cluster. For example cluster 8 might include 
+#    data sets 2, 7, 13, 17 and 23. Thus [8] means: "2 7 13 17 23"
+# 6) one number within curly brackets means to subtract that number from a list. For example, using the same
+#    cluster as before, the expression [8] {13,23} means "2 7 17"
+# 7) same points 1 to 4 apply to everything inside a curly bracket.
+interpretCombine <- function(args,clusters)
+{
+ # Number of character strings
+ n <- length(args)
+
+ # Loop over all character strings and extract information as individual numbers
+ addList <- c()
+ subtractList <- c()
+ for (i in 1:n)
+ {
+  stmp <- args[i]
+
+  # Differentiate between "no brackets" and brackets ("square" or "double square")
+  m <- nchar(stmp)
+
+  # Square brackets
+  if (substr(stmp,1,1) == "[" & substr(stmp,nchar(stmp),nchar(stmp)) == "]" &
+      substr(stmp,2,2) != "[" & substr(stmp,nchar(stmp)-1,nchar(stmp)-1) != "]")
+  {
+   gcore <- substr(stmp,2,nchar(stmp)-1)
+   glist <- interpretGcore(gcore)
+
+   # Expand list of cluster as clusters elements
+   for (i in glist)
+   {
+    addList <- c(addList,clusters[[i]])
+   }
+  }
+
+  # Double square brackets
+  if (substr(stmp,1,1) == "[" & substr(stmp,2,2) == "[" &
+      substr(stmp,nchar(stmp)-1,nchar(stmp)-1) == "]" & substr(stmp,nchar(stmp),nchar(stmp)) == "]")
+  {
+   gcore <- substr(stmp,3,nchar(stmp)-2)
+   glist <- interpretGcore(gcore)
+   subtractList <- c(subtractList,glist)
+  }
+
+  # No brackets
+  if (substr(stmp,1,1) != "[" & substr(stmp,nchar(stmp),nchar(stmp)) != "]")
+  {
+   gcore <- stmp
+   glist <- interpretGcore(gcore)
+   addList <- c(addList,glist)
+  }
+ }
+ addList <- unique(addList)
+ if (length(subtractList) != 0) subtractList <- unique(subtractList)
+
+ # Remove elements in subtractList from elements in addList
+ if (length(subtractList) != 0) 
+ {
+  idx <- na.omit(match(subtractList,addList))
+  args <- addList[-idx]
+ }
+ if (length(subtractList) == 0) 
+ {
+  args <- addList
+ }
+
+ # Sorting before returning
+ args <- sort(args)
+
+ return(args)
+}
+
+interpretGcore <- function(gcore)
+{
+ # Find out number of blocks
+ glist <- c()
+ ltmp <- strsplit(gcore,",")
+ if (length(ltmp[[1]]) > 1)
+ {
+  for (j in 1:length(ltmp[[1]]))
+  {
+   ltmp2 <- strsplit(ltmp[[1]][j],"-")
+   if (length(ltmp2[[1]]) == 2)
+   {
+    if (as.integer(ltmp2[[1]][1]) <= as.integer(ltmp2[[1]][2])) glist <- c(glist,ltmp2[[1]][1]:ltmp2[[1]][2])
+   }
+   if (length(ltmp2[[1]]) == 1)
+   {
+    glist <- c(glist,as.integer(ltmp2[[1]][1]))
+   }
+  }
+ }
+ if (length(ltmp[[1]]) == 1)
+ {
+  ltmp2 <- strsplit(ltmp[[1]][1],"-")
+  if (length(ltmp2[[1]]) == 2)
+  {
+   if (as.integer(ltmp2[[1]][1]) <= as.integer(ltmp2[[1]][2])) glist <- c(glist,ltmp2[[1]][1]:ltmp2[[1]][2])
+  }
+  if (length(ltmp2[[1]]) == 1)
+  {
+   glist <- c(glist,as.integer(ltmp2[[1]][1]))
+  }
+ }
+
+ return(glist)
+}
 
 
 
@@ -477,11 +588,59 @@ options(warn = -1)
 
 # Retrieve value from command line
 args <- commandArgs(trailingOnly=TRUE)
+cat("\n")
+cat(paste("Input string:   ",paste(args,collapse=" ")))
+n <- length(args)
+cat("\n")
+cat("Input request:\nData sets to be included:\n")
+for (i in 1:n)
+{
+ stmp <- args[i]
+ if (substr(stmp,1,1) != "[" & substr(stmp,nchar(stmp),nchar(stmp)) != "]")
+ {
+  gcore <- stmp
+  glist <- interpretGcore(gcore)
+  msg <- sprintf("                                              : %s\n",paste(glist,collapse=" "))
+  cat(msg)
+ }
+}
+cat("Input request:\nClusters with data sets to be included:\n")
+for (i in 1:n)
+{
+ stmp <- args[i]
+ if (substr(stmp,1,1) == "[" & substr(stmp,nchar(stmp),nchar(stmp)) == "]" &
+     substr(stmp,2,2) != "[" & substr(stmp,nchar(stmp)-1,nchar(stmp)-1) != "]")
+ {
+  gcore <- substr(stmp,2,nchar(stmp)-1)
+  glist <- interpretGcore(gcore)
+  for (j in glist) 
+  {
+   msg <- sprintf("         Cluster %3d - Includes data sets     : %s\n",j,paste(groups[[1]][[j]],collapse=" "))
+   cat(msg)
+  }
+ }
+}
+cat("Input request:\nData sets to be excluded:\n")
+for (i in 1:n)
+{
+ stmp <- args[i]
+ if (substr(stmp,1,1) == "[" & substr(stmp,2,2) == "[" &
+     substr(stmp,nchar(stmp)-1,nchar(stmp)-1) == "]" & substr(stmp,nchar(stmp),nchar(stmp)) == "]")
+ {
+  gcore <- substr(stmp,3,nchar(stmp)-2)
+  glist <- interpretGcore(gcore)
+  msg <- sprintf("                                              : %s\n",paste(glist,collapse=" "))
+  cat(msg)
+ }
+}
+cat("\n")
 cat("Files to be combined:  ")
-cat(args)
+targs <- interpretCombine(args,groups[[1]])
+cat(targs)
 cat("\n")
 cat("\n")
-cln <- as.numeric(args)
+#cln <- as.numeric(args)
+cln <- targs
 
 # If one or more datasets have been discarded during the analysis mode, stop
 tmp <- match(cln,maindf$cn)

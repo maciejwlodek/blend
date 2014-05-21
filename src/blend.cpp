@@ -10,6 +10,19 @@
 /********* included in the root directory of this package.                                          *********/
 /************************************************************************************************************/
 /************************************************************************************************************/
+// CHANGES IN VERSION 0.5.2 - 20/05/2014
+// - Small correction / addition to html documentation.
+// - Fixed a bug in the calculation and plotting of LCV values when some of the original data sets are discarded.
+// - New syntax for making combination mode easier. Now the input command line can accept the following items:
+//    a) d or d1-d2 or d1,d2             : means add data set d, or all data sets from d1 to d2, or data sets d1
+//                                         and d2
+//    b) [n] or [n1-n2] or [n1,n2]       : means add all data sets composing cluster n, or all data sets
+//                                         composing clusters from number n1 to number n2, or all data sets composing
+//                                         clusters n1 and n2;
+//    c) [[d]] or [[d1-d2]] or [[d1,d2]] : means discard data set d, or all data sets from d1 to d2, or data sets d1
+//                                         and d2.
+// - Added keyword "RUN" for AIMLESS.
+//
 // CHANGES IN VERSION 0.5.1 - 13/03/2014
 // - Computing LCV for all nodes in the dendrogram. Top 5 nodes display LCV values in the dendrogram.
 // - Added in log file proper CCP4 banner stuff and tags in log file to have tables and plots properly
@@ -27,6 +40,7 @@
 //   to run a same combination.
 // - Added final merging statistics to log file (synthesis and combination modes) so that they may be viewed
 //   with logview.
+//
 // CHANGES IN VERSION 0.5.0 - 12/02/2014
 // - A new keyword, BLEND LAUEGROUP  [space group or laue group, POINTLESS style], has been added. This
 //   allows the laue group of input XDS files to be decided by the user. If no LAUEGROUP line is used,
@@ -36,6 +50,7 @@
 //   parameters). Alternatively the user can impose his/her own choice for LAUEGROUP.
 // - POINTLESS log file are saved in xds_files directory, so that one can check what went on at this stage.
 // - LCV values for all merging nodes are tabulated in "CLUSTERS.txt" file.
+//
 // CHANGES IN VERSION 0.4.3 - 08/02/2014
 // - Now keywords are given via stdin, like other CCP4 programs. The three different sections for keywords
 //   are highlighted via presence of three keywords at the beginning of each line, BLEND, POINTLESS and
@@ -218,7 +233,8 @@ int main(int argc, char* argv[])
   int runmode=0;
   float dlevel_top,dlevel_bottom;
   std::string mode_string,filename,cl_mode,cl_height;
-  std::vector<int> arbitrary_datasets;
+  //std::vector<int> arbitrary_datasets;
+  std::vector<std::string> arbitrary_datasets;
   if (argc == 1)
   {
    int nerr=1;
@@ -261,6 +277,7 @@ int main(int argc, char* argv[])
    akeys.push_back("ANOMALOUS");
    akeys.push_back("SCALES");
    akeys.push_back("EXCLUDE");
+   akeys.push_back("RUN");
 
    // Load in keywords from standard input
    // This is a way of reading lines from standard input and storing them into a string variable, line,
@@ -280,7 +297,8 @@ int main(int argc, char* argv[])
     for (unsigned int i = 0; i < akeys.size(); ++i)
     {
      Idx = keywdline.find(akeys[i]);
-     if (Idx != std::string::npos)
+     //if (Idx != std::string::npos)
+     if (int(Idx) == 0)
      {
       vkeywdline.push_back(keywdline.substr(Idx));
       jflag = 1;
@@ -302,7 +320,8 @@ int main(int argc, char* argv[])
      for (unsigned int i = 0; i < akeys.size(); ++i)
      {
       Idx = keywdline.find(akeys[i]);
-      if (Idx != std::string::npos)
+      //if (Idx != std::string::npos)
+      if (int(Idx) == 0)
       {
        vkeywdline.push_back(keywdline.substr(Idx));
        jflag = 1;
@@ -323,7 +342,8 @@ int main(int argc, char* argv[])
     for (unsigned int j = 0; j < vkeywdline.size(); ++j)
     {
      Idx = vkeywdline[j].find(akeys[i]);
-     if (Idx != std::string::npos)
+     //if (Idx != std::string::npos)
+     if (int(Idx) == 0)
      {
       k = 1;
       keywd_ostream << vkeywdline[j] << std::endl;
@@ -336,7 +356,8 @@ int main(int argc, char* argv[])
     for (unsigned int j = 0; j < vkeywdline.size(); ++j)
     {
      Idx = vkeywdline[j].find(akeys[i]);
-     if (Idx != std::string::npos) keywd_ostream << vkeywdline[j] << std::endl;
+     //if (Idx != std::string::npos) keywd_ostream << vkeywdline[j] << std::endl;
+     if (int(Idx) == 0) keywd_ostream << vkeywdline[j] << std::endl;
     }
    }
    keywd_ostream << "POINTLESS KEYWORDS" << std::endl;
@@ -345,16 +366,18 @@ int main(int argc, char* argv[])
     for (unsigned int j = 0; j < vkeywdline.size(); ++j)
     {
      Idx = vkeywdline[j].find(akeys[i]);
-     if (Idx != std::string::npos) keywd_ostream << vkeywdline[j] << std::endl;
+     //if (Idx != std::string::npos) keywd_ostream << vkeywdline[j] << std::endl;
+     if (int(Idx) == 0) keywd_ostream << vkeywdline[j] << std::endl;
     }
    }
    keywd_ostream << "AIMLESS KEYWORDS" << std::endl;
-   for (int i = 8; i < 13; ++i)
+   for (int i = 8; i < 14; ++i)
    {
     for (unsigned int j = 0; j < vkeywdline.size(); ++j)
     {
      Idx = vkeywdline[j].find(akeys[i]);
-     if (Idx != std::string::npos) keywd_ostream << vkeywdline[j] << std::endl;
+     //if (Idx != std::string::npos) keywd_ostream << vkeywdline[j] << std::endl;
+     if (int(Idx) == 0) keywd_ostream << vkeywdline[j] << std::endl;
     }
    }
    keywd_ostream.close();
@@ -365,7 +388,8 @@ int main(int argc, char* argv[])
    for (unsigned i = 0; i < vkeywdline.size(); ++i)
    {
     Idx = vkeywdline[i].find(akeys[5]);
-    if (Idx != std::string::npos) lauegroup = vkeywdline[i];
+    //if (Idx != std::string::npos) lauegroup = vkeywdline[i];
+    if (int(Idx) == 0) lauegroup = vkeywdline[i];
    }
 
    // Carry on checking correct command-line input
@@ -434,6 +458,7 @@ int main(int argc, char* argv[])
    akeys.push_back("ANOMALOUS");
    akeys.push_back("SCALES");
    akeys.push_back("EXCLUDE");
+   akeys.push_back("RUN");
 
    // Load in keywords from standard input
    // This is a way of reading lines from standard input and storing them into a string variable, line,
@@ -453,7 +478,8 @@ int main(int argc, char* argv[])
     for (unsigned int i = 0; i < akeys.size(); ++i)
     {
      Idx = keywdline.find(akeys[i]);
-     if (Idx != std::string::npos)
+     //if (Idx != std::string::npos)
+     if (int(Idx) == 0)
      {
       vkeywdline.push_back(keywdline.substr(Idx));
       jflag = 1;
@@ -475,7 +501,8 @@ int main(int argc, char* argv[])
      for (unsigned int i = 0; i < akeys.size(); ++i)
      {
       Idx = keywdline.find(akeys[i]);
-      if (Idx != std::string::npos)
+      //if (Idx != std::string::npos)
+      if (int(Idx) == 0)
       {
        vkeywdline.push_back(keywdline.substr(Idx));
        jflag = 1;
@@ -496,7 +523,8 @@ int main(int argc, char* argv[])
     for (unsigned int j = 0; j < vkeywdline.size(); ++j)
     {
      Idx = vkeywdline[j].find(akeys[i]);
-     if (Idx != std::string::npos)
+     //if (Idx != std::string::npos)
+     if (int(Idx) == 0)
      {
       k = 1;
       keywd_ostream << vkeywdline[j] << std::endl;
@@ -509,7 +537,8 @@ int main(int argc, char* argv[])
     for (unsigned int j = 0; j < vkeywdline.size(); ++j)
     {
      Idx = vkeywdline[j].find(akeys[i]);
-     if (Idx != std::string::npos) keywd_ostream << vkeywdline[j] << std::endl;
+     //if (Idx != std::string::npos) keywd_ostream << vkeywdline[j] << std::endl;
+     if (int(Idx) == 0) keywd_ostream << vkeywdline[j] << std::endl;
     }
    }
    keywd_ostream << "POINTLESS KEYWORDS" << std::endl;
@@ -518,16 +547,18 @@ int main(int argc, char* argv[])
     for (unsigned int j = 0; j < vkeywdline.size(); ++j)
     {
      Idx = vkeywdline[j].find(akeys[i]);
-     if (Idx != std::string::npos) keywd_ostream << vkeywdline[j] << std::endl;
+     //if (Idx != std::string::npos) keywd_ostream << vkeywdline[j] << std::endl;
+     if (int(Idx) == 0) keywd_ostream << vkeywdline[j] << std::endl;
     }
    }
    keywd_ostream << "AIMLESS KEYWORDS" << std::endl;
-   for (int i = 8; i < 13; ++i)
+   for (int i = 8; i < 14; ++i)
    {
     for (unsigned int j = 0; j < vkeywdline.size(); ++j)
     {
      Idx = vkeywdline[j].find(akeys[i]);
-     if (Idx != std::string::npos) keywd_ostream << vkeywdline[j] << std::endl;
+     //if (Idx != std::string::npos) keywd_ostream << vkeywdline[j] << std::endl;
+     if (int(Idx) == 0) keywd_ostream << vkeywdline[j] << std::endl;
     }
    }
    keywd_ostream.close();
@@ -577,6 +608,7 @@ int main(int argc, char* argv[])
    akeys.push_back("ANOMALOUS");
    akeys.push_back("SCALES");
    akeys.push_back("EXCLUDE");
+   akeys.push_back("RUN");
 
    // Load in keywords from standard input
    // This is a way of reading lines from standard input and storing them into a string variable, line,
@@ -596,7 +628,8 @@ int main(int argc, char* argv[])
     for (unsigned int i = 0; i < akeys.size(); ++i)
     {
      Idx = keywdline.find(akeys[i]);
-     if (Idx != std::string::npos)
+     //if (Idx != std::string::npos)
+     if (int(Idx) == 0)
      {
       vkeywdline.push_back(keywdline.substr(Idx));
       jflag = 1;
@@ -618,7 +651,8 @@ int main(int argc, char* argv[])
      for (unsigned int i = 0; i < akeys.size(); ++i)
      {
       Idx = keywdline.find(akeys[i]);
-      if (Idx != std::string::npos)
+      //if (Idx != std::string::npos)
+      if (int(Idx) == 0)
       {
        vkeywdline.push_back(keywdline.substr(Idx));
        jflag = 1;
@@ -639,7 +673,8 @@ int main(int argc, char* argv[])
     for (unsigned int j = 0; j < vkeywdline.size(); ++j)
     {
      Idx = vkeywdline[j].find(akeys[i]);
-     if (Idx != std::string::npos)
+     //if (Idx != std::string::npos)
+     if (int(Idx) == 0)
      {
       k = 1;
       keywd_ostream << vkeywdline[j] << std::endl;
@@ -652,7 +687,8 @@ int main(int argc, char* argv[])
     for (unsigned int j = 0; j < vkeywdline.size(); ++j)
     {
      Idx = vkeywdline[j].find(akeys[i]);
-     if (Idx != std::string::npos) keywd_ostream << vkeywdline[j] << std::endl;
+     //if (Idx != std::string::npos) keywd_ostream << vkeywdline[j] << std::endl;
+     if (int(Idx) == 0) keywd_ostream << vkeywdline[j] << std::endl;
     }
    }
    keywd_ostream << "POINTLESS KEYWORDS" << std::endl;
@@ -661,16 +697,18 @@ int main(int argc, char* argv[])
     for (unsigned int j = 0; j < vkeywdline.size(); ++j)
     {
      Idx = vkeywdline[j].find(akeys[i]);
-     if (Idx != std::string::npos) keywd_ostream << vkeywdline[j] << std::endl;
+     //if (Idx != std::string::npos) keywd_ostream << vkeywdline[j] << std::endl;
+     if (int(Idx) == 0) keywd_ostream << vkeywdline[j] << std::endl;
     }
    }
    keywd_ostream << "AIMLESS KEYWORDS" << std::endl;
-   for (int i = 8; i < 13; ++i)
+   for (int i = 8; i < 14; ++i)
    {
     for (unsigned int j = 0; j < vkeywdline.size(); ++j)
     {
      Idx = vkeywdline[j].find(akeys[i]);
-     if (Idx != std::string::npos) keywd_ostream << vkeywdline[j] << std::endl;
+     //if (Idx != std::string::npos) keywd_ostream << vkeywdline[j] << std::endl;
+     if (int(Idx) == 0) keywd_ostream << vkeywdline[j] << std::endl;
     }
    }
    keywd_ostream.close();
@@ -679,7 +717,9 @@ int main(int argc, char* argv[])
    runmode=3;
 
    // Turn arguments into integer numbers (in vector "arbitrary_datasets") to be later used in R code
-   for (int i=2;i < argc;i++) arbitrary_datasets.push_back(atoi(argv[i])); 
+   //for (int i=2;i < argc;i++) arbitrary_datasets.push_back(atoi(argv[i])); 
+   // Turn arguments into a vector, "arbitrary_datasets", of characters to be later used in R code
+   for (int i=2;i < argc;i++) arbitrary_datasets.push_back(argv[i]); 
   }
 
   // I like well-formatted output

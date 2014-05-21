@@ -6,7 +6,7 @@
 <h2>SYNOPSIS</h2>
 <p><b>blend -a</b> <i>foo_in.dat</i>
 <p><b>blend -s</b> <i>cut_level_high</i> <i>[cut_level_low]</i>
-<p><b>blend -c</b> <i>d1</i> <i>d2</i>  <i>d3</i>  <i>d4</i>  <i>...</i>
+<p><b>blend -c</b> <i>d1</i> <i>d2</i>  <i>d3</i>  <i>d4</i>  <i>...</i> or <i>[d1] [d2] [[d3-d4]] ...</i>, etc.
 <br>
 <br>
 <br>
@@ -124,7 +124,32 @@ dendrogram. For example, referring to the dendrogram described previously, there
 union of data sets 1, 4, 11 and 13 because there is no node corresponding to this combination. Such a limitation can be overcome 
 by running the program in combination mode. In the specific case, simply:
 <pre>         blend -c 1 4 11 13</pre>
-The ability to create scaled data out of unlimited desired combinations confers flexibility to the program.
+When the number of data sets and clusters is large it is very tedious to type or even cut and paste the long string of numbers forming
+the combination. For this reason an <i>ad hoc</i> syntax has been created to include groups of numerically-contiguous data sets, whole
+clusters or groups of clusters, and to exclude individual data sets or groups of data sets. The syntax is made up of the following rules:
+<pre>         "[]"        a single-square bracket including one or more numbers means all data
+                     sets in the clusters corresponding to those numbers.</pre>
+<pre>         "[[]]"      a double-square bracket including one or more numbers indicates that all
+                     data sets corresponding to those numbers are to be removed from the final group.</pre>
+<pre>         "-"         an hyphen (minus sign) between two numbers indicates all integers between the two
+                     numbers. If the first number is greater than the second, the selection is ignored.</pre>
+<pre>         ","         commas between numbers are sometimes needed to separate data sets or clusters,
+                     if they are inside single or double-square brackets.</pre>
+<pre>         EXAMPLES (all referring to the dendrogram previously described).
+
+         1) Combine cluster 2 with cluster 4:
+
+                                               blend -c [2] [4]               equivalent to       blend -c 8 9 10 13 
+
+         2) All data sets in cluster 12, with the exception of data sets 7 and 11:
+
+                                               blend -c [12] [[7,11]]         equivalent to       blend -c 5 6 8 9 10 11 12 13      or    blend -c 5 6 8-13
+
+         3) Clusters 1 and 9, with the exception of data set 14, and with the addition of data sets 1 and 7:
+
+                                               blend -c [1] [9] [[14]] 1 7    equivalent to       blend -c 1 2 3 4 5 6 7            or    blend 1-7 </pre>
+
+The ability to create scaled data out of any desired combinations confers flexibility to the program.
 <br>
 <br>
 <h2><a name="InputOutput"></a>INPUT AND OUTPUT FILES</h2>
@@ -327,6 +352,7 @@ DATAREF             ()
 TOLERANCE           5 (same default value as the one used in POINTLESS)</pre></li>
    <li> Group 3
         <pre>ANOMALOUS           OFF
+RUN                 (default is to break into different runs at each discontinuity - see AIMLESS)
 EXCLUDE             (individual image numbers or images range - see AIMLESS)
 RESOLUTION          HIGH [smallest among highest resolutions of all composing data sets - see AIMLESS]
 SCALES              ROTATION SPACING 5 SECONDARY  BFACTOR ON BROTATION SPACING 20 (see AIMLESS)
@@ -350,6 +376,7 @@ case-insensitive, but are listed below in upper-case.
 <a href="#isigi">ISIGI</a>,
 <a href="#lauegroup">LAUEGROUP</a>,
 <a href="#radfrac">RADFRAC</a>, 
+<a href="#run">RUN</a>, 
 <a href="#resolution">RESOLUTION</a>, 
 <a href="#scales">SCALES</a>, 
 <a href="#sdcorrection">SDCORRECTION</a>, 
@@ -421,6 +448,10 @@ cutting is quite severe; when RADFRAC is equal to 0 there is no cutting, even wh
 By default (RADFRAC 0.75) when BLEND detects the occurrence of substantial global radiation damage, then all images collected
 after a certain image are discarded. The discarded images, on average, include intensities that have been reduced of more than 25% of
 their original value.
+<h3><a name="run"></a>RUN &lt;Nrun&gt; BATCH &ltb1&gt; TO &ltb2&gt; </h3>
+Default keys are the same used in AIMLESS.
+This keyword is equivalent to the one used in AIMLESS and controls the definition of "runs" (i.e. contiguous batches of data undergoing
+a same scaling protocol). More details can be found in AIMLESS documentation pages.
 <h3><a name="resolution"></a>RESOLUTION [[LOW] [[HIGH] &lt;Resmax&gt;] </h3>
 Default for subkey HIGH is the biggest among highest resolutions of all composing data sets; for subkey LOW is the smallest
 among lowest resolutions of all composing datasets, where resolutions are here meant to be indicated in angstroms.
@@ -544,4 +575,10 @@ any time soon.<br>
   </p>
 <br>
 <h2>SEE ALSO</h2>
+<blockquote>
+<a href="mosflm.html"><b>MOSFLM</b></a>
+<a href="http://xds.mpimf-heidelberg.mpg.de/"><b>XDS</b></a>
+<a href="pointless.html"><b>POINTLESS</b></a>
+<a href="aimless.html"><b>AIMLESS</b></a>
+</blockquote>
 </body></html>
