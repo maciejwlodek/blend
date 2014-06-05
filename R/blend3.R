@@ -636,11 +636,20 @@ for (i in 1:n)
 cat("\n")
 cat("Files to be combined:  ")
 targs <- interpretCombine(args,groups[[1]])
-cat(targs)
+if (length(targs) == 0) cat("None")
+if (length(targs) > 0) cat(targs)
 cat("\n")
 cat("\n")
 #cln <- as.numeric(args)
 cln <- targs
+
+# If user selection implies no data sets, return with warning message
+if (length(cln) == 0)
+{
+ msg <- "WARNING! User selection of data sets for this combination implies no data sets.\n"
+ cat(msg)
+ q(save = "no", status = 0, runLast = FALSE)
+}
 
 # If one or more datasets have been discarded during the analysis mode, stop
 tmp <- match(cln,maindf$cn)
