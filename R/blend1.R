@@ -34,6 +34,25 @@ cleanData <- function(data,acmin=0.95,acmax=1.05)
 }
 
 #
+# Determine if radiation damage detection and cure are to be activated for this data set.
+# Minimum number of images to activate procedure is 6; minimum resolution is 5 A.
+# Returns TRUE for ok, and FALSE if not ok.
+okRadDam <- function(data,minIma=6,minReso=5)
+{
+ ansR <- TRUE
+
+ # Number of images
+ images <- data$V4
+ if (length(images) < minIma) ansR <- FALSE
+
+ # Resolution range
+ resos <- data$V9
+ if (1/max(resos) > minReso) ansR <- FALSE
+
+ return(ansR)
+}
+
+#
 aveIvsRes <- function(nbin,ss,II=NULL,m=min(ss),M=max(ss))
 {
  # Resize vectors if needed
@@ -848,13 +867,23 @@ for (crystal in filenames)
  cat(sprintf("Considering purging data of radiation damaged elements."))
  data <- read.table(crystal)
  data <- cleanData(data)
+
+ # Check if resolution or number of images are within limits for radiation damage procedure
+ ansR <- okRadDam(data)
+ if (abs(fdrop) < 0.000001) ansR <- FALSE
  originalBatch <- max(data$V4,na.rm=TRUE)
  Ibatches <- c(Ibatches,range(data$V4,na.rm=TRUE)[1])
  Fbatches <- c(Fbatches,range(data$V4,na.rm=TRUE)[2])
  meanBC <- mean(data$V4,na.rm=TRUE)
- wplots <- Wplots(data,nbin=nbin,m=0.125)
- tempWplots <- c(tempWplots,list(wplots))
- coefs <- newraddam(wplots)
+
+ # Procedure for radiation damage detection only activated if resolution or number of images are within limits
+ if (ansR)
+ {
+  wplots <- Wplots(data,nbin=nbin,m=0.125)
+  tempWplots <- c(tempWplots,list(wplots))
+  coefs <- newraddam(wplots)
+ }
+ if (!ansR) coefs <- c(1/0,1/0)
 
  # Purging is done only when criteria are met
  if (is.finite(coefs[2]))
@@ -875,7 +904,12 @@ for (crystal in filenames)
  }
  if (!is.finite(coefs[2]))
  {
-  cat(sprintf(" This datasets will not be purged.\n"))
+  if (ansR) cat(sprintf(" This datasets will not be purged.\n"))
+  if (!ansR) 
+  {
+   if (abs(fdrop) < 0.000001) cat(sprintf(" This datasets will not be purged.\n"))
+   if (abs(fdrop) >= 0.000001) cat(sprintf(" This datasets will not be purged because of insufficient number of images or resolution too low.\n"))
+  }
   meanAC <- meanBC
  }
 
