@@ -925,7 +925,7 @@ for (i in 1:length(logdframe[,1]))
 {
  j <- as.integer(rownames(logdframe)[i])
  linea2 <- sprintf("   %3d      %3d  %7.3f  %7.3f  %6.2f    %6.2f      %7.2f        %7.2f    %7.2f\n",
-                   i,logdframe[i,1],logdframe[i,2],logdframe[i,3],logdframe[i,4],logdframe[i,5],logdframe[i,7],logdframe[i,8],logdframe[i,6])
+                   i,logdframe[i,1],logdframe[i,2],logdframe[i,3],logdframe[i,4],logdframe[i,5],logdframe[i,6],logdframe[i,7],logdframe[i,8])
  cat(linea2)                                                                                                                 # For logview
 }
 linea <- sprintf("$$\n")                                                                                                     # For logview
