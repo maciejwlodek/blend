@@ -14,6 +14,7 @@
 // - Added condition on images and resolution to skip radiation damage procedure: the procedure is not carried
 //   out if there are less than 6 images and / or if the highest resolution is less than 5 angstroms. Radiation
 //   damage procedure is also skipped if keyword RADFRAC is less than 0.000001.
+// - Fixed a bug which crashed the program when POINTLESS failed to assign SG. It relates to CC12 and Mn2.
 // CHANGES IN VERSION 0.5.2 - 20/05/2014
 // - Small correction / addition to html documentation.
 // - Fixed a bug in the calculation and plotting of LCV values when some of the original data sets are discarded.

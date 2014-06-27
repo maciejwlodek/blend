@@ -850,21 +850,27 @@ if (file.exists(outdir))
  }
 
  # Extract CC1/2 and Mn2 and add them to tmp (other statistics)
-
- # Extract CC1/2
- gCC12 <- grep("from half-dataset correlation CC(1/2)",tmp[[2]],fixed=TRUE)
- lineCC12 <- tmp[[2]][gCC12][1]
- stmp <- strsplit(lineCC12,">")[[1]][2]
- stmp <- strsplit(stmp,"=")
- stmp <- gsub("\\s","",stmp[[1]][2])
- CC12 <- as.numeric(substr(stmp,1,(nchar(stmp)-1)))
+ if (!is.null(tmp[[2]]) & length(tmp[[2]]) > 0)
+ {
+  gCC12 <- grep("from half-dataset correlation CC(1/2)",tmp[[2]],fixed=TRUE)
+  lineCC12 <- tmp[[2]][gCC12][1]
+  stmp <- strsplit(lineCC12,">")[[1]][2]
+  stmp <- strsplit(stmp,"=")
+  stmp <- gsub("\\s","",stmp[[1]][2])
+  CC12 <- as.numeric(substr(stmp,1,(nchar(stmp)-1)))
+ }
+ if (is.null(tmp[[2]]) | length(tmp[[2]]) == 0) CC12 <- NA
  
  # Extract Mn2
- gMn2 <- grep("from Mn(I/sd) >  2.00:",tmp[[2]],fixed=TRUE)
- lineMn2 <- tmp[[2]][gMn2][1]
- stmp <- strsplit(lineMn2,"=")[[1]][2]
- stmp <- gsub("\\s","",stmp)
- Mn2 <- as.numeric(substr(stmp,1,(nchar(stmp)-1)))
+ if (!is.null(tmp[[2]]) & length(tmp[[2]]) > 0)
+ {
+  gMn2 <- grep("from Mn(I/sd) >  2.00:",tmp[[2]],fixed=TRUE)
+  lineMn2 <- tmp[[2]][gMn2][1]
+  stmp <- strsplit(lineMn2,"=")[[1]][2]
+  stmp <- gsub("\\s","",stmp)
+  Mn2 <- as.numeric(substr(stmp,1,(nchar(stmp)-1)))
+ }
+ if (is.null(tmp[[2]]) | length(tmp[[2]]) == 0) Mn2 <- NA
  
  extra_tmp <- data.frame(CC12=CC12,Mn2=Mn2)
 
