@@ -519,7 +519,8 @@ interpretCombine <- function(args,clusters)
  if (length(subtractList) != 0) 
  {
   idx <- na.omit(match(subtractList,addList))
-  args <- addList[-idx]
+  if (length(idx) > 0) args <- addList[-idx]
+  if (length(idx) == 0) args <- addList
  }
  if (length(subtractList) == 0) 
  {

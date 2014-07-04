@@ -10,6 +10,9 @@
 /********* included in the root directory of this package.                                          *********/
 /************************************************************************************************************/
 /************************************************************************************************************/
+// CHANGES IN VERSION 0.5.4 - 04/07/2014
+// - Fixed a bug in blend3.R. Now if [[n]] is not contained in the group of data sets to combine, it just
+//   ignores it.
 // CHANGES IN VERSION 0.5.3 - 14/06/2014
 // - Added condition on images and resolution to skip radiation damage procedure: the procedure is not carried
 //   out if there are less than 6 images and / or if the highest resolution is less than 5 angstroms. Radiation
