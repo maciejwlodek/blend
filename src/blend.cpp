@@ -10,6 +10,9 @@
 /********* included in the root directory of this package.                                          *********/
 /************************************************************************************************************/
 /************************************************************************************************************/
+// CHANGES IN VERSION 0.5.5 - 07/08/2014
+// - Fixed a bug in both blend2.R and blend3.R in relation to altidx; added "TOLERANCE 1000" so that now
+//   POINTLESS does not fail just for alternative indexing.
 // CHANGES IN VERSION 0.5.4 - 04/07/2014
 // - Fixed a bug in blend3.R. Now if [[n]] is not contained in the group of data sets to combine, it just
 //   ignores it.

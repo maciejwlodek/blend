@@ -99,6 +99,8 @@ altidx <- function(hklin,hklref,hklout,rwin=FALSE)
  cat(linea,file="pointless_keywords.dat",append=TRUE)
  linea <- sprintf("HKLOUT %s\n",hklout)
  cat(linea,file="pointless_keywords.dat",append=TRUE)
+ linea <- sprintf("TOLERANCE 1000\n")
+ cat(linea,file="pointless_keywords.dat",append=TRUE)
 
  # Run program
  if (rwin)
