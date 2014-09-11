@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 project(blend C CXX)
-find_package(CCP4 REQUIRED mmdb ccp4c clipper-core clipper-mmdb clipper-minimol
+find_package(CCP4 REQUIRED mmdb2 ccp4c clipper-core clipper-mmdb clipper-minimol
                            clipper-contrib clipper-ccp4 cctbx)
 
 include_directories(${CCP4_INCLUDE_DIRS} ${CCP4C_INCLUDE_DIR}/ccp4)
