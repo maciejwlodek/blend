@@ -598,13 +598,44 @@ maxRatio <- function(cpar)
   dac <- c(dac,tmp[2])
   dbc <- c(dbc,tmp[3])
  }
+ #print("DAB,DAC,DBC")
+ #print(dab)
+ #print(dac)
+ #print(dbc)
 
  # Calculate maxRatio matrix for the 3 diagonals vectors and extract max value for each matrix
  mab <- max(distRatio(dab))
+ iab <- which(distRatio(dab) == max(distRatio(dab)))
  mac <- max(distRatio(dac))
+ iac <- which(distRatio(dac) == max(distRatio(dac)))
  mbc <- max(distRatio(dbc))
+ ibc <- which(distRatio(dbc) == max(distRatio(dbc)))
+ vv <- c(iab[1],iac[1],ibc[1])
+ #print(vv)
+ #print(c(mab,mac,mbc))
+ imall <- which(c(mab,mac,mbc) == max(c(mab,mac,mbc)))[1]
+ idx <- vv[imall]
+ #print("IDX")
+ #print(idx)
+ idxI <- idx%%n
+ if (idxI == 0) idxI <- n
+ #print("idxI ")
+ #print(idxI)
+ idxJ <- idx%/%n
+ if (idxJ == 0) idxJ <- 1
+ #print("idxJ ")
+ #print(idxJ)
+ dd1 <- faceDiagonals(cpar[idxI,1],cpar[idxI,2],cpar[idxI,3],cpar[idxI,4],cpar[idxI,5],cpar[idxI,6])
+ #print("DD1")
+ #print(dd1)
+ dd2 <- faceDiagonals(cpar[idxJ,1],cpar[idxJ,2],cpar[idxJ,3],cpar[idxJ,4],cpar[idxJ,5],cpar[idxJ,6])
+ #print("DD2")
+ #print(dd2)
+ Mpar <- max(abs(dd1-dd2))
+ #msg <- sprintf("Mpar                                     %10.5f",Mpar)
+ #print(msg)
 
- return(max(mab,mac,mbc))
+ return(c(max(mab,mac,mbc),Mpar))
 }
 
 find_nodes_coords <- function(clst, clns, cn)
@@ -1091,11 +1122,12 @@ groups <- treeToList(npar.hc_ward,lowresos,highresos)
 
 # Calculate LCV values for all nodes of dendrogram
 LCV_values <- c()
+aLCV_values <- c()
 for (cn in groups[[1]])
 {
  idx <- match(cn,macropar$cn)
- #LCV_values <- c(LCV_values, maxRatio(macropar[cn,2:7]))
- LCV_values <- c(LCV_values, maxRatio(macropar[idx,2:7]))
+ LCV_values <- c(LCV_values, maxRatio(macropar[idx,2:7])[1])
+ aLCV_values <- c(aLCV_values, maxRatio(macropar[idx,2:7])[2])
 }
 
 # Output merging nodes table to an ascii file
@@ -1103,16 +1135,16 @@ nTable <- "./CLUSTERS.txt"
 if (file.exists(nTable)) emptyc <- file.remove(nTable)
 linea <- "                               \n"
 cat(linea,file=nTable)
-linea <- " Cluster     Number of         Cluster         LCV      Datasets\n"
+linea <- " Cluster     Number of         Cluster         LCV      aLCV      Datasets\n"
 cat(linea,file=nTable,append=TRUE)
-linea <- "  Number      Datasets          Height                  ID\n"
+linea <- "  Number      Datasets          Height                            ID\n"
 cat(linea,file=nTable,append=TRUE)
 linea <- "                               \n"
 cat(linea,file=nTable,append=TRUE)
 for (i in 1:length(groups[[1]]))
 {
- linea <- paste(sprintf("     %03d           %3d         %7.3f     %7.2f    ",
-                i,length(groups[[1]][[i]]),npar.hc_ward$height[i],LCV_values[i]),"  ",paste(groups[[1]][[i]],collapse=" "),"\n",sep="")
+ linea <- paste(sprintf("     %03d           %3d         %7.3f     %7.2f %9.2f    ",
+                i,length(groups[[1]][[i]]),npar.hc_ward$height[i],LCV_values[i],aLCV_values[i]),"  ",paste(groups[[1]][[i]],collapse=" "),"\n",sep="")
  cat(linea,file=nTable,append=TRUE)
 }
 
@@ -1124,13 +1156,18 @@ for (i in 1:length(maindf[,1]))
  attributes(tmp) <- NULL
  VV <- c(VV,tmp)
 }
-kk <- maxRatio(macropar[,2:7])
-msg <- sprintf("Linear Cell Variation: %6.2f %s",kk,"%")
+kkjaf <- maxRatio(macropar[,2:7])
+kk <- kkjaf[1]
+akk <- kkjaf[2]
+#msg <- sprintf("LCV: %6.2f %s (absolute LCV: %.2f %s)",kk,"%",akk," angstroms")
+tmsg <- sprintf("LCV: %.2f%s (absolute LCV: %.2f",kk,"%",akk)
+msg <- bquote(.(tmsg) ~ ring(A)*")")
 
 if (length(npar.hc_ward$height) > 1)
 {
  png(file="./tree.png",height=1000,width=1000)
  #plclust(npar.hc_ward,xlab="Individual datasets",ylab="Ward distance",main=msg,sub="")
+ par(oma=c(0,0.5,0,0.5),mgp=c(1.5,0.5,0))
  plot(npar.hc_ward,xlab="Individual datasets",ylab="Ward distance",main=msg,sub="",col.main="red",cex.main=2,col.lab="blue",cex.lab=2)
  nodesxy <- find_nodes_coords(npar.hc_ward,groups[[1]],macropar$cn)
  if (length(LCV_values) > 5) idx <- (length(LCV_values)-4):(length(LCV_values)-1)
@@ -1138,15 +1175,16 @@ if (length(npar.hc_ward$height) > 1)
  labelsxy <- c()
  for (i in 1:length(LCV_values))
  {
-  stmp <- sprintf("%6.2f",LCV_values[i])
+  stmp <- sprintf("%6.2f(%.2f)",LCV_values[i],aLCV_values[i])
   labelsxy <- c(labelsxy,stmp)
  }
- text(nodesxy$x[idx],nodesxy$y[idx],labels=labelsxy[idx],adj=c(0,-0.5),col="red",cex=1.5)
+ text(nodesxy$x[idx],nodesxy$y[idx],labels=labelsxy[idx],adj=c(0,-0.5),col="red",cex=1.0)
  emptyc <- dev.off()    # The "emptyc" is to collect the return value of dev.off(), so that it's not output
  postscript(file="./tree.ps", height = 10, width = 10, paper = "a4")
  #plclust(npar.hc_ward,xlab="Individual datasets",ylab="Ward distance",main=msg,sub="")
+ par(oma=c(0,0.5,0,0.5),mgp=c(1.5,0.5,0))
  plot(npar.hc_ward,xlab="Individual datasets",ylab="Ward distance",main=msg,sub="",col.main="red",cex.main=2,col.lab="blue",cex.lab=2)
- text(nodesxy$x[idx],nodesxy$y[idx],labels=labelsxy[idx],adj=c(0,-0.5),col="red",cex=1.5)
+ text(nodesxy$x[idx],nodesxy$y[idx],labels=labelsxy[idx],adj=c(0,-0.2),col="red",cex=0.8)
  emptyc <- dev.off()    # The "emptyc" is to collect the return value of dev.off(), so that it's not output
 }
 if (length(npar.hc_ward$height) == 1) cat("WARNING! No plot of dendrogram available as there is only 1 node. For cluster height refer to file 'CLUSTERS.txt'\n")

@@ -10,6 +10,9 @@
 /********* included in the root directory of this package.                                          *********/
 /************************************************************************************************************/
 /************************************************************************************************************/
+// CHANGES IN VERSION 0.5.6 - 03/10/2014
+// - Added the new aLCV, i.e. the linear cell variation in absolute (angstroms) value
+// - Chenged part of the documentation and tutorials to reflect aLCV addition
 // CHANGES IN VERSION 0.5.5 - 07/08/2014
 // - Fixed a bug in both blend2.R and blend3.R in relation to altidx; added "TOLERANCE 1000" so that now
 //   POINTLESS does not fail just for alternative indexing.
