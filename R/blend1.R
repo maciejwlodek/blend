@@ -598,10 +598,6 @@ maxRatio <- function(cpar)
   dac <- c(dac,tmp[2])
   dbc <- c(dbc,tmp[3])
  }
- #print("DAB,DAC,DBC")
- #print(dab)
- #print(dac)
- #print(dbc)
 
  # Calculate maxRatio matrix for the 3 diagonals vectors and extract max value for each matrix
  mab <- max(distRatio(dab))
@@ -611,29 +607,15 @@ maxRatio <- function(cpar)
  mbc <- max(distRatio(dbc))
  ibc <- which(distRatio(dbc) == max(distRatio(dbc)))
  vv <- c(iab[1],iac[1],ibc[1])
- #print(vv)
- #print(c(mab,mac,mbc))
  imall <- which(c(mab,mac,mbc) == max(c(mab,mac,mbc)))[1]
  idx <- vv[imall]
- #print("IDX")
- #print(idx)
  idxI <- idx%%n
+ idxJ <- idx%/%n+1
+ if (idxI == 0) idxJ <- idxJ-1
  if (idxI == 0) idxI <- n
- #print("idxI ")
- #print(idxI)
- idxJ <- idx%/%n
- if (idxJ == 0) idxJ <- 1
- #print("idxJ ")
- #print(idxJ)
  dd1 <- faceDiagonals(cpar[idxI,1],cpar[idxI,2],cpar[idxI,3],cpar[idxI,4],cpar[idxI,5],cpar[idxI,6])
- #print("DD1")
- #print(dd1)
  dd2 <- faceDiagonals(cpar[idxJ,1],cpar[idxJ,2],cpar[idxJ,3],cpar[idxJ,4],cpar[idxJ,5],cpar[idxJ,6])
- #print("DD2")
- #print(dd2)
  Mpar <- max(abs(dd1-dd2))
- #msg <- sprintf("Mpar                                     %10.5f",Mpar)
- #print(msg)
 
  return(c(max(mab,mac,mbc),Mpar))
 }
@@ -645,14 +627,12 @@ find_nodes_coords <- function(clst, clns, cn)
 
  # x coordinates for individual objects
  xobj <- clns[[nobj - 1]]
- #print(xobj)
 
  # Go through nodes formation
  x <- numeric(nobj - 1)
  y <- numeric(nobj - 1)
  for (i in 1:length(clst$merge[,1]))
  {
-  #print(clns[[i]])
   ele1 <- clst$merge[i,1]
   ele2 <- clst$merge[i,2]
   if (ele1 < 0 & ele2 < 0)
@@ -1126,8 +1106,11 @@ aLCV_values <- c()
 for (cn in groups[[1]])
 {
  idx <- match(cn,macropar$cn)
- LCV_values <- c(LCV_values, maxRatio(macropar[idx,2:7])[1])
- aLCV_values <- c(aLCV_values, maxRatio(macropar[idx,2:7])[2])
+ tmp <- maxRatio(macropar[idx,2:7])
+ LCV_values <- c(LCV_values,tmp[1])
+ aLCV_values <- c(aLCV_values,tmp[2])
+ #LCV_values <- c(LCV_values, maxRatio(macropar[idx,2:7])[1])
+ #aLCV_values <- c(aLCV_values, maxRatio(macropar[idx,2:7])[2])
 }
 
 # Output merging nodes table to an ascii file
@@ -1156,10 +1139,8 @@ for (i in 1:length(maindf[,1]))
  attributes(tmp) <- NULL
  VV <- c(VV,tmp)
 }
-kkjaf <- maxRatio(macropar[,2:7])
-kk <- kkjaf[1]
-akk <- kkjaf[2]
-#msg <- sprintf("LCV: %6.2f %s (absolute LCV: %.2f %s)",kk,"%",akk," angstroms")
+kk <- LCV_values[length(groups[[1]])]
+akk <- aLCV_values[length(groups[[1]])]
 tmsg <- sprintf("LCV: %.2f%s (absolute LCV: %.2f",kk,"%",akk)
 msg <- bquote(.(tmsg) ~ ring(A)*")")
 
