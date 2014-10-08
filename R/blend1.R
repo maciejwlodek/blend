@@ -582,6 +582,26 @@ distRatio <- function(v)
  return(m)
 }
 
+adistRatio <- function(v)
+{
+ # Length of vector
+ n <- length(v)
+
+ # Create n X n matrix
+ m <- matrix(ncol=n,nrow=n)
+
+ # Double loop to fill the matrix
+ for (i in 1:n)
+ {
+  for (j in 1:n)
+  {
+   m[i,j] <- abs(v[i]-v[j])
+  }
+ }
+
+ return(m)
+}
+
 maxRatio <- function(cpar)
 {
  # Number of datasets
@@ -602,20 +622,16 @@ maxRatio <- function(cpar)
  # Calculate maxRatio matrix for the 3 diagonals vectors and extract max value for each matrix
  mab <- max(distRatio(dab))
  iab <- which(distRatio(dab) == max(distRatio(dab)))
+ sab <- adistRatio(dab)[iab]
  mac <- max(distRatio(dac))
  iac <- which(distRatio(dac) == max(distRatio(dac)))
+ sac <- adistRatio(dac)[iac]
  mbc <- max(distRatio(dbc))
  ibc <- which(distRatio(dbc) == max(distRatio(dbc)))
- vv <- c(iab[1],iac[1],ibc[1])
+ sbc <- adistRatio(dbc)[ibc]
+ vv <- c(sab,sac,sbc)
  imall <- which(c(mab,mac,mbc) == max(c(mab,mac,mbc)))[1]
- idx <- vv[imall]
- idxI <- idx%%n
- idxJ <- idx%/%n+1
- if (idxI == 0) idxJ <- idxJ-1
- if (idxI == 0) idxI <- n
- dd1 <- faceDiagonals(cpar[idxI,1],cpar[idxI,2],cpar[idxI,3],cpar[idxI,4],cpar[idxI,5],cpar[idxI,6])
- dd2 <- faceDiagonals(cpar[idxJ,1],cpar[idxJ,2],cpar[idxJ,3],cpar[idxJ,4],cpar[idxJ,5],cpar[idxJ,6])
- Mpar <- max(abs(dd1-dd2))
+ Mpar <- vv[imall]
 
  return(c(max(mab,mac,mbc),Mpar))
 }
@@ -1109,8 +1125,6 @@ for (cn in groups[[1]])
  tmp <- maxRatio(macropar[idx,2:7])
  LCV_values <- c(LCV_values,tmp[1])
  aLCV_values <- c(aLCV_values,tmp[2])
- #LCV_values <- c(LCV_values, maxRatio(macropar[idx,2:7])[1])
- #aLCV_values <- c(aLCV_values, maxRatio(macropar[idx,2:7])[2])
 }
 
 # Output merging nodes table to an ascii file

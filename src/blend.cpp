@@ -10,6 +10,8 @@
 /********* included in the root directory of this package.                                          *********/
 /************************************************************************************************************/
 /************************************************************************************************************/
+// CHANGES IN VERSION 0.5.8 - 08/10/2014
+// - Further bug fixes for aLCV calculation
 // CHANGES IN VERSION 0.5.7 - 07/10/2014
 // - Fixed bug for aLCV calculation
 // CHANGES IN VERSION 0.5.6 - 03/10/2014
