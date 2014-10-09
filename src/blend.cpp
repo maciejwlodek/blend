@@ -10,6 +10,9 @@
 /********* included in the root directory of this package.                                          *********/
 /************************************************************************************************************/
 /************************************************************************************************************/
+// CHANGES IN VERSION 0.5.9 - 09/10/2014
+// - Small change in code for both blend2.R and blend3.R to reflect new resolution criteria
+//   in AIMLESS for CC1/2 and Mn(I/sd)
 // CHANGES IN VERSION 0.5.8 - 08/10/2014
 // - Further bug fixes for aLCV calculation
 // CHANGES IN VERSION 0.5.7 - 07/10/2014

@@ -867,7 +867,7 @@ if (file.exists(outdir))
  # Extract Mn2
  if (!is.null(tmp[[2]]) & length(tmp[[2]]) > 0)
  {
-  gMn2 <- grep("from Mn(I/sd) >  2.00:",tmp[[2]],fixed=TRUE)
+  gMn2 <- grep("from Mn(I/sd) >  1.50:",tmp[[2]],fixed=TRUE)
   lineMn2 <- tmp[[2]][gMn2][1]
   stmp <- strsplit(lineMn2,"=")[[1]][2]
   stmp <- gsub("\\s","",stmp)

@@ -572,7 +572,6 @@ if (length(idx) > 0)
    suffix <- c(outdir,sprintf("%03d",j))
    tmp <- merge_datasets("FINAL_list_of_files.dat",selection=groups[[1]][[j]],suffix,pointless_keys,aimless_keys,
                          resomin=groups[[2]][[j]][1],resomax=groups[[2]][[j]][2],nref=idxref,rwin=rwin)
-   #if (i == 1) print(tmp)
    cat(" Statistics for this group:\n")
 
    # Change row names for display purpose
@@ -596,7 +595,7 @@ if (length(idx) > 0)
    # Extract Reso Mn(I/sd)
    if (!is.null(tmp[[2]]) & length(tmp[[2]]) > 0)
    {
-    gMn2 <- grep("from Mn(I/sd) >  2.00:",tmp[[2]],fixed=TRUE)
+    gMn2 <- grep("from Mn(I/sd) >  1.50:",tmp[[2]],fixed=TRUE)
     lineMn2 <- tmp[[2]][gMn2][1]
     stmp <- strsplit(lineMn2,"=")[[1]][2]
     stmp <- gsub("\\s","",stmp)
