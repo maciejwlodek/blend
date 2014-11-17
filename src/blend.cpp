@@ -10,6 +10,21 @@
 /********* included in the root directory of this package.                                          *********/
 /************************************************************************************************************/
 /************************************************************************************************************/
+// CHANGES IN VERSION 0.5.10 - 05/11/2014
+// - Now only one POINTLESS run and one AIMLESS run are needed for each cluster or group. All input
+//   and output files are retained (no more need of "new_" and "final_" files). Input, output and
+//   keywords for both POINTLESS and AIMLESS runs can be seen inside each POINTLESS or AIMLESS log.
+//   This, there is no more need of an aimless_keywords.dat file. Easier to reproduce POINTLESS or
+//   AIMLESS runs now
+// - Fixed a bug responsible for re-writing RESOLUTION keyword twice in aimless_keywords.dat
+// - Fixed order with which data set are fed to POINTLESS and AIMLESS inside "blend2.R". Now
+//   synthesis output gives same results of combination output corresponding to same cluster
+// - Replaced REBATCH with POINTLESS for images removal
+// - Data sets in clusters or groups are now always listed in increasing order 
+// - Detecting when POINTLESS fails for cell discrepancy (TOLERANCE) and enabling the program to output
+//   the log file
+// - New possibilities in synthesis mode: -sLCV and -saLCV which allows to select based on LCV
+//   or aLCV values, rather than based on cluster height
 // CHANGES IN VERSION 0.5.9 - 09/10/2014
 // - Small change in code for both blend2.R and blend3.R to reflect new resolution criteria
 //   in AIMLESS for CC1/2 and Mn(I/sd)
@@ -252,6 +267,7 @@ int main(int argc, char* argv[])
 
   // Check comand line input is well formatted
   int runmode=0;
+  int addrunmode2 = 0; // mode_string "-sLCV" gives addrunmode2 = 1; mode_string "-saLCV" gives addrunmode2 = 2
   float dlevel_top,dlevel_bottom;
   std::string mode_string,filename,cl_mode,cl_height;
   //std::vector<int> arbitrary_datasets;
@@ -268,9 +284,8 @@ int main(int argc, char* argv[])
    int nerr=1;
    throw nerr;
   }
-  //if (mode_string != "-a" & mode_string != "-s")     // First argument after program name "blend" needs to be either "-a" or "-s"
-  if (mode_string != "-a" && mode_string != "-s" && mode_string != "-c")     // First argument after program name "blend" needs to be either "-a" 
-                                                                           // or "-s", or "-c"
+  if (mode_string != "-a" && mode_string != "-s" && mode_string != "-c" &&      // First argument after program name "blend" needs to be either "-a"
+      mode_string != "-sLCV" && mode_string != "-saLCV")                        // or "-s" or "-sLCV" or "-saLCV" or "-c"
   {
    int nerr=1;
    throw nerr;
@@ -456,7 +471,7 @@ int main(int argc, char* argv[])
     throw nerr;
    }
   }
-  if (mode_string == "-s")     // Synthesis pass
+  if (mode_string == "-s" || mode_string == "-sLCV" || mode_string == "-saLCV")     // Synthesis pass
   {
    // In order to line up BLEND with the way ccp4i works (with stdin passed keywords) this is what has been added
 
@@ -586,6 +601,8 @@ int main(int argc, char* argv[])
 
    // Carry on checking correct command-line input
    runmode=2;
+   if (mode_string == "-sLCV")  addrunmode2 = 1;
+   if (mode_string == "-saLCV") addrunmode2 = 2;
    if (argc == 3)
    {
     if (std::atof(argv[2]) == 0) {int nerr=11; throw nerr;}
@@ -976,12 +993,13 @@ int main(int argc, char* argv[])
    //R_command_line << "R --vanilla --slave --quiet < " << R_program2 << " --args " << dlevel_top << " " << dlevel_bottom;
    if (Rscp == 0)
    {
-    R_command_line << "Rscript " << R_program2 << " " << dlevel_top << " " << dlevel_bottom;
+    R_command_line << "Rscript " << R_program2 << " " << addrunmode2 << " " << dlevel_top << " " << dlevel_bottom;
    }
    else
    {
-    R_command_line << "Rscript.exe " << R_program2 << " " << dlevel_top << " " << dlevel_bottom;
+    R_command_line << "Rscript.exe " << R_program2 << " " << addrunmode2 << " " << dlevel_top << " " << dlevel_bottom;
    }
+   //std::cout << R_command_line.str() << std::endl;
    R_status=std::system((R_command_line.str()).c_str());
    if (R_status != 0)
    {
@@ -1065,10 +1083,15 @@ int main(int argc, char* argv[])
              << "   blend -a /path/to/directory                                (analysis mode)\n"
              << "                 or               \n"
              << "   blend -s l1 (numeric height in dendrogram)                (synthesis mode)\n"
+             << "   blend -sLCV l1 (LCV value) \n"
+             << "   blend -saLCV l1 (aLCV value) \n"
              << "                 or               \n"
              << "   blend -s l1 l2 (numeric heights in dendrogram)            (synthesis mode)\n"
+             << "   blend -sLCV l1 l2 (LCV values) \n"
+             << "   blend -saLCV l1 (aLCV values) \n"
              << "                 or               \n"
-             << "   blend -c d1 d2 d3 ... (serial number of datasets)       (combination mode)\n" << std::endl;
+             << "   blend -c d1 d2 d3 ... (serial number of datasets)       (combination mode)\n" 
+             << std::endl;
    return EXIT_FAILURE;
   }
   if (nerr == 7)

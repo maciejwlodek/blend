@@ -27,7 +27,6 @@ mtz_batch_list <- function(hklin,rwin=FALSE)
  # Run mtzdmp and save output
  if (rwin)
  {
-  #exemtzdmp <- system(paste("mtzdump.exe hklin ",hklin," < mtzdump_keywords.dat",sep=""),intern=TRUE)
   exemtzdmp <- shell(paste("mtzdump.exe hklin ",hklin," < mtzdump_keywords.dat",sep=""),intern=TRUE)
  }
  else
@@ -53,144 +52,50 @@ mtz_batch_list <- function(hklin,rwin=FALSE)
 }
 
 #
-# Function to truncate and renumber batches
-trunc_and_renum <- function(hklin,inibatch,finbatch,irenum,hklout,rwin=FALSE)
-{
- # Build keywords file
- linea <- sprintf("TITLE Rebatch file for multicrystal merging\n")
- cat(linea,file="rebatch_keywords.dat")
- if (inibatch > 0)
- {
-  linea <- sprintf("BATCH %d TO %d REJECT\n",inibatch,finbatch)
-  cat(linea,file="rebatch_keywords.dat",append=TRUE)
- }
- linea <- sprintf("BATCH ALL START %d\n",irenum)
- cat(linea,file="rebatch_keywords.dat",append=TRUE)
- linea <- sprintf("END\n")
- cat(linea,file="rebatch_keywords.dat",append=TRUE)
-
- # Run program
- if (rwin)
- {
-  stringa <- paste("rebatch.exe HKLIN ",hklin," HKLOUT ",hklout," < rebatch_keywords.dat")
-  exerebatch <- shell(stringa,intern=TRUE)
- }
- else
- {
-  stringa <- paste("rebatch HKLIN ",hklin," HKLOUT ",hklout," < rebatch_keywords.dat")
-  exerebatch <- system(stringa,intern=TRUE)
- }
-
- # Delete keywords file
- if (file.exists("rebatch_keywords.dat")) emptyc <- file.remove("rebatch_keywords.dat")
-
- return(exerebatch)
-}
-
-#
-# Alternate indexing with POINTLESS
-altidx <- function(hklin,hklref,hklout,rwin=FALSE)
-{
- # Pointless keywords file
- linea <- sprintf("NAME PROJECT xxx CRYSTAL yyy DATASET zzz\n")
- cat(linea,file="pointless_keywords.dat")
- linea <- sprintf("HKLIN %s\n",hklin)
- cat(linea,file="pointless_keywords.dat",append=TRUE)
- linea <- sprintf("HKLREF %s\n",hklref)
- cat(linea,file="pointless_keywords.dat",append=TRUE)
- linea <- sprintf("HKLOUT %s\n",hklout)
- cat(linea,file="pointless_keywords.dat",append=TRUE)
- linea <- sprintf("TOLERANCE 1000\n")
- cat(linea,file="pointless_keywords.dat",append=TRUE)
-
- # Run program
- if (rwin)
- {
-  stringa <- "pointless.exe < pointless_keywords.dat"
-  exepointless <- shell(stringa,intern=TRUE, ignore.stderr = TRUE)
- }
- else
- {
-  stringa <- "pointless < pointless_keywords.dat"
-  exepointless <- system(stringa,intern=TRUE, ignore.stderr = TRUE)
- }
-
- # Delete keywords file
- if (file.exists("pointless_keywords.dat")) emptyc <- file.remove("pointless_keywords.dat")
-
- return(exepointless)
-}
-
-#
 # Run pointless to find Laue group and merge files (after alternate indexing)
 merge_mtzs <- function(mtz_list,selection,mtzout,pointless_keys,hklref,rwin=FALSE)
 {
- # List of files to remove at the end
- files_to_rm <- c()
-
  # Cycle through each file in the list and do the following:
  #    1) extract batch information from each mtz file;
- #    2) truncate end of batches according to selection
- #    3) do alternate indexing;
+ #    2) add EXCLUDE BATCH for each file needed, according to selection
+ #    3) include appropriate HKLREF for alternate indexing;
  #    4) glue all mtz together into a single mtz
 
- #mtzin <- "new_001.mtz"                        !!!!!!!!!!!!!!!!!
- mtzin <- c()
+ # Form POINTLESS keyword file
+ linea <- sprintf("TITLE Prepare file for multicrystal merging\n")
+ cat(linea,file="pointless_keywords.dat")
+ linea <- sprintf("NAME PROJECT xxx CRYSTAL yyy DATASET zzz\n")
+ cat(linea,file="pointless_keywords.dat",append=TRUE)
  for (imtz in 1:length(mtz_list))
  {
-  # Serial number appended to mtz file
-  sfx <- sprintf("_%03d",imtz)
-
   hklin <- mtz_list[imtz]
+  linea <- sprintf("HKLIN %s\n",hklin)
+  cat(linea,file="pointless_keywords.dat",append=TRUE)
 
   # Extract batch information from each mtz file
   blist <- mtz_batch_list(hklin,rwin=rwin)
 
-  # Truncate batches
+  # Images to remove (if requested)
   itmp <- selection[imtz]+1
   if (itmp > blist[length(blist)]) inibatch <- -1
   if (itmp <= blist[length(blist)]) inibatch <- itmp
   finbatch <- blist[length(blist)]
-  hklout <- paste("new",sfx,".mtz",sep="")
-  files_to_rm <- c(files_to_rm,hklout)
-  tmp <- trunc_and_renum(hklin,inibatch,finbatch,1,hklout,rwin=rwin) 
-
-  # Do alternate indexing
-  hklin <- hklout
-  hklout <- paste("final",sfx,".mtz",sep="")
-  mtzin <- c(mtzin,hklout)
-  files_to_rm <- c(files_to_rm,hklout)
-  tmp <- altidx(hklin,hklref,hklout,rwin=rwin)
-
-  # Return NULL if space group of reference file is incompatible with space group of any of current files
-  exealtidx <- grep("$$ <!--SUMMARY_END-->",tmp,fixed=TRUE)
-  if (length(exealtidx) == 0)
+  if (inibatch > 0)
   {
-   messaggio <- "Reference file is incompatible with some data sets of this cluster.\n"
-   cat(messaggio)
-   exepointless <- NULL
-
-   # Clean directory from unnecessary files
-   for (a in files_to_rm) if (file.exists(a)) file.remove(a)
-
-   return(exepointless)
+   linea <- sprintf("EXCLUDE FILE %d BATCH %d TO %d\n",imtz,inibatch,finbatch)
+   cat(linea,file="pointless_keywords.dat",append=TRUE)
   }
  }
-
- # Run Pointless to glue everything together under correct space group
- linea <- sprintf("NAME PROJECT xxx CRYSTAL yyy DATASET zzz\n")
- cat(linea,file="pointless_keywords.dat")
- for (a in mtzin)
- {
-  linea <- sprintf("HKLIN %s\n",a)
-  cat(linea,file="pointless_keywords.dat",append=TRUE)
- }
+ linea <- sprintf("HKLREF %s\n",hklref)
+ cat(linea,file="pointless_keywords.dat",append=TRUE)
+ linea <- sprintf("HKLOUT %s\n",mtzout)
+ cat(linea,file="pointless_keywords.dat",append=TRUE)
 
  # Additional keywords, introduced by user through BLEND_KEYWORDS.dat file
  for (line in pointless_keys) cat(paste(line,"\n",sep=""),file="pointless_keywords.dat",append=TRUE)
 
  # End of keywords file
- linea <- paste("HKLOUT ",mtzout)
+ linea <- sprintf("END\n")
  cat(linea,file="pointless_keywords.dat",append=TRUE)
  
  # Run program
@@ -207,9 +112,6 @@ merge_mtzs <- function(mtz_list,selection,mtzout,pointless_keys,hklref,rwin=FALS
  
  # Delete keywords file
  if (file.exists("pointless_keywords.dat")) emptyc <- file.remove("pointless_keywords.dat")
-
- # Clean directory from unnecessary files
- for (a in files_to_rm) if (file.exists(a)) file.remove(a)
 
  return(exepointless)
 }
@@ -231,71 +133,33 @@ merge_datasets <- function(mtz_names,selection,suffix,pointless_keys,aimless_key
  ccp4 <- Sys.getenv("CCP4")
  if (nchar(ccp4) == 0) stop("You need to set up environment for running ccp4 programs")
 
- # Aimless keywords file
-
- # Default ones
- linea <- "TITLE Scale multiple datasets\n"
- cat(linea,file="aimless_keywords.dat")
-
- # Check RESOLUTION keyword is already assigned
- if (length(aimless_keys) > 0)         # i.e. if aimless_keys is different from NULL
- {
-  tmp <- strsplit(aimless_keys," ")
-  for (j in 1:length(tmp))
-  {
-   idx <- which(nchar(tmp[[j]]) != 0)
-   cnd <- ((substr(tmp[[j]][idx],1,1) == "R") | (substr(tmp[[j]][idx],1,1) == "r")) &
-          ((substr(tmp[[j]][idx],2,2) == "E") | (substr(tmp[[j]][idx],2,2) == "e")) &
-          ((substr(tmp[[j]][idx],3,3) == "S") | (substr(tmp[[j]][idx],3,3) == "s")) &
-          ((substr(tmp[[j]][idx],4,4) == "O") | (substr(tmp[[j]][idx],4,4) == "o"))
-   cnd <- sum(cnd)
-  }
- }
- if (length(aimless_keys) == 0) cnd <- 0
- if (cnd == 0)
- {
-  if (!is.null(resomin) & !is.null(resomax))
-  {
-   linea <- sprintf("RESOLUTION LOW %f HIGH %f \n",resomin,resomax)
-   cat(linea,file="aimless_keywords.dat",append=TRUE)
-  }
-  if (!is.null(resomin) & is.null(resomax))
-  {
-   linea <- sprintf("RESOLUTION LOW %f\n",resomin)
-   cat(linea,file="aimless_keywords.dat",append=TRUE)
-  }
-  if (is.null(resomin) & !is.null(resomax))
-  {
-   linea <- sprintf("RESOLUTION HIGH %f\n",resomax)
-   cat(linea,file="aimless_keywords.dat",append=TRUE)
-  }
- }
-
- # Input by user through BLEND_KEYWORDS.dat
- for (line in aimless_keys) cat(paste(line,"\n",sep=""),file="aimless_keywords.dat",append=TRUE)
-
- # End of keywords file for AIMLESS
- linea <- sprintf("END\n")
- cat(linea,file="aimless_keywords.dat",append=TRUE)
 
  # Reference file for indexing
- hklref <- indata[nref,1]
+ idxref <- as.integer(nref)
+ if (is.na(idxref)) hklref <- nref
+ if (!is.na(idxref)) hklref <- indata[idxref,1]
+ 
 
  # Run POINTLESS and AIMLESS
  mtz_list <- indata[selection,1]
  sele <- indata[selection,3]
- #cat("Merging multiple mtz into a single mtz ...\n")
+
+ # Use copy of reference data set in case it belongs to group
+ if (hklref %in% mtz_list)
+ {
+  file.copy(from=hklref,to="copy_of_ref_file.mtz",overwrite=TRUE)
+  hklref <- "copy_of_ref_file.mtz"
+ }
  cat("Collating multiple mtz into a single mtz ...\n")
- exemerge <- merge_mtzs(mtz_list=mtz_list,selection=sele,mtzout="merged.mtz",pointless_keys=pointless_keys,hklref=hklref,rwin=rwin)
+ linea_in <- paste(suffix[1],paste("unscaled_",suffix[2],".mtz",sep=""),sep="/")
+ exemerge <- merge_mtzs(mtz_list=mtz_list,selection=sele,mtzout=linea_in,pointless_keys=pointless_keys,hklref=hklref,rwin=rwin)
+ if (file.exists("copy_of_ref_file.mtz")) file.remove("copy_of_ref_file.mtz")
  fatal_error <- grep("#-------------",exemerge,fixed=TRUE)
  if (length(fatal_error) == 0 &
      length(grep("FATAL ERROR message:",exemerge,fixed=TRUE)) == 0 &
+     length(grep("Stopping",exemerge,fixed=TRUE)) == 0 &
      length(exemerge) != 0)
  {
-  # Rename merged.mtz
-  #linea <- paste(suffix[1],paste("merged_",suffix[2],".mtz",sep=""),sep="/")
-  linea <- paste(suffix[1],paste("unscaled_",suffix[2],".mtz",sep=""),sep="/")
-  file.copy(from="merged.mtz",to=linea)
 
   # Rename POINTLESS log
   log_file <- paste(suffix[1],paste("pointless_",suffix[2],".log",sep=""),sep="/")
@@ -305,37 +169,85 @@ merge_datasets <- function(mtz_names,selection,suffix,pointless_keys,aimless_key
    cat(linea,file=log_file,append=TRUE)
   }
 
-  # Prepare command line for AIMLESS
-  #cat("Running AIMLESS on the merged file ...\n")
+  # Aimless keywords file
+  linea_out <- paste(suffix[1],paste("scaled_",suffix[2],".mtz",sep=""),sep="/")
+  linea <- "TITLE Scale multiple datasets\n"
+  cat(linea,file="aimless_keywords.dat")
+  linea <- sprintf("HKLIN %s\n",linea_in)
+  cat(linea,file="aimless_keywords.dat",append=TRUE)
+  linea <- sprintf("HKLOUT %s\n",linea_out)
+  cat(linea,file="aimless_keywords.dat",append=TRUE)
+
+
+  # Check RESOLUTION keyword is already assigned
+  ncnd <- 0
+  if (length(aimless_keys) > 0)         # i.e. if aimless_keys is different from NULL
+  {
+   tmp <- strsplit(aimless_keys," ")
+   for (j in 1:length(tmp))
+   {
+    idx <- which(nchar(tmp[[j]]) != 0)
+    cnd <- ((substr(tmp[[j]][idx],1,1) == "R") | (substr(tmp[[j]][idx],1,1) == "r")) &
+           ((substr(tmp[[j]][idx],2,2) == "E") | (substr(tmp[[j]][idx],2,2) == "e")) &
+           ((substr(tmp[[j]][idx],3,3) == "S") | (substr(tmp[[j]][idx],3,3) == "s")) &
+           ((substr(tmp[[j]][idx],4,4) == "O") | (substr(tmp[[j]][idx],4,4) == "o"))
+    ncnd <- ncnd+sum(cnd)
+   }
+  }
+  if (length(aimless_keys) == 0) ncnd <- 0
+  if (ncnd == 0)
+  {
+   if (!is.null(resomin) & !is.null(resomax))
+   {
+    linea <- sprintf("RESOLUTION LOW %f HIGH %f \n",resomin,resomax)
+    cat(linea,file="aimless_keywords.dat",append=TRUE)
+   }
+   if (!is.null(resomin) & is.null(resomax))
+   {
+    linea <- sprintf("RESOLUTION LOW %f\n",resomin)
+    cat(linea,file="aimless_keywords.dat",append=TRUE)
+   }
+   if (is.null(resomin) & !is.null(resomax))
+   {
+    linea <- sprintf("RESOLUTION HIGH %f\n",resomax)
+    cat(linea,file="aimless_keywords.dat",append=TRUE)
+   }
+  }
+
+  # Input by user through BLEND_KEYWORDS.dat
+  for (line in aimless_keys) cat(paste(line,"\n",sep=""),file="aimless_keywords.dat",append=TRUE)
+
+  # End of keywords file for AIMLESS
+  linea <- sprintf("END\n")
+  cat(linea,file="aimless_keywords.dat",append=TRUE)
+
+  # Run AIMLESS
   cat("Running AIMLESS on the unscaled file ...\n")
   if (rwin)
   {
-   stringa <- sprintf("aimless.exe HKLIN merged.mtz HKLOUT sTrAnO.mtz < aimless_keywords.dat")
+   stringa <- sprintf("aimless.exe < aimless_keywords.dat")
    exeaimless <- shell(stringa,intern=TRUE, ignore.stderr = TRUE)
   }
   else
   {
-   stringa <- sprintf("aimless HKLIN merged.mtz HKLOUT sTrAnO.mtz < aimless_keywords.dat")
+   stringa <- sprintf("aimless < aimless_keywords.dat")
    exeaimless <- system(stringa,intern=TRUE, ignore.stderr = TRUE)
   }
-  
-  # Run AIMLESS
+
+  # Collect and organize AIMLESS output
   nexeaimless <- length(exeaimless)
   if (length(grep("End of aimless job,", exeaimless[(nexeaimless - 1)], fixed = TRUE)) == 0)
   {
    Mstats <- data.frame(Rmeas=c(NA,NA,NA),Rpim=c(NA,NA,NA),Completeness=c(NA,NA,NA),Multiplicity=c(NA,NA,NA),
                         LowRes=c(NA,NA,NA),HighRes=c(NA,NA,NA))
- 
-   # AIMLESS log
    log_file <- paste(suffix[1],paste("aimless_",suffix[2],".log",sep=""),sep="/")
    for (linea in exeaimless)
    {
     linea <- paste(linea,"\n",sep="")
     cat(linea,file=log_file,append=TRUE)
    }
-
+ 
    # Clean directory from unnecessary files
-   #dircontents <- system("ls",intern=TRUE)
    dircontents <- list.files("./")
    idx <- grep("ANOMPLOT",dircontents,fixed=TRUE)
    if (length(idx) != 0) for (jj in idx) file.remove(dircontents[jj])
@@ -349,22 +261,17 @@ merge_datasets <- function(mtz_names,selection,suffix,pointless_keys,aimless_key
    if (length(idx) != 0) for (jj in idx) file.remove(dircontents[jj])
    idx <- grep("SCALES",dircontents,fixed=TRUE)
    if (length(idx) != 0) for (jj in idx) file.remove(dircontents[jj])
+   idx <- grep("aimless_keywords",dircontents,fixed=TRUE)
+   if (length(idx) != 0) for (jj in idx) file.remove(dircontents[jj])
 
-   # Remove files produced to merge mtz
-   #dircontents <- system("ls",intern=TRUE)
+   # Remove files produced to merge mtz's
    dircontents <- list.files("./")
-   idx <- grep("rebatch",dircontents,fixed=TRUE)
-   for (i in idx) file.remove(dircontents[i])
    idx <- grep("mtzdump",dircontents,fixed=TRUE)
    for (i in idx) file.remove(dircontents[i])
    idx <- grep("pointless",dircontents,fixed=TRUE)
    for (i in idx) file.remove(dircontents[i])
-   #idx <- grep("aimless_keywords",dircontents,fixed=TRUE)
-   #for (i in idx) file.remove(dircontents[i])
    idx <- grep("reference",dircontents,fixed=TRUE)
    for (i in idx) file.remove(dircontents[i])
-   idx <- grep("merged.mtz",dircontents,fixed=TRUE)
-   file.remove(dircontents[idx])
  
    return(list(Mstats,exeaimless))
   }
@@ -405,9 +312,7 @@ merge_datasets <- function(mtz_names,selection,suffix,pointless_keys,aimless_key
   Mstats <- data.frame(Rmeas=Rmeas_values,Rpim=Rpim_values,Completeness=Completeness_values,Multiplicity=Multiplicity_values,
                        LowRes=LowResos_values,HighRes=HighResos_values)
 
-  # Rename sTrAnO.mtz write AIMLESS log file
-  linea <- paste(suffix[1],paste("scaled_",suffix[2],".mtz",sep=""),sep="/")
-  file.copy(from="sTrAnO.mtz",to=linea)
+  # Write AIMLESS log file
   log_file <- paste(suffix[1],paste("aimless_",suffix[2],".log",sep=""),sep="/")
   for (linea in exeaimless)
   {
@@ -415,22 +320,16 @@ merge_datasets <- function(mtz_names,selection,suffix,pointless_keys,aimless_key
    cat(linea,file=log_file,append=TRUE)
   }
 
-  # Remove files produced to merge mtz
-  #dircontents <- system("ls",intern=TRUE)
+  # Remove files produced to merge mtz's
   dircontents <- list.files("./")
-  idx <- grep("rebatch",dircontents,fixed=TRUE)
-  if (length(idx) != 0) for (i in idx) file.remove(dircontents[i])
   idx <- grep("mtzdump",dircontents,fixed=TRUE)
   if (length(idx) != 0) for (i in idx) file.remove(dircontents[i])
   idx <- grep("pointless",dircontents,fixed=TRUE)
   if (length(idx) != 0) for (i in idx) file.remove(dircontents[i])
   idx <- grep("reference",dircontents,fixed=TRUE)
   if (length(idx) != 0) for (i in idx) file.remove(dircontents[i])
-  idx <- grep("merged.mtz",dircontents,fixed=TRUE)
-  if (length(idx) != 0) file.remove(dircontents[idx])
  
-  # Remove files produced to scale mtz
-  #dircontents <- system("ls",intern=TRUE)
+  # Remove files produced to scale mtz's
   dircontents <- list.files("./")
   idx <- grep("ANOMPLOT",dircontents,fixed=TRUE)
   if (length(idx) != 0) for (jj in idx) file.remove(dircontents[jj])
@@ -444,8 +343,8 @@ merge_datasets <- function(mtz_names,selection,suffix,pointless_keys,aimless_key
   if (length(idx) != 0) for (jj in idx) file.remove(dircontents[jj])
   idx <- grep("SCALES",dircontents,fixed=TRUE)
   if (length(idx) != 0) for (jj in idx) file.remove(dircontents[jj])
-  idx <- grep("sTrAnO.mtz",dircontents,fixed=TRUE)
-  if (length(idx) != 0) file.remove(dircontents[idx])
+  idx <- grep("aimless_keywords",dircontents,fixed=TRUE)
+  if (length(idx) != 0) for (jj in idx) file.remove(dircontents[jj])
 
   return(list(Mstats,exeaimless))
  }
@@ -453,11 +352,18 @@ merge_datasets <- function(mtz_names,selection,suffix,pointless_keys,aimless_key
  {
   Mstats <- data.frame(Rmeas=c(NA,NA,NA),Rpim=c(NA,NA,NA),Completeness=c(NA,NA,NA),Multiplicity=c(NA,NA,NA),
                        LowRes=c(NA,NA,NA),HighRes=c(NA,NA,NA))
+
+  # Rename POINTLESS log
+  log_file <- paste(suffix[1],paste("pointless_",suffix[2],".log",sep=""),sep="/")
+  for (linea in exemerge)
+  {
+   linea <- paste(linea,"\n",sep="")
+   cat(linea,file=log_file,append=TRUE)
+  }
   
   return(list(Mstats,exemerge))
  }
 }
-
 
 
 
@@ -480,18 +386,34 @@ options(warn = -1)
 # Retrieve value from command line
 args <- commandArgs(trailingOnly=TRUE)
 tmp <- as.numeric(args)
-dlevel_top <- tmp[1]
-dlevel_bottom <- tmp[2]
+level_type <- as.integer(tmp[1])
+dlevel_top <- tmp[2]
+dlevel_bottom <- tmp[3]
 
 # List of wanted nodes (from input)
-if (dlevel_bottom < 0) idx <- which(npar.hc_ward$height < dlevel_top)
-if (dlevel_bottom > 0) idx <- which(npar.hc_ward$height > dlevel_bottom & npar.hc_ward$height < dlevel_top)
+if (level_type == 0)
+{
+ if (dlevel_bottom < 0) idx <- which(npar.hc_ward$height < dlevel_top)
+ if (dlevel_bottom > 0) idx <- which(npar.hc_ward$height > dlevel_bottom & npar.hc_ward$height < dlevel_top)
+}
+if (level_type == 1)
+{
+ if (dlevel_bottom < 0) idx <- which(LCV_values < dlevel_top)
+ if (dlevel_bottom > 0) idx <- which(LCV_values > dlevel_bottom & LCV_values < dlevel_top)
+}
+if (level_type == 2)
+{
+ if (dlevel_bottom < 0) idx <- which(aLCV_values < dlevel_top)
+ if (dlevel_bottom > 0) idx <- which(aLCV_values > dlevel_bottom & aLCV_values < dlevel_top)
+}
 
 # If no merging nodes are included between the selected levels, stop with a warning
 if (length(idx) == 0)
 {
- dlevel_bottom <- 0.0
- warning(paste("Your selection range (",dlevel_bottom," - ",dlevel_top,") includes no merging nodes. Try a different range.",sep=""))
+ if (dlevel_bottom < 0) dlevel_bottom <- 0.0
+ cat("\n")
+ cat(paste("WARNING! Your selection range (",dlevel_bottom," - ",dlevel_top,") includes no merging nodes. Try a different range.",sep=""))
+ cat("\n")
 }
 if (length(idx) > 0)
 {
@@ -514,10 +436,10 @@ if (length(idx) > 0)
    tmp <- contents[tmp[1]]    # [1] in case somebody add DATAREF line more than once
    tmp <- strsplit(tmp," ")
    jdx <- which(nchar(tmp[[1]]) != 0)
-   idxref <- as.integer(tmp[[1]][jdx[length(jdx)]])
-  }
-  #if (length(tmp) == 0) idxref <- 1
-  messaggio <- paste("Reference dataset used in case alternative indexing is needed: ",idxref,"\n",sep="")
+   idxref_char <- tmp[[1]][jdx[length(jdx)]]
+   idxref <- as.integer(idxref_char)
+  } else idxref_char <- as.character(idxref)
+  messaggio <- paste("Reference dataset used in case alternative indexing is needed: ",idxref_char,"\n",sep="")
   cat(messaggio)
   cat("\n")
 
@@ -552,7 +474,9 @@ if (length(idx) > 0)
   j <- idx[i]
  
   # Produce text related to specific cluster in CLUSTERs.info file
-  cln <- groups[[1]][[j]]
+  #cln <- groups[[1]][[j]]
+  tmpcln <- groups[[1]][[j]]
+  cln <- sort(tmpcln)
   messaggio <- paste("********* Cluster ",j,", composed of datasets ",sep="")
   for (k in cln) messaggio <- paste(messaggio,k," ",sep="")
   messaggio <- paste(messaggio,"*********\n",sep="")
@@ -570,15 +494,15 @@ if (length(idx) > 0)
   
    # Scale and merge datasets in this specific cluster
    suffix <- c(outdir,sprintf("%03d",j))
-   tmp <- merge_datasets("FINAL_list_of_files.dat",selection=groups[[1]][[j]],suffix,pointless_keys,aimless_keys,
-                         resomin=groups[[2]][[j]][1],resomax=groups[[2]][[j]][2],nref=idxref,rwin=rwin)
+   tmp <- merge_datasets("FINAL_list_of_files.dat",selection=cln,suffix,pointless_keys,aimless_keys,
+                         resomin=groups[[2]][[j]][1],resomax=groups[[2]][[j]][2],nref=idxref_char,rwin=rwin)
    cat(" Statistics for this group:\n")
 
    # Change row names for display purpose
    rownames(tmp[[1]]) <- c("Overall","InnerShell","OuterShell")
    print(tmp[[1]])
-   if (length(tmp[[2]]) == 0) warning(paste("No result could be produced for cluster ",j," due to a problem with POINTLESS",sep=""))
-   if (length(tmp[[2]]) != 0 & is.na(tmp[[1]][1,1])) warning(paste("No result could be produced for cluster ",j," due to a problem with AIMLESS",sep=""))
+   if (length(tmp[[2]]) == 0) cat(paste("WARNING! No result could be produced for cluster ",j," due to a problem with POINTLESS",sep=""))
+   if (length(tmp[[2]]) != 0 & is.na(tmp[[1]][1,1])) cat(paste("WARNING! No result could be produced for cluster ",j," due to a problem with AIMLESS",sep=""))
  
    # Extract CC1/2
    if (!is.null(tmp[[2]]) & length(tmp[[2]]) > 0)
@@ -588,7 +512,8 @@ if (length(idx) > 0)
     stmp <- strsplit(lineCC12,">")[[1]][2]
     stmp <- strsplit(stmp,"=")
     stmp <- gsub("\\s","",stmp[[1]][2])
-    CC12 <- as.numeric(substr(stmp,1,(nchar(stmp)-1)))
+    lstmp <- strsplit(stmp,"A")
+    CC12 <- as.numeric(lstmp[[1]][1])
    }
    if (is.null(tmp[[2]]) | length(tmp[[2]]) == 0) CC12 <- NA
 

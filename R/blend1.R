@@ -1140,8 +1140,10 @@ linea <- "                               \n"
 cat(linea,file=nTable,append=TRUE)
 for (i in 1:length(groups[[1]]))
 {
+ sorted_groups <- sort(groups[[1]][[i]])
  linea <- paste(sprintf("     %03d           %3d         %7.3f     %7.2f %9.2f    ",
-                i,length(groups[[1]][[i]]),npar.hc_ward$height[i],LCV_values[i],aLCV_values[i]),"  ",paste(groups[[1]][[i]],collapse=" "),"\n",sep="")
+                i,length(groups[[1]][[i]]),npar.hc_ward$height[i],LCV_values[i],aLCV_values[i]),"  ",paste(sorted_groups,collapse=" "),"\n",sep="")
+ #               i,length(groups[[1]][[i]]),npar.hc_ward$height[i],LCV_values[i],aLCV_values[i]),"  ",paste(groups[[1]][[i]],collapse=" "),"\n",sep="")
  cat(linea,file=nTable,append=TRUE)
 }
 
