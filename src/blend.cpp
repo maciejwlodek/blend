@@ -14,7 +14,7 @@
 // - Now only one POINTLESS run and one AIMLESS run are needed for each cluster or group. All input
 //   and output files are retained (no more need of "new_" and "final_" files). Input, output and
 //   keywords for both POINTLESS and AIMLESS runs can be seen inside each POINTLESS or AIMLESS log.
-//   This, there is no more need of an aimless_keywords.dat file. Easier to reproduce POINTLESS or
+//   Thus, there is no more need of an aimless_keywords.dat file. Easier to reproduce POINTLESS or
 //   AIMLESS runs now
 // - Fixed a bug responsible for re-writing RESOLUTION keyword twice in aimless_keywords.dat
 // - Fixed order with which data set are fed to POINTLESS and AIMLESS inside "blend2.R". Now

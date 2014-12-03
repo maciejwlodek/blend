@@ -1,4 +1,5 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<!-- ::INDEX_INFO::BLEND::Supported::Data Processing and Reduction::multi-dataset combination and cluster analysis:::::::: -->
 <html><head><title>CCP4 Program Suite: blend</title></head><body>
 <!-- ::INDEX_INFO::BLEND::Supported::Data Processing and Reduction::multi-dataset combination and cluster analysis:::::::: -->
 <h1>BLEND (CCP4: Supported Program)</h1>
@@ -7,6 +8,8 @@
 <h2>SYNOPSIS</h2>
 <p><b>blend -a</b> <i>foo_in.dat</i>
 <p><b>blend -s</b> <i>cut_level_high</i> <i>[cut_level_low]</i>
+<p><b>blend -sLCV</b> <i>cut_LCV_level_high</i> <i>[cut_LCV_level_low]</i>
+<p><b>blend -saLCV</b> <i>cut_absolute_LCV_level_high</i> <i>[cut_absolute_LCV_level_low]</i>
 <p><b>blend -c</b> <i>d1</i> <i>d2</i>  <i>d3</i>  <i>d4</i>  <i>...</i> or <i>[d1] [d2] [[d3-d4]] ...</i>, etc.
 <br>
 <br>
@@ -22,7 +25,7 @@
 X-ray data collection from a single crystal is not always feasible. Very often crystallographers try to
 collect data from multiple crystals or from multiple locations on a single crystal. The resulting
 datasets are normally incomplete, or show low redundancy. Using any of them individually does not
-does not make for reliable phasing or model building and refinement. It is, rather, potentially better
+make for reliable phasing or model building and refinement. It is, rather, potentially better
 to try and merge all diverse datasets in more-complete ones. While solving the incompleteness
 issue, this merging produces datasets which, although inherently less precise, have a tendency to be
 more accurate because systematic errors interfere destructively when coming from different sources
@@ -39,7 +42,9 @@ calculated from each dataset. Results produced by the program in analysis mode c
 running the program in synthesis mode (option -s), or in combination mode (option -c). In synthesis
 mode datasets belonging to clusters previously determined are scaled together and output into
 individual merged reflection files in MTZ format, ready to be used in all subsequent stages of
-phasing, model building and refinement. The combination mode allows users to carry out the same
+phasing, model building and refinement. <a href=#variantsLCV>Variants</a> of the synthesis mode are synthesis mode using LCV values and
+synthesis mode using absolute LCV values (see <a href=#LCV>later</a> for meaning of LCV and absolute LCV). 
+The combination mode allows users to carry out the same
 tasks enabled by the synthesis mode, this time for any combination of datasets, not necessarily those
 grouped in clusters.
 <h2><a name="input_preparation"></a>Input preparation</h2>
@@ -49,7 +54,7 @@ directories. In the first scenario, only the path to the directory needs to be f
 all individual files will have to be listed in a single ASCII file and this is fed into BLEND. 
 Program execution is controlled by keywords. From version 0.5.0, keywords are passed as standard input, as it is in general the case 
 for the majority of CCP4 programs. If no keywords are passed to the program, default values and / or procedures for the parameters 
-connected to the keywords will be used. More on BLEND keywords later.<br>
+connected to the keywords will be used. More on BLEND keywords <a href=#keywords>later</a>.<br>
 <br>
 Some problems arising in connection with input preparation can be found in the section <a href=#miscellaneous>Miscellaneous and problems</a>.
 <h2><a name="running_analysis"></a>Running the program in analysis mode</h2>
@@ -116,9 +121,15 @@ two levels, one higher and one lower than 2.711, a scaled filed for this cluster
 <pre>         blend -s 2.712 2.710</pre>
 These two numbers are arbitrary numbers that fall just above and below 2.711, and that do not include values for any other node 
 in the dendrogram. It is important to notice that when using two values it is compulsory to type the largest one first.
+<p>
+<h3><a name="variantsLCV"></a>Variants of run in synthesis mode</h3>
+As previously mentioned, two variants of synthesis mode are available, synthesis mode using LCV values
+and synthesis mode using absolute LCV values (see <a href=#LCV>later</a>). In this case cluster selection will use LCV
+and absolute LCV values, rather than cluster heights (many thanks to Alkistis Mitropoulou for suggesting these variants!).
+</p>
 <h2><a name="running_combination"></a>Running the program in combination mode</h2>
 <p>
-Cluster analysis produces a grouping of all datasets in several clusters. This makes possible to carry out a limited number 
+Cluster analysis produces a grouping of all datasets in several clusters. This makes it possible to carry out a limited number 
 of merging and scalings among the huge number of possible datasets combinations, thus making it possible to save on processing time. 
 Clustering, though, introduces limitations because the user is forced to calculate datasets only corresponding to nodes in the 
 dendrogram. For example, referring to the dendrogram described previously, there is no way we could obtain scaled data out of the 
@@ -170,7 +181,7 @@ Input can be either a file (no fixed name, but here it is indicated as "foo_in.d
 <!-- <span style="font-weight: normal;"></span><span style="font-weight: normal;">
 </span> -->
 <h3>Output</h3>
-Execution of BLEND in different modes (analysis "-a", synthesis "-s", combination "-c" implies different output files. <br>
+Execution of BLEND in different modes (analysis "-a", synthesis "-s" or "-sLCV" or "-saLCV", combination "-c" implies different output files. <br>
 <!-- <span style="font-family: monospace;"><br> -->
  <br>
  (a) From analysis mode:
@@ -203,7 +214,7 @@ Execution of BLEND in different modes (analysis "-a", synthesis "-s", combinatio
        20 max), the dendrogram can be interpreted quite easily. For larger numbers it might be
        easier to refer to the ASCII counterpart of the dendrogram, which is the file called "CLUSTERS.txt" <br>
        <br>
-  <dt> CLUSTERS.txt
+  <dt> <a name="LCV"></a>CLUSTERS.txt
        <dd> In this file the exact numerical value of the dendrogram's merging nodes is
        also reported, a feature useful to run BLEND in synthesis mode. The dendrogram is the
        most important outcome of BLEND analysis. The user takes decisions on merged data,
@@ -214,7 +225,7 @@ Execution of BLEND in different modes (analysis "-a", synthesis "-s", combinatio
        through principal component analysis their numerical value in the dendrogram is not
        immediately related to real cell variation. Therefore it is not possible to get a feeling for
        structural isomorphism using the Ward distance. To help with this issue a parameter directly
-       related to unit cell differences has been introduced, the <em> Linear Cell Variation </em> (LCV). LCV
+       related to unit cell differences has been introduced, the <em><b> Linear Cell Variation</em> (LCV)</b>. LCV
        measures the maximum linear increase or decrease of the diagonals on the 3 independent
        cell faces. Values below 1% in general indicate a good degree of isomorphism among
        different crystals. Structural differences start to be noticeable with LCV greater than 1.5%.
@@ -279,15 +290,18 @@ Execution of BLEND in different modes (analysis "-a", synthesis "-s", combinatio
        keyword used in BLEND which relates to POINTLESS is TOLERANCE; this keyword
        controls how much cell sizes are allowed to change if they are to be considered in
        connection with a same structure. If the user wants to use a specific dataset as reference, the
-       serial number of the desired dataset can be included after keyword DATAREF. The reason
+       serial number of the desired dataset can be included after keyword DATAREF, if such reference is
+       part of the input data. Alternatively the name of a reference mtz or pdb file can be given (as in
+       POINTLESS). 
+The reason
        why merged but unscaled files are kept for the user is connected with the way subsequent
        scaling is carried out. At present scaling in default mode is performed by BLEND using
        AIMLESS. This does not always guarantee the production of final averaged intensities. For
        example, data could be weak, or the collection followed some unusual set up. A successful
        scaling could, then, be obtained by running AIMLESS in non-default mode, using specific
-       keywords. The starting files for doing this are the ¿merged_xxx.mtz¿ files. There is also, of
+       keywords. The starting files for doing this are the "unscaled_xxx.mtz" files. There is also, of
        course, the option to re-run BLEND in synthesis mode by adding specific scaling keywords,
-       but these, at present, are limited to keyword RESO and keyword SDCORR <br>
+       but, at present, not all available AIMLESS keywords can be used in BLEND. <br>
        <br>
   <dt> scaled_001.mtz, scaled_002.mtz, ... (inside directory "merged_files")
        <dd> are the final scaled files, for those cases that could be
@@ -300,14 +314,6 @@ Execution of BLEND in different modes (analysis "-a", synthesis "-s", combinatio
        <dd> full logs from the AIMLESS runs. The user can
        benefit from these files to find out detailed information on merging statistics and scaling in
        general <br>
-       <br>
-  <dt> aimless_keywords.dat
-       <dd> is the only file written outside the ¿merged_files¿ directory. This is a
-       basic AIMLESS keywords file that the user can amend and use to rerun scaling jobs.
-       Suppose scaling is re-tried with different keywords for cluster 3. Then, after having
-       amended the aimless_keywords.dat, the scaling jobs can be launched as follows:
-       <pre> aimless HKLIN unscaled_003.mtz HKLOUT scaled_003.mtz < aimless_keywords.dat > aimless_003.log </pre>
-       Names for output and log files in this case are decided by the user
  </dl>
  <br>
  (c) From combination mode:
@@ -412,13 +418,17 @@ DATAREF can, alternatively, be fixed to the serial number of a different data se
 For example the default reference file could either belong to a space group
 different from that of the datasets in the selected cluster, or having a different indexing
 convention. In this case DATAREF can be assigned the serial number of one of the datasets
-belonging to the cluster.
+belonging to the cluster. An mtz or pdb file not included among the files processed by BLEND can also
+be associated with DATAREF, similarly to what happens in POINTLESS when using keyword HKLREF.
 <h3><a name="exclude"></a>EXCLUDE [&ltbatch range&gt | &ltbatch list&gt]</h3>
 Default is no exclusion of any image.
 This keyword, equivalent to the one used in AIMLESS, controls exclusion from the scaling process of specific images.
 These can be provided as a series of individual image numbers or as an image range:
 <pre>         Example 1.   EXCLUDE BATCH 12 18 21 89
          Example 2.   EXCLUDE BATCH 32 TO 46</pre>
+An easier alternative for excluding images from scaling jobs is to write an AIMLESS keywords file by copying and pasting
+input keywords found in specific AIMLESS logs included in either "merged_files" or "combined_files" directories, and adding
+as many EXCLUDE keywords as needed.
 <h3><a name="isigi"></a>ISIGI</h3>
 Default value is 1.5.
 ISIGI controls the resolution cut. Integrated intensities and their errors are averaged in
@@ -492,13 +502,11 @@ is sufficient to take to completion failed scaling jobs. If no solution is found
 <br>
 <h2><a name="miscellaneous"></a>MISCELLANEOUS AND PROBLEMS</h2>
 Problems (and, alas, crashes!) could happen in BLEND, as it is the case with any software.
-Some of them and their cause are known (and described in this section). This list will become longer as
-the software is used more and more.<br>
+Some of them and their cause are known (and described in this section). <br>
 <h4>(1) Program abrupt terminations</h4><br>
 We have made substantial efforts to stop the program from
 crashing and, rather, to enable it to exit in a clean way with some kind of error message. But
-crashes are still to be expected. They will become less and less frequent as users report on
-them:
+crashes are still to be expected. They will become less and less frequent as users report them:
 <dl compact="compact">
   <dt>Crashes in analysis mode
   <dd>At present the program has been reported to crash in analysis
