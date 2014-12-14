@@ -12,6 +12,7 @@
 /************************************************************************************************************/
 // CHANGES IN VERSION 0.5.11 - 14/12/2014
 // - Fixed a bug in keywords management. Now accepting both uppercase and lowercase.
+// - Fixed a bug for the calculation of aLCV (module blend1.R)
 // CHANGES IN VERSION 0.5.10 - 12/11/2014
 // - Now only one POINTLESS run and one AIMLESS run are needed for each cluster or group. All input
 //   and output files are retained (no more need of "new_" and "final_" files). Input, output and

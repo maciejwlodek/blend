@@ -629,8 +629,8 @@ maxRatio <- function(cpar)
  mbc <- max(distRatio(dbc))
  ibc <- which(distRatio(dbc) == max(distRatio(dbc)))
  sbc <- adistRatio(dbc)[ibc]
- vv <- c(sab,sac,sbc)
- imall <- which(c(mab,mac,mbc) == max(c(mab,mac,mbc)))[1]
+ vv <- c(sab[1],sac[1],sbc[1])
+ imall <- which(c(mab,mac,mbc) == max(c(mab,mac,mbc)))
  Mpar <- vv[imall]
 
  return(c(max(mab,mac,mbc),Mpar))
