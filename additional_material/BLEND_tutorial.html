@@ -1609,11 +1609,10 @@ interface, but the user
 <P>
  <FONT SIZE=4>
  From the "Completeness" column we can see that the only complete data set is data set 3. Its resolution, as suggested by the
- "Reso CC1/2" and "Reso Mn(I/sd)" columns is around 1.65 &#197. Resolutions are higher for the other partial data sets and it
- seems reasonable to push resolution for combined data at 1.6 &#197. Let us, therefore, run BLEND in synthesis mode to produce
- merged data for all nodes of the dendrogram at this resolution. The corresponding line to add to the BLEND keywords file is
- "RESO HIGH 1.6". We also want to turn anomalous handling of data on in <I>AIMLESS</I>, as we would like to use scaled data
- for subsequent phasing. In the end, the updated "bkeys.dat" looks like this:
+ "Reso CC1/2" and "Reso Mn(I/sd)" columns falls between 1.64 &#197 and 1.75 &#197. Resolutions are higher for the other partial data sets and it
+ seems reasonable to adopt 1.6 &#197 as a common resolution for all data. The previous table can be reproduced using this resolution if the 
+ keywords file includes the following lines ("ANOMALOUS ON" has been added to make sure AIMLESS treats Friedel's opposites separately and that it returns
+ the corresponding anomalous statistics):
  </FONT>
 </P>
 <P>
@@ -1625,7 +1624,86 @@ interface, but the user
 </P>
 <P>
  <FONT SIZE=4>
- Then we execute BLEND as follows (the value 10 is high enough in the dendrogram to include all nodes):
+ The corresponding table is:
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+  <table style="width:800px">
+   <tr>
+    <td><FONT COLOR="#0000ff">Group</FONT></td>
+    <td></td>
+    <td></td>
+    <td><FONT COLOR="0000ff">Comple-</FONT></td>
+    <td><FONT COLOR="0000ff">Multi-</FONT></td>
+    <td><FONT COLOR="0000ff">Reso</FONT></td>
+    <td><FONT COLOR="0000ff">Reso</FONT></td>
+    <td><FONT COLOR="0000ff">Reso</FONT></td>
+   </tr>
+   <tr>
+    <td><FONT COLOR="#0000ff">Number</FONT></td>
+    <td><FONT COLOR="#0000ff">Rmeas</FONT></td>
+    <td><FONT COLOR="#0000ff">Rpim</FONT></td>
+    <td><FONT COLOR="#0000ff">teness</FONT></td>
+    <td><FONT COLOR="#0000ff">plicity</FONT></td>
+    <td><FONT COLOR="#0000ff">CC1/2</FONT></td>
+    <td><FONT COLOR="#0000ff">Mn(I/sd)</FONT></td>
+    <td><FONT COLOR="#0000ff">Max</FONT></td>
+   </tr>
+   <tr>
+    <td>1</td>    <td>0.067</td>    <td>0.041</td>    <td>70.90</td>       <td>1.90</td>     <td>1.60</td>      <td>1.60</td>     <td>1.60</td>
+   </tr>
+   <tr>
+    <td>2</td>    <td>0.070</td>    <td>0.036</td>    <td>73.30</td>       <td>3.10</td>     <td>1.60</td>      <td>1.60</td>     <td>1.60</td>
+   </tr>
+   <tr>
+    <td>3</td>    <td>0.213</td>    <td>0.078</td>    <td>94.70</td>       <td>5.80</td>     <td>1.60</td>      <td>1.76</td>     <td>1.60</td>
+   </tr>
+   <tr>
+    <td>4</td>    <td>0.082</td>    <td>0.044</td>    <td>75.20</td>       <td>2.50</td>     <td>1.60</td>      <td>1.60</td>     <td>1.60</td>
+   </tr>
+   <tr>
+    <td>5</td>    <td>0.066</td>    <td>0.043</td>    <td>84.30</td>       <td>1.70</td>     <td>1.60</td>      <td>1.60</td>     <td>1.60</td>
+   </tr>
+   <tr>
+    <td>6</td>    <td>0.196</td>    <td>0.122</td>    <td>85.50</td>       <td>2.00</td>     <td>1.60</td>      <td>1.84</td>     <td>1.60</td>
+   </tr>
+   <tr>
+    <td>7</td>    <td>0.176</td>    <td>0.106</td>    <td>71.10</td>       <td>2.20</td>     <td>1.60</td>      <td>1.60</td>     <td>1.60</td>
+   </tr>
+   <tr>
+    <td>8</td>    <td>0.052</td>    <td>0.031</td>    <td>60.90</td>       <td>2.20</td>     <td>1.60</td>      <td>1.60</td>     <td>1.60</td>
+   </tr>
+   <tr>
+    <td>9</td>    <td>0.120</td>    <td>0.081</td>    <td>82.30</td>       <td>1.70</td>     <td>1.60</td>      <td>1.60</td>     <td>1.60</td>
+   </tr>
+   <tr>
+    <td>10</td>   <td>0.367</td>    <td>0.248</td>    <td>79.30</td>       <td>1.60</td>     <td>1.89</td>      <td>2.04</td>     <td>1.60</td>
+   </tr>
+   <tr>
+    <td>11</td>   <td>0.081</td>    <td>0.051</td>    <td>81.30</td>       <td>2.00</td>     <td>1.60</td>      <td>1.60</td>     <td>1.60</td>
+   </tr>
+   <tr>
+    <td>12</td>   <td>0.075</td>    <td>0.042</td>    <td>90.40</td>       <td>2.70</td>     <td>1.60</td>      <td>1.60</td>     <td>1.60</td>
+   </tr>
+  </table>
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ The newly created "combined_files" directory can be renamed "individual_files_1.6", to differentiate it from "individual_files":
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+ <FONT SIZE=4 COLOR="#008000">
+  mv combined_files individual_files_1.6
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ Next, BLEND is executed in synthesis mode using the same keywords file, to produce
+ merged data for all nodes of the dendrogram at this resolution. As a value of 10 is high enough to
+ include all nodes of the dendrogram, the resulting command line will result as follows:
  </FONT>
 </P>
 <P ALIGN=CENTER>
@@ -1660,10 +1738,10 @@ interface, but the user
 </P>
 <P>
  <FONT SIZE=4>
- It is immediately seen that clusters with satisfactory anomalous completeness are 5, 6, 7, 9, 10, 11
+ Clusters with satisfactory anomalous completeness are 5, 6, 7, 9, 10, 11
  (greater than 90%). These are data sets on
- which we can try the procedure to find heavy atoms substructure. These files will have to be compared with the only individual
- data set with the highest anomalous completeness, data set 3. A "grep" line similar to the one previously used can show this:
+ which we can try the procedure to find heavy atoms substructure. These files can be compared with the two individual
+ data sets with the highest anomalous completeness, data set 3 and data set 12. A "grep" line similar to the one previously used can show this:
  </FONT>
 </P>
 <P ALIGN=CENTER>
@@ -1682,8 +1760,8 @@ interface, but the user
 </P>
 <P>
  <FONT SIZE=4>
- The value of 76.9% for the anomalous completeness of data set 3 is nowhere near an acceptable 90%, but it's the only decent one
- obtainable with indvidual data sets, and it is with this one that all merged ones will have to be compared. The message
+ Values 80.1% and 76.2% for the anomalous completeness of data sets 3 and 12 are not close to 90%, but the only decent ones
+ obtainable with indvidual data sets, and it is with these that all merged ones will have to be compared. The message
  to be taken home is that when only partial data are available it is still possible to combine them and obtain a complete data set,
  rather than wait for new crystals and another data collection. Furthermore, the redundancy implied by merging data together can
  increase the anomalous signal and, thus, strengthen the phasing power.<br>
@@ -1700,6 +1778,7 @@ interface, but the user
  mkdir anoproc<br>
  cd anoproc<br>
  mkdir lysBr_ind_003<br>
+ mkdir lysBr_ind_012<br>
  mkdir lysBr_005<br>
  mkdir lysBr_006<br>
  mkdir lysBr_007<br>
@@ -1710,8 +1789,8 @@ interface, but the user
 </P>
 <P>
  <FONT SIZE=4>
- The procedure to produce sca files ready to be used in <I>SHELX</I> will be now shown only for one of the data sets involved, data set 6,
- but it is meant to be repeated in exactly the same way for all other data sets. First we move to directory "lysBr_006". Then we run
+ The procedure to produce sca files ready to be used in <I>SHELX</I> will be now shown only for one of the data sets involved, the one corresponding 
+ to cluster 6, but it is meant to be repeated in exactly the same way for all other data sets. First we move to directory "lysBr_006". Then we run
  <I>TRUNCATE</I>, using command lines, in the following way:
  </FONT>
 </P>
@@ -1752,33 +1831,39 @@ interface, but the user
    <td><FONT COLOR="#0000ff">Cfom</FONT></td>
   </tr>
   <tr>
-   <td> ind_003 </td> <td> yes (?) </td> <td> yes </td> <td>30.37</td> <td>15.47</td> <td>45.85</td> 
+   <td> ind_003 </td> <td> yes (-) </td> <td> yes (-) </td> <td>33.68</td> <td>15.34</td> <td>49.02</td> 
   </tr>
   <tr>
-   <td> 005 </td> <td> yes </td> <td> yes </td> <td>43.64</td> <td>26.23</td> <td>69.87</td> 
+   <td> ind_012 </td> <td> yes </td> <td> yes </td> <td>43.52</td> <td>25.45</td> <td>68.97</td> 
   </tr>
   <tr>
-   <td> 006 </td> <td> yes </td> <td> yes </td> <td>37.24</td> <td>22.07</td> <td>59.31</td> 
+   <td> 005 </td> <td> yes </td> <td> yes </td> <td>45.07</td> <td>24.94</td> <td>70.01</td> 
   </tr>
   <tr>
-   <td> 007 </td> <td> yes </td> <td> yes </td> <td>43.05</td> <td>25.97</td> <td>69.02</td> 
+   <td> 006 </td> <td> yes </td> <td> yes </td> <td>37.17</td> <td>19.07</td> <td>56.25</td> 
   </tr>
   <tr>
-   <td> 009 </td> <td> yes </td> <td> yes </td> <td>34.96</td> <td>18.59</td> <td>53.54</td> 
+   <td> 007 </td> <td> yes </td> <td> yes </td> <td>44.72</td> <td>26.03</td> <td>70.75</td> 
   </tr>
   <tr>
-   <td> 010 </td> <td> yes </td> <td> yes </td> <td>44.68</td> <td>27.25</td> <td>71.92</td> 
+   <td> 009 </td> <td> yes </td> <td> yes </td> <td>36.78</td> <td>18.05</td> <td>54.83</td> 
   </tr>
   <tr>
-   <td> 011 </td> <td> yes </td> <td> yes </td> <td>42.59</td> <td>25.57</td> <td>68.16</td> 
+   <td> 010 </td> <td> yes </td> <td> yes </td> <td>45.68</td> <td>26.01</td> <td>71.69</td> 
+  </tr>
+  <tr>
+   <td> 011 </td> <td> yes </td> <td> yes </td> <td>44.25</td> <td>26.60</td> <td>70.85</td> 
   </tr>
  </table>
 </P>
 <P>
  <FONT SIZE=4>
  The phasing power of bromine in a stable structure like lysozyme is clear from the relatively high CCall (> 30)
- for data set "ind_003". It is also clear, though, that the anomalous signal becomes much more effective when multiple
- isomorphous crystals are merged together.
+ for the two individual data sets "ind_003" and "ind_012". The last one shows better anomalous signal and reaches
+ higher values of the combined figure of merit, compared to the first one. It is also clear, though, that the anomalous 
+ signal becomes much more effective when multiple isomorphous crystals are merged together. Complete clusters which includes "ind_003",
+ i.e. cluster 006 and 009, improve the anomalous signal of "ind_003" alone; the same can be said of the complete clusters
+ which include "ind_012", i.e. cluster 005, 007 and 010. This second group of clusters perform better than the other group.
  </FONT>
 </P>
 <br>

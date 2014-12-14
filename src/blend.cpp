@@ -10,7 +10,9 @@
 /********* included in the root directory of this package.                                          *********/
 /************************************************************************************************************/
 /************************************************************************************************************/
-// CHANGES IN VERSION 0.5.10 - 05/11/2014
+// CHANGES IN VERSION 0.5.11 - 14/12/2014
+// - Fixed a bug in keywords management. Now accepting both uppercase and lowercase.
+// CHANGES IN VERSION 0.5.10 - 12/11/2014
 // - Now only one POINTLESS run and one AIMLESS run are needed for each cluster or group. All input
 //   and output files are retained (no more need of "new_" and "final_" files). Input, output and
 //   keywords for both POINTLESS and AIMLESS runs can be seen inside each POINTLESS or AIMLESS log.
@@ -326,6 +328,7 @@ int main(int argc, char* argv[])
    std::cout << std::endl;
    getline(std::cin, keywdline);
    trim(keywdline);
+   to_upper(keywdline);
    std::cout << keywdline << std::endl;
    if (keywdline.substr(0,3) != "END" && keywdline.substr(0,3) != "GO" && keywdline != "")
    {
@@ -349,6 +352,7 @@ int main(int argc, char* argv[])
     old_keywdline = keywdline;
     getline(std::cin, keywdline);
     trim(keywdline);
+    to_upper(keywdline);
     std::cout << keywdline << std::endl;
     if (keywdline.substr(0,3) != "END" && keywdline.substr(0,3) != "GO" && keywdline != "")
     {
@@ -507,6 +511,7 @@ int main(int argc, char* argv[])
    std::cout << std::endl;
    getline(std::cin, keywdline);
    trim(keywdline);
+   to_upper(keywdline);
    std::cout << keywdline << std::endl;
    if (keywdline.substr(0,3) != "END" && keywdline.substr(0,3) != "GO" && keywdline != "")
    {
@@ -530,6 +535,7 @@ int main(int argc, char* argv[])
     old_keywdline = keywdline;
     getline(std::cin, keywdline);
     trim(keywdline);
+    to_upper(keywdline);
     std::cout << keywdline << std::endl;
     if (keywdline.substr(0,3) != "END" && keywdline.substr(0,3) != "GO" && keywdline != "")
     {
@@ -659,6 +665,7 @@ int main(int argc, char* argv[])
    std::cout << std::endl;
    getline(std::cin, keywdline);
    trim(keywdline);
+   to_upper(keywdline);
    std::cout << keywdline << std::endl;
    if (keywdline.substr(0,3) != "END" && keywdline.substr(0,3) != "GO" && keywdline != "")
    {
@@ -682,6 +689,7 @@ int main(int argc, char* argv[])
     old_keywdline = keywdline;
     getline(std::cin, keywdline);
     trim(keywdline);
+    to_upper(keywdline);
     std::cout << keywdline << std::endl;
     if (keywdline.substr(0,3) != "END" && keywdline.substr(0,3) != "GO" && keywdline != "")
     {
