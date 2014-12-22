@@ -439,6 +439,17 @@ if (length(idx) > 0)
    idxref_char <- tmp[[1]][jdx[length(jdx)]]
    idxref <- as.integer(idxref_char)
   } else idxref_char <- as.character(idxref)
+  # Read in "FINAL_list_of_files.dat" to associate reference dataset to file path (just in some cases)
+  indata <- read.table(file="FINAL_list_of_files.dat")
+  indata[,1] <- as.character(indata[,1])
+  tmpref <- as.integer(idxref_char)
+  if (!is.na(tmpref)) idxref_char <- indata[idxref,1]
+  if (!file.exists(idxref_char))
+  {
+   messaggio <- paste("Input reference dataset",idxref_char,"does not exist. Please input an existing file.\n")
+   cat(messaggio)
+   q(save = "no", status = 1, runLast = FALSE) 
+  }
   messaggio <- paste("Reference dataset used in case alternative indexing is needed: ",idxref_char,"\n",sep="")
   cat(messaggio)
   cat("\n")

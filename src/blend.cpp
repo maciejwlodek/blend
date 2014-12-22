@@ -10,6 +10,13 @@
 /********* included in the root directory of this package.                                          *********/
 /************************************************************************************************************/
 /************************************************************************************************************/
+// CHANGES IN VERSION 0.5.12 - 23/12/2014
+// - Added check to ascertain whether dataref file exists. If not the program exits with error code (files
+//   blend2.R and blend3.R).
+// - Bug fixes: DATAREF keyword line was all made uppercase, which resulted in reference file path to be
+//   changed. Now only keyword DATAREF (and not all line) is turned to uppercase.
+// - Reference to J. Foadi for support has been eliminated. Now users should report or contact CCP4-related
+//   people or bullettin board.
 // CHANGES IN VERSION 0.5.11 - 14/12/2014
 // - Fixed a bug in keywords management. Now accepting both uppercase and lowercase.
 // - Fixed a bug for the calculation of aLCV (module blend1.R)
@@ -322,14 +329,29 @@ int main(int argc, char* argv[])
    // This is a way of reading lines from standard input and storing them into a string variable, line,
    // until a "/n" (carriage return) is entered
    int jflag;
-   std::string keywdline;
+   std::string keywdline, keywdline2;
+   std::vector<std::string> split_vec;
    std::vector<std::string> vkeywdline;
    std::string::size_type Idx;
    std::cout << ">>>>> Input command lines <<<<<" << std::endl;
    std::cout << std::endl;
    getline(std::cin, keywdline);
    trim(keywdline);
-   to_upper(keywdline);
+   split(split_vec,keywdline,is_any_of(" "));
+   keywdline2 = split_vec[0];
+   to_upper(keywdline2);
+   if (keywdline2.substr(0,4) == "DATA")
+   {
+    keywdline = keywdline2 + " ";
+    for (unsigned int i = 1; i < split_vec.size(); ++i)
+    {
+     keywdline = keywdline + split_vec[i];
+    }
+   }
+   else
+   {
+    to_upper(keywdline);
+   }
    std::cout << keywdline << std::endl;
    if (keywdline.substr(0,3) != "END" && keywdline.substr(0,3) != "GO" && keywdline != "")
    {
@@ -353,7 +375,21 @@ int main(int argc, char* argv[])
     old_keywdline = keywdline;
     getline(std::cin, keywdline);
     trim(keywdline);
-    to_upper(keywdline);
+    split(split_vec,keywdline,is_any_of(" "));
+    keywdline2 = split_vec[0];
+    to_upper(keywdline2);
+    if (keywdline2.substr(0,4) == "DATA")
+    {
+     keywdline = keywdline2 + " ";
+     for (unsigned int i = 1; i < split_vec.size(); ++i)
+     {
+      keywdline = keywdline + split_vec[i];
+     }
+    }
+    else
+    {
+     to_upper(keywdline);
+    }
     std::cout << keywdline << std::endl;
     if (keywdline.substr(0,3) != "END" && keywdline.substr(0,3) != "GO" && keywdline != "")
     {
@@ -505,14 +541,29 @@ int main(int argc, char* argv[])
    // This is a way of reading lines from standard input and storing them into a string variable, line,
    // until a "/n" (carriage return) is entered
    int jflag;
-   std::string keywdline;
+   std::string keywdline,keywdline2;
+   std::vector<std::string> split_vec;
    std::vector<std::string> vkeywdline;
    std::string::size_type Idx;
    std::cout << ">>>>> Input command lines <<<<<" << std::endl;
    std::cout << std::endl;
    getline(std::cin, keywdline);
    trim(keywdline);
-   to_upper(keywdline);
+   split(split_vec,keywdline,is_any_of(" "));
+   keywdline2 = split_vec[0];
+   to_upper(keywdline2);
+   if (keywdline2.substr(0,4) == "DATA")
+   {
+    keywdline = keywdline2 + " ";
+    for (unsigned int i = 1; i < split_vec.size(); ++i)
+    {
+     keywdline = keywdline + split_vec[i];
+    }
+   }
+   else
+   {
+    to_upper(keywdline);
+   }
    std::cout << keywdline << std::endl;
    if (keywdline.substr(0,3) != "END" && keywdline.substr(0,3) != "GO" && keywdline != "")
    {
@@ -536,7 +587,21 @@ int main(int argc, char* argv[])
     old_keywdline = keywdline;
     getline(std::cin, keywdline);
     trim(keywdline);
-    to_upper(keywdline);
+    split(split_vec,keywdline,is_any_of(" "));
+    keywdline2 = split_vec[0];
+    to_upper(keywdline2);
+    if (keywdline2.substr(0,4) == "DATA")
+    {
+     keywdline = keywdline2 + " ";
+     for (unsigned int i = 1; i < split_vec.size(); ++i)
+     {
+      keywdline = keywdline + split_vec[i];
+     }
+    }
+    else
+    {
+     to_upper(keywdline);
+    }
     std::cout << keywdline << std::endl;
     if (keywdline.substr(0,3) != "END" && keywdline.substr(0,3) != "GO" && keywdline != "")
     {
@@ -659,14 +724,29 @@ int main(int argc, char* argv[])
    // This is a way of reading lines from standard input and storing them into a string variable, line,
    // until a "/n" (carriage return) is entered
    int jflag;
-   std::string keywdline;
+   std::string keywdline,keywdline2;
+   std::vector<std::string> split_vec;
    std::vector<std::string> vkeywdline;
    std::string::size_type Idx;
    std::cout << ">>>>> Input command lines <<<<<" << std::endl;
    std::cout << std::endl;
    getline(std::cin, keywdline);
    trim(keywdline);
-   to_upper(keywdline);
+   split(split_vec,keywdline,is_any_of(" "));
+   keywdline2 = split_vec[0];
+   to_upper(keywdline2);
+   if (keywdline2.substr(0,4) == "DATA")
+   {
+    keywdline = keywdline2 + " ";
+    for (unsigned int i = 1; i < split_vec.size(); ++i)
+    {
+     keywdline = keywdline + split_vec[i];
+    }
+   }
+   else
+   {
+    to_upper(keywdline);
+   }
    std::cout << keywdline << std::endl;
    if (keywdline.substr(0,3) != "END" && keywdline.substr(0,3) != "GO" && keywdline != "")
    {
@@ -690,7 +770,21 @@ int main(int argc, char* argv[])
     old_keywdline = keywdline;
     getline(std::cin, keywdline);
     trim(keywdline);
-    to_upper(keywdline);
+    split(split_vec,keywdline,is_any_of(" "));
+    keywdline2 = split_vec[0];
+    to_upper(keywdline2);
+    if (keywdline2.substr(0,4) == "DATA")
+    {
+     keywdline = keywdline2 + " ";
+     for (unsigned int i = 1; i < split_vec.size(); ++i)
+     {
+      keywdline = keywdline + split_vec[i];
+     }
+    }
+    else
+    {
+     to_upper(keywdline);
+    }
     std::cout << keywdline << std::endl;
     if (keywdline.substr(0,3) != "END" && keywdline.substr(0,3) != "GO" && keywdline != "")
     {
@@ -1138,7 +1232,7 @@ int main(int argc, char* argv[])
   if (nerr == 13)
   {
    std::cerr << "\n EXECUTION ERROR!\n"
-             << "An error occurred in the execution of R code associated with BLEND. Please, report this to J. Foadi" << std::endl;
+             << "An error occurred in the execution of R code associated with BLEND." << std::endl;
   }
   if (nerr == 14)
   {
@@ -1153,7 +1247,7 @@ int main(int argc, char* argv[])
   if (nerr == 16)
   {
    std::cerr << "\n EXECUTION ERROR!\n"
-             << "An error occurred in the execution of Python code associated with BLEND. Please, report this to J. Foadi" << std::endl;
+             << "An error occurred in the execution of Python code associated with BLEND." << std::endl;
   }
  }
 

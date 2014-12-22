@@ -578,7 +578,7 @@ if (file.exists(outdir))
  midx <- which(tmp == "mtz")
  if (length(midx) != length(lidx))
  {
-  messaggio <- "WARNING! Number of POINTLESS and AIMLESS logs in combined_files directory does not correspond to number of reflection files."
+  messaggio <- "WARNING! Number of POINTLESS and AIMLESS logs in combined_files directory does not correspond to number of reflection files.\n"
   cat(messaggio)
  }
 
@@ -619,7 +619,7 @@ if (file.exists(outdir))
   }
 
   # Check whether groups described in GROUPS.info matches files contained in combined_files
-  if (length(lidx) != 2*length(glist)) cat("WARNING! Number of groups described in file GROUPS.info does not match number of files in directory combined_files")
+  if (length(lidx) != 2*length(glist)) cat("WARNING! Number of groups described in file GROUPS.info does not match number of files in directory combined_files.\n")
  }
 
  # Load content of MERGING_STATISTICS.info, if it exists
@@ -630,10 +630,9 @@ if (file.exists(outdir))
   merging_statistics_info <- scan(mtmp,what="character",sep="\n",quiet=TRUE)
   idx <- grep("Rmeas",merging_statistics_info,fixed=TRUE)
   nn <- length(merging_statistics_info)-idx
-  if (nn != length(gidx)) cat("WARNING! MERGING_STATISTICS.info has information contrasting with GROUPS_info")
+  if (nn != length(gidx)) cat("WARNING! MERGING_STATISTICS.info has information contrasting with GROUPS_info.\n")
  }
 }
-if (!file.exists(outdir)) dir.create(outdir)
 
 # Find out resolutions corresponding to selected datasets
 fdata <- read.table("FINAL_list_of_files.dat")
@@ -662,6 +661,17 @@ if (file.exists("BLEND_KEYWORDS.dat"))
   idxref_char <- tmp[[1]][jdx[length(jdx)]]
   idxref <- as.integer(idxref_char)
  } else idxref_char <- as.character(idxref)
+ # Read in "FINAL_list_of_files.dat" to associate reference dataset to file path (just in some cases)
+ indata <- read.table(file="FINAL_list_of_files.dat")
+ indata[,1] <- as.character(indata[,1])
+ tmpref <- as.integer(idxref_char)
+ if (!is.na(tmpref)) idxref_char <- indata[idxref,1]
+ if (!file.exists(idxref_char))
+ {
+  messaggio <- paste("Input reference dataset",idxref_char,"does not exist. Please input an existing file.\n")
+  cat(messaggio)
+  q(save = "no", status = 1, runLast = FALSE)
+ }
  messaggio <- paste("Reference dataset used in case alternative indexing is needed: ",idxref_char,"\n",sep="")
  cat(messaggio)
  cat("\n")
@@ -673,6 +683,7 @@ if (file.exists("BLEND_KEYWORDS.dat"))
 }
 
 # Produce scaled dataset
+if (!file.exists(outdir)) dir.create(outdir)   # Create "combined_files" directory, if it does not exist
 ftail <- sprintf("%03d",(length(gidx)+1))
 suffix <- c(outdir,ftail)
 tmp <- merge_datasets("FINAL_list_of_files.dat",selection=cln,suffix,pointless_keys,aimless_keys,
@@ -682,8 +693,8 @@ cat(" Statistics for this group:\n")
 # Change row names for display purpose
 rownames(tmp[[1]]) <- c("Overall","InnerShell","OuterShell")
 print(tmp[[1]])
-if (length(tmp[[2]]) == 0) cat("WARNING! No results could be produced for this group due to a problem with POINTLESS")
-if (length(tmp[[2]]) != 0 & is.na(tmp[[1]][1,1])) cat("WARNING! No result could be produced for this group due to a problem with AIMLESS")
+if (length(tmp[[2]]) == 0) cat("WARNING! No results could be produced for this group due to a problem with POINTLESS.\n")
+if (length(tmp[[2]]) != 0 & is.na(tmp[[1]][1,1])) cat("WARNING! No result could be produced for this group due to a problem with AIMLESS.\n")
 
 # Add to what's already included in "combined_files" directory
 cat("\n")
