@@ -10,6 +10,10 @@
 /********* included in the root directory of this package.                                          *********/
 /************************************************************************************************************/
 /************************************************************************************************************/
+// CHANGES IN VERSION 0.5.13 - 12/01/2015
+// - Changed the "No result..." message in both modules blend2.R and blend3.R so that now stopping can
+//   be due to either POINTLESS or AIMLESS and one can find out by exploring content of directory "merged_files"
+//   or "combined_files".
 // CHANGES IN VERSION 0.5.12 - 23/12/2014
 // - Added check to ascertain whether dataref file exists. If not the program exits with error code (files
 //   blend2.R and blend3.R).

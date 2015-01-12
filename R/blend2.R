@@ -412,7 +412,7 @@ if (length(idx) == 0)
 {
  if (dlevel_bottom < 0) dlevel_bottom <- 0.0
  cat("\n")
- cat(paste("WARNING! Your selection range (",dlevel_bottom," - ",dlevel_top,") includes no merging nodes. Try a different range.",sep=""))
+ cat(paste("WARNING! Your selection range (",dlevel_bottom," - ",dlevel_top,") includes no merging nodes. Try a different range.\n",sep=""))
  cat("\n")
 }
 if (length(idx) > 0)
@@ -512,8 +512,8 @@ if (length(idx) > 0)
    # Change row names for display purpose
    rownames(tmp[[1]]) <- c("Overall","InnerShell","OuterShell")
    print(tmp[[1]])
-   if (length(tmp[[2]]) == 0) cat(paste("WARNING! No result could be produced for cluster ",j," due to a problem with POINTLESS",sep=""))
-   if (length(tmp[[2]]) != 0 & is.na(tmp[[1]][1,1])) cat(paste("WARNING! No result could be produced for cluster ",j," due to a problem with AIMLESS",sep=""))
+   if (is.na(tmp[[1]][1,1])) cat(paste("WARNING! No result could be produced for cluster ",j," due to a problem with either POINTLESS or AIMLESS.\n",
+                                       "         You can try and explore why in directory <merged_files> (see documentation).\n\n",sep=""))
  
    # Extract CC1/2
    if (!is.null(tmp[[2]]) & length(tmp[[2]]) > 0)

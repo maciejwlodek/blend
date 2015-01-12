@@ -555,7 +555,7 @@ cln <- targs
 # If user selection implies no data sets, return with warning message
 if (length(cln) == 0)
 {
- msg <- "WARNING! User selection of data sets for this combination implies no data sets.\n"
+ msg <- "WARNING! User selection of data sets for this combination implies no data sets.\n\n"
  cat(msg)
  q(save = "no", status = 0, runLast = FALSE)
 }
@@ -578,13 +578,13 @@ if (file.exists(outdir))
  midx <- which(tmp == "mtz")
  if (length(midx) != length(lidx))
  {
-  messaggio <- "WARNING! Number of POINTLESS and AIMLESS logs in combined_files directory does not correspond to number of reflection files.\n"
+  messaggio <- "WARNING! Number of POINTLESS and AIMLESS logs in combined_files directory does not correspond to number of reflection files.\n\n"
   cat(messaggio)
  }
 
  # Extract serial number of groups already existing in file GROUPS.info
  mtmp <- paste(outdir,"/GROUPS.info",sep="")
- if (!file.exists(mtmp)) cat("WARNING! File GROUPS.info is missing in directory combined_files\n")
+ if (!file.exists(mtmp)) cat("WARNING! File GROUPS.info is missing in directory combined_files\n\n")
  if (file.exists(mtmp))
  {
   groups_info <- scan(mtmp,what="character",sep="\n",quiet=TRUE)
@@ -619,18 +619,18 @@ if (file.exists(outdir))
   }
 
   # Check whether groups described in GROUPS.info matches files contained in combined_files
-  if (length(lidx) != 2*length(glist)) cat("WARNING! Number of groups described in file GROUPS.info does not match number of files in directory combined_files.\n")
+  if (length(lidx) != 2*length(glist)) cat("WARNING! Number of groups described in file GROUPS.info does not match number of files in directory combined_files.\n\n")
  }
 
  # Load content of MERGING_STATISTICS.info, if it exists
  mtmp <- paste(outdir,"/MERGING_STATISTICS.info",sep="")
- if (!file.exists(mtmp)) cat("WARNING! File MERGING_STATISTICS.info is missing in directory combined_files\n")
+ if (!file.exists(mtmp)) cat("WARNING! File MERGING_STATISTICS.info is missing in directory combined_files\n"\n)
  if (file.exists(mtmp))
  {
   merging_statistics_info <- scan(mtmp,what="character",sep="\n",quiet=TRUE)
   idx <- grep("Rmeas",merging_statistics_info,fixed=TRUE)
   nn <- length(merging_statistics_info)-idx
-  if (nn != length(gidx)) cat("WARNING! MERGING_STATISTICS.info has information contrasting with GROUPS_info.\n")
+  if (nn != length(gidx)) cat("WARNING! MERGING_STATISTICS.info has information contrasting with GROUPS_info.\n\n")
  }
 }
 
@@ -693,8 +693,8 @@ cat(" Statistics for this group:\n")
 # Change row names for display purpose
 rownames(tmp[[1]]) <- c("Overall","InnerShell","OuterShell")
 print(tmp[[1]])
-if (length(tmp[[2]]) == 0) cat("WARNING! No results could be produced for this group due to a problem with POINTLESS.\n")
-if (length(tmp[[2]]) != 0 & is.na(tmp[[1]][1,1])) cat("WARNING! No result could be produced for this group due to a problem with AIMLESS.\n")
+if (is.na(tmp[[1]][1,1])) cat(paste("WARNING! No result could be produced for this group, due to a problem with either POINTLESS or AIMLESS.\n",
+                                       "         You can try and explore why in directory <combined_files> (see documentation).\n\n",sep=""))
 
 # Add to what's already included in "combined_files" directory
 cat("\n")
