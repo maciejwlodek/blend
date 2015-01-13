@@ -10,6 +10,8 @@
 /********* included in the root directory of this package.                                          *********/
 /************************************************************************************************************/
 /************************************************************************************************************/
+// CHANGES IN VERSION 0.5.14 - 13/01/2015
+// - Fixed a silly code-syntax error accidentally inserted in previous changes (module blend3.R).
 // CHANGES IN VERSION 0.5.13 - 12/01/2015
 // - Changed the "No result..." message in both modules blend2.R and blend3.R so that now stopping can
 //   be due to either POINTLESS or AIMLESS and one can find out by exploring content of directory "merged_files"

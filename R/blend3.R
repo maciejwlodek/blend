@@ -624,7 +624,7 @@ if (file.exists(outdir))
 
  # Load content of MERGING_STATISTICS.info, if it exists
  mtmp <- paste(outdir,"/MERGING_STATISTICS.info",sep="")
- if (!file.exists(mtmp)) cat("WARNING! File MERGING_STATISTICS.info is missing in directory combined_files\n"\n)
+ if (!file.exists(mtmp)) cat("WARNING! File MERGING_STATISTICS.info is missing in directory combined_files\n\n")
  if (file.exists(mtmp))
  {
   merging_statistics_info <- scan(mtmp,what="character",sep="\n",quiet=TRUE)
