@@ -1,4 +1,4 @@
-///************************************************************************************************************/
+/************************************************************************************************************/
 /************************************************************************************************************/
 /********* blend.cpp                                                                                *********/
 /*********                                                                                          *********/
@@ -10,6 +10,10 @@
 /********* included in the root directory of this package.                                          *********/
 /************************************************************************************************************/
 /************************************************************************************************************/
+// CHANGES IN VERSION 0.6.0  -  8/02/2015
+// - Added new mode "graphical", with the purpose of producing annotated dendrograms (-g D).
+//   New PNG annotated dendrograms are stored in directory "graphics". All options of graphics
+//   mode are included in R code "blend4.R".
 // CHANGES IN VERSION 0.5.14 - 13/01/2015
 // - Fixed a silly code-syntax error accidentally inserted in previous changes (module blend3.R).
 // CHANGES IN VERSION 0.5.13 - 12/01/2015
@@ -277,6 +281,7 @@ int main(int argc, char* argv[])
   std::string R_program1 = home+"/R/blend1.R";
   std::string R_program2 = home+"/R/blend2.R";
   std::string R_program3 = home+"/R/blend3.R";
+  std::string R_program4 = home+"/R/blend4.R";
   std::string Python_program1 = home+"/python/create_file_for_BLEND.py";
   std::string Python_program2 = home+"/python/merge_clusters.py";
   std::string Python_program3 = home+"/python/xds_to_mtz_list.py";
@@ -294,14 +299,14 @@ int main(int argc, char* argv[])
    throw nerr;
   }
   mode_string=argv[1];
-  //if (argc < 3 | argc > 4)
   if (argc < 3)
   {
    int nerr=1;
    throw nerr;
   }
   if (mode_string != "-a" && mode_string != "-s" && mode_string != "-c" &&      // First argument after program name "blend" needs to be either "-a"
-      mode_string != "-sLCV" && mode_string != "-saLCV")                        // or "-s" or "-sLCV" or "-saLCV" or "-c"
+      mode_string != "-sLCV" && mode_string != "-saLCV" &&                      // or "-s" or "-sLCV" or "-saLCV" or "-c"
+      mode_string != "-g")                                                      // or "-g"
   {
    int nerr=1;
    throw nerr;
@@ -868,21 +873,16 @@ int main(int argc, char* argv[])
    // Turn arguments into a vector, "arbitrary_datasets", of characters to be later used in R code
    for (int i=2;i < argc;i++) arbitrary_datasets.push_back(argv[i]); 
   }
+  if (mode_string == "-g")     // Graphics mode
+  {
+   runmode = 4;
+
+   // Turn arguments into a vector, "arbitrary_datasets", of characters to be later used in R code
+   for (int i=2;i < argc;i++) arbitrary_datasets.push_back(argv[i]); 
+  }
 
   // I like well-formatted output
   std::cout.setf(std::ios::fixed);
-
-  // Amend command line arguments for CCP4 initialization
-  //int ncorrect=0;
-  //if (runmode == 1) ncorrect=3;
-  //if (runmode == 2)
-  //{
-  // if (dlevel_bottom < 0) ncorrect=3;
-  // if (dlevel_bottom >= 0) ncorrect=4;
-  //}
-  //if (runmode == 3) ncorrect=arbitrary_datasets.size()+2;
-  //argc-=ncorrect;
-  //for (int i=0;i < argc;i++) argv[i]=argv[i+1]; 
 
   // Analysis mode
   if (runmode == 1)
@@ -1179,6 +1179,46 @@ int main(int argc, char* argv[])
    std::cout << "##################################################################" << std::endl;
    std::cout << std::endl;
   }
+
+  // Graphics mode
+  if (runmode == 4)
+  {
+   // If less than 2 characters stop
+   if (arbitrary_datasets.size() < 1)
+   {
+    int nerr=17;
+    throw nerr;
+   }
+   std::cout << std::endl;
+   std::cout << "<B><FONT COLOR='#FF0000'><!--SUMMARY_BEGIN-->" << std::endl;
+   std::cout << std::endl;
+   std::cout << "You are now running BLEND in graphics mode." << std::endl; 
+   std::cout << std::endl;
+   std::cout << "<!--SUMMARY_END--></FONT></B>" << std::endl;
+   std::cout << std::endl;
+
+   // Run R code
+   std::cout << std::endl;
+   std::cout << "Running R code to read information from previous runs of BLEND and produce annotated dendrograms..." << std::endl; 
+   std::cout << std::endl;
+   int R_status;
+   std::ostringstream R_command_line,tmp;
+   for (unsigned int i=0;i < arbitrary_datasets.size();i++) tmp << arbitrary_datasets[i] << " ";
+   if (Rscp == 0)
+   {
+    R_command_line << "Rscript " << R_program4 << " " << tmp.str();
+   }
+   else
+   {
+    R_command_line << "Rscript.exe " << R_program4 << " " << tmp.str();
+   }
+   R_status=std::system((R_command_line.str()).c_str());
+   if (R_status != 0)
+   {
+    int nerr=13;
+    throw nerr;
+   }
+  }
  }
  catch (int nerr)
  {
@@ -1187,19 +1227,22 @@ int main(int argc, char* argv[])
    std::cerr << "\n BLEND ERROR!\n"
              << "Wrong command line format: too few, or too many arguments. Correct format is:\n"
              << "                                  \n"
-             << "   blend -a name_of_file.dat                                  (analysis mode)\n"
+             << "   blend -a name_of_file.dat                                             (analysis mode)\n"
              << "                 or               \n"
-             << "   blend -a /path/to/directory                                (analysis mode)\n"
+             << "   blend -a /path/to/directory                                           (analysis mode)\n"
              << "                 or               \n"
-             << "   blend -s l1 (numeric height in dendrogram)                (synthesis mode)\n"
+             << "   blend -s l1 (numeric height in dendrogram)                           (synthesis mode)\n"
              << "   blend -sLCV l1 (LCV value) \n"
              << "   blend -saLCV l1 (aLCV value) \n"
              << "                 or               \n"
-             << "   blend -s l1 l2 (numeric heights in dendrogram)            (synthesis mode)\n"
+             << "   blend -s l1 l2 (numeric heights in dendrogram)                       (synthesis mode)\n"
              << "   blend -sLCV l1 l2 (LCV values) \n"
              << "   blend -saLCV l1 (aLCV values) \n"
              << "                 or               \n"
-             << "   blend -c d1 d2 d3 ... (serial number of datasets)       (combination mode)\n" 
+             << "   blend -c d1 d2 d3 ... (serial number of datasets)                  (combination mode)\n" 
+             << "                 or               \n"
+             << "   blend -g D ... clN (cluster number) lN (level)                        (graphics mode:\n"
+             << "                                                                   annotated dendrogram)\n"
              << std::endl;
    return EXIT_FAILURE;
   }
@@ -1254,6 +1297,11 @@ int main(int argc, char* argv[])
   {
    std::cerr << "\n EXECUTION ERROR!\n"
              << "An error occurred in the execution of Python code associated with BLEND." << std::endl;
+  }
+  if (nerr == 17)
+  {
+   std::cerr << "\n EXECUTION ERROR!\n"
+             << "Minimum number of command-line parameters in graphics mode is 1." << std::endl;
   }
  }
 
