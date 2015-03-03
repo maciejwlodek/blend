@@ -545,6 +545,8 @@ if (length(idx) > 0)
  }
  rownames(mergingStatistics) <- idx
 
+ save(mergingStatistics,file="BLEND.RMergingStatistics")
+
  # Plot Rmeas vs Completeness (in both PNG and POSTSCRIPT formats)
  tmp <- is.na(mergingStatistics$Rmeas)
  ntmp <- sum(tmp)

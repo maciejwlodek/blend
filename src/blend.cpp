@@ -10,10 +10,10 @@
 /********* included in the root directory of this package.                                          *********/
 /************************************************************************************************************/
 /************************************************************************************************************/
-// CHANGES IN VERSION 0.6.0  -  8/02/2015
+// CHANGES IN VERSION 0.6.1  -  3/03/2015
 // - Added new mode "graphical", with the purpose of producing annotated dendrograms (-g D).
 //   New PNG annotated dendrograms are stored in directory "graphics". All options of graphics
-//   mode are included in R code "blend4.R".
+//   mode are included in R code "blend4.R". Module "blend2.R" has also been slightly modified.
 // CHANGES IN VERSION 0.5.14 - 13/01/2015
 // - Fixed a silly code-syntax error accidentally inserted in previous changes (module blend3.R).
 // CHANGES IN VERSION 0.5.13 - 12/01/2015
