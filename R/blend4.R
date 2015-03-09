@@ -281,9 +281,27 @@ if (!file.exists("BLEND.RData"))
 if (file.exists("BLEND.RMergingStatistics")) load("BLEND.RMergingStatistics",.GlobalEnv)
 if (!file.exists("BLEND.RMergingStatistics"))
 {
- msg <- "File BLEND.RMergingStatistics not found.\n"
- cat(msg)
- q(save = "no", status = 1, runLast = FALSE)
+ # Create a mergingStatistics data frame with all NA's, because synthesis has not been carried out yet
+
+ # Number of dendrogram nodes
+ ncls <- length(groups[[1]])
+
+ # Vectors including low resolutions and high resolutions of clusters
+ vecLow <- c()
+ vecHigh <- c()
+ for (i in 1:ncls) 
+ {
+  vecLow <- c(vecLow,groups[[2]][[i]][1])
+  vecHigh <- c(vecHigh,groups[[2]][[i]][2])
+ }
+
+ # Data frame mergingStatistics
+ mergingStatistics <- data.frame(Rmeas=rep(NA,times=ncls),Rpim=rep(NA,times=ncls),
+                                 Completeness=rep(NA,times=ncls),                  # Later to be changed according to new code
+                                 Multiplicity=rep(NA,times=ncls),                  # Later to be changed according to new code
+                                 LowRes=vecLow,HighRes=vecHigh,
+                                 CC12=rep(NA,times=ncls),                          # Later to be changed according to new code
+                                 Mn2=rep(NA,times=ncls))                           # Later to be changed according to new code
 }
 
 # Decide what type of graphics job it is required, based on first argument.

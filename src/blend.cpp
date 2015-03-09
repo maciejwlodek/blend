@@ -10,7 +10,10 @@
 /********* included in the root directory of this package.                                          *********/
 /************************************************************************************************************/
 /************************************************************************************************************/
-// CHANGES IN VERSION 0.6.1  -  3/03/2015
+// CHANGES IN VERSION 0.6.2  -  09/03/2015
+// - Graphics (D) mode can now also be used before running synthesis. It will zoom in dendrogram
+//   without returning statistics, completeness and resolution.
+// CHANGES IN VERSION 0.6.1  -  03/03/2015
 // - Added new mode "graphical", with the purpose of producing annotated dendrograms (-g D).
 //   New PNG annotated dendrograms are stored in directory "graphics". All options of graphics
 //   mode are included in R code "blend4.R". Module "blend2.R" has also been slightly modified.
