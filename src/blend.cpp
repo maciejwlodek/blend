@@ -10,6 +10,12 @@
 /********* included in the root directory of this package.                                          *********/
 /************************************************************************************************************/
 /************************************************************************************************************/
+// CHANGES IN VERSION 0.6.3  -  12/03/2015
+// - Fixed bug in "blend4.R" to compute annotated dendrogram when only part of dendrogram's nodes
+//   have been merged and scaled.
+// - Added PS graphs and amended PS dendrogram (now it is vertical, rather than horizontal).
+// - Added a new, quick "dendrogram-only" mode (-aDO) to simply read cell parameters and return
+//   dendrogram and a few files.
 // CHANGES IN VERSION 0.6.2  -  09/03/2015
 // - Graphics (D) mode can now also be used before running synthesis. It will zoom in dendrogram
 //   without returning statistics, completeness and resolution.
@@ -150,38 +156,6 @@
 // Diamond Light Source and Imperial College London
 // June 2012
 //
-// The program runs in 3 modes:
-//    1) ANALYSIS - reads all mtz files and produces global statistics;
-//
-//       USAGE:		blend -a datasets_list.dat
-//			blend -a /path/to/directory/with/integrated/data
-//
-//    2) SYNTHESIS - reads one or two heights chosen after looking at the dendrogram and produces merged data; 
-//
-//	 USAGE:		blend -s l1			if only one cutting level is chosen
-// 			blend -s l1 l2			if two levels are chosen
-//
-//    3) COMBINATION - reads serial number of datasets to be included in merged dataset. Used to create groups of
-//                     datasets not included in the dendrogram. 
-//
-//	 USAGE:		blend -c d1 d2 d3 d4 d5 ...	d1, d2, d3, etc are the serial number of the datasets that 
-//                                                      the user would like to merge.
-// 
-// In analysis mode BLEND produces a dendrogram (image file of format PNG) and a summary table. BLEND only needs to be run once in analysis mode.
-// It can be run as many times as wished in synthesis mode. After having run BLEND in analysis mode, the user decides on which merging nodes 
-// in the dendrogram he/she is interested. This can be done in either synthesis or combination mode.
-// Suppose all nodes below an height of l1 = 8.2 are deemed to be interesting. To reproduce merged files
-// for all these nodes it is sufficient to type:
-//
-//			blend -s 8.2
-//
-// If, instead, all nodes between heights, say, 7.2 and 9.6 are deemed to be useful, then two values will be included in the command line:
-//
-//			blend -s 7.2 9.6
-//
-// All merged files and other material will, then , be produced and stored in directories with sequential numbers, like result_00, result_01, etc.
-// Same goes for the combination mode. The only difference here is that the selection of datasets to be merged is decided by the user, and can be
-// different rom what is found in the dendrogram.
 //
 /************************************************************************************************************/
 /************************************************************************************************************/
@@ -281,6 +255,7 @@ int main(int argc, char* argv[])
     home = val;
   else
     home = std::string(std::getenv("CCP4")) + "/share/blend";
+  std::string R_program0 = home+"/R/blend0.R";
   std::string R_program1 = home+"/R/blend1.R";
   std::string R_program2 = home+"/R/blend2.R";
   std::string R_program3 = home+"/R/blend3.R";
@@ -309,12 +284,12 @@ int main(int argc, char* argv[])
   }
   if (mode_string != "-a" && mode_string != "-s" && mode_string != "-c" &&      // First argument after program name "blend" needs to be either "-a"
       mode_string != "-sLCV" && mode_string != "-saLCV" &&                      // or "-s" or "-sLCV" or "-saLCV" or "-c"
-      mode_string != "-g")                                                      // or "-g"
+      mode_string != "-g" && mode_string != "-aDO")                             // or "-g" or "-aDO"
   {
    int nerr=1;
    throw nerr;
   }
-  if (mode_string == "-a")     // Analysis pass
+  if (mode_string == "-a" || mode_string == "-aDO")     // Analysis pass
   {
    // In order to line up BLEND with the way ccp4i works (with stdin passed keywords) this is what has been added
 
@@ -887,7 +862,7 @@ int main(int argc, char* argv[])
   // I like well-formatted output
   std::cout.setf(std::ios::fixed);
 
-  // Analysis mode
+  // Analysis mode or Dendrogram-Only mode
   if (runmode == 1)
   {
    // Name of ascii file containing list of mtz files
@@ -900,7 +875,14 @@ int main(int argc, char* argv[])
    std::cout << std::endl;
    std::cout << "<B><FONT COLOR='#FF0000'><!--SUMMARY_BEGIN-->" << std::endl;
    std::cout << std::endl;
-   std::cout << "You are now running BLEND in analysis mode." << std::endl; 
+   if (mode_string == "-a")
+   {
+    std::cout << "You are now running BLEND in analysis mode." << std::endl; 
+   }
+   if (mode_string == "-aDO")
+   {
+    std::cout << "You are now running BLEND in dendrogram-only mode." << std::endl; 
+   }
    std::cout << std::endl;
    std::cout << "<!--SUMMARY_END--></FONT></B>" << std::endl;
    std::cout << std::endl;
@@ -1066,7 +1048,8 @@ int main(int argc, char* argv[])
    if (hkl_list.size() > 1)
    {
     std::cout << "Building R files ........." << std::endl;
-    statistics_with_R(hkl_list,sg_to_crystal,spacegroup_class,crystal_flag,R_program1,Rscp);
+    if (mode_string == "-a") statistics_with_R(hkl_list,sg_to_crystal,spacegroup_class,crystal_flag,R_program1,Rscp);
+    if (mode_string == "-aDO") statistics_with_R2(hkl_list,sg_to_crystal,spacegroup_class,crystal_flag,R_program0,Rscp);
    }
 
    // Delete BLEND_KEYWORDS.dat before termination
@@ -1228,8 +1211,12 @@ int main(int argc, char* argv[])
   if (nerr == 1)
   {
    std::cerr << "\n BLEND ERROR!\n"
-             << "Wrong command line format: too few, or too many arguments. Correct format is:\n"
+             << "Wrong command line format. Correct format is:\n"
              << "                                  \n"
+             << "   blend -aDO name_of_file.dat                                    (dendrogram-only mode)\n"
+             << "                 or               \n"
+             << "   blend -aDO /path/to/directory                                  (dendrogram-only mode)\n"
+             << "                 or               \n"
              << "   blend -a name_of_file.dat                                             (analysis mode)\n"
              << "                 or               \n"
              << "   blend -a /path/to/directory                                           (analysis mode)\n"

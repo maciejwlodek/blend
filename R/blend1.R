@@ -1177,7 +1177,8 @@ if (length(npar.hc_ward$height) > 1)
  }
  text(nodesxy$x[idx],nodesxy$y[idx],labels=labelsxy[idx],adj=c(0,-0.5),col="red",cex=1.0)
  emptyc <- dev.off()    # The "emptyc" is to collect the return value of dev.off(), so that it's not output
- postscript(file="./tree.ps", height = 10, width = 10, paper = "a4")
+ #postscript(file="./tree.ps", height = 10, width = 10, paper = "a4")
+ postscript(file="./tree.ps",paper = "a4",horizontal=FALSE)
  #plclust(npar.hc_ward,xlab="Individual datasets",ylab="Ward distance",main=msg,sub="")
  par(oma=c(0,0.5,0,0.5),mgp=c(1.5,0.5,0))
  plot(npar.hc_ward,xlab="Individual datasets",ylab="Ward distance",main=msg,sub="",col.main="red",cex.main=2,col.lab="blue",cex.lab=2)

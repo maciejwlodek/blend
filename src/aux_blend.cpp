@@ -453,12 +453,10 @@ void statistics_with_R(std::vector<scala::hkl_unmerge_list>& hkl_list,std::multi
      forR_file << filename << std::endl;
      std::ofstream infofile(filename.c_str(),std::ios::out);   // Remember, first argument is a string literal, not a string!
      infofile.setf(std::ios::fixed);   // Permanent until reset
-     //while (hkl_list[pos_cs->second].next_reflection(reflection) >= 0)
      for (int j=0;j < nrefs;j++)
      {
       reflection=hkl_list[pos_cs->second].get_reflection(j);
       int nobsnow=reflection.num_observations();
-      //while (reflection.next_observation(observation) >= 0)
       for (int jj=0;jj < nobsnow;jj++)
       {
        observation=reflection.get_observation(jj);
@@ -466,7 +464,6 @@ void statistics_with_R(std::vector<scala::hkl_unmerge_list>& hkl_list,std::multi
        int nBatch=observation.Batch();
        int nBatch_serial=hkl_list[pos_cs->second].batch_serial(nBatch);
        scala::Batch batch=hkl_list[pos_cs->second].batch(nBatch_serial);
-       //CMtz::MTZBAT batchmtz=batch.batchdata();
        std::string rispo="N";
 
        // Find average coordinates corresponding to different parts on detector   
@@ -494,8 +491,6 @@ void statistics_with_R(std::vector<scala::hkl_unmerge_list>& hkl_list,std::multi
  std::cout << "Performing statistical analysis (this might take a while!)........." << std::endl;
  int R_status;
  std::ostringstream R_command_line;
- //R_command_line << "R --vanilla --slave --quiet < " << R_program;
- //R_command_line << "R CMD BATCH --slave --no-save --no-restore " << R_program;
  if (Rscp == 0)
  {  
   R_command_line << "Rscript " << R_program;
@@ -511,143 +506,175 @@ void statistics_with_R(std::vector<scala::hkl_unmerge_list>& hkl_list,std::multi
   throw nerr;
  }
  
- // Read and interpret content of file produced by R code
- //filename="forBLEND.dat";
- //std::ifstream raddam_file(filename.c_str(),std::ios::in);
- //int rrr;
- //std::vector<int> bl,cn,aveCOR,medRR,stnRR,MB,raddam_code;
- //while (!raddam_file.eof())
- //{
- // raddam_file >> rrr;
- // bl.push_back(rrr);
- // raddam_file >> rrr;
- // cn.push_back(rrr);
- // raddam_file >> rrr;
- // aveCOR.push_back(rrr);
- // raddam_file >> rrr;
- // medRR.push_back(rrr);
- // raddam_file >> rrr;
- // stnRR.push_back(rrr);
- // raddam_file >> rrr;
- // MB.push_back(rrr);
- // raddam_file >> rrr;
- // raddam_code.push_back(rrr);
- //}
- //raddam_file.close();
-
- // Radiation damage output
- //std::cout << "List of crystals on which radiation damage has occurred:" << std::endl;
- //for (int j=0;j < raddam_code.size();j++)
- //{
- // if (raddam_code[j] == 1) std::cout << "         Bravais lattice n. " << std::setw(4) << bl[j] << ", crystal number " << std::setw(5) << cn[j] << std::endl;
- //}
- //std::cout << "List of crystals on which radiation damage has not occurred:" << std::endl;
- //for (int j=0;j < raddam_code.size();j++)
- //{
- // if (raddam_code[j] == -1) std::cout << "         Bravais lattice n. " << std::setw(4) << bl[j] << ", crystal number " << std::setw(5) << cn[j] << std::endl;
- //}
- //std::cout << "List of crystals on which nothing can be assumed about radiation damage:" << std::endl;
- //for (int j=0;j < raddam_code.size();j++)
- //{
- // if (raddam_code[j] == 0) std::cout << "         Bravais lattice n. " << std::setw(4) << bl[j] << ", crystal number " << std::setw(5) << cn[j] << std::endl;
- //}
-
- // Delete file produced by R code for BLEND
- //if (remove(filename.c_str()) != 0) std::cout << "Could not delete file " << filename << std::endl;
- 
- //if (valid_classes > 0)
- //{
- // std::cout << "Results for cluster analysis are included in the following files:" << std::endl;
- // std::ifstream graphic_filenames(filename.c_str(),std::ios::in);
- // while (!graphic_filenames.eof())
- // {
- //  graphic_filenames >> tmpstring;
- //  if (tmpstring != "NA" & !graphic_filenames.eof()) std::cout << tmpstring << std::endl;
- // }
- // graphic_filenames.close();
- //}
-
  return;    // Remove this when using standard BLEND
+}
 
- // Delete files used by R
- //filename="forR.dat";
- //if (remove(filename.c_str()) != 0) std::cout << "Could not delete file " << filename << std::endl;
- //filename="forBLEND.dat";
- //if (remove(filename.c_str()) != 0) std::cout << "Could not delete file " << filename << std::endl;
- //for (int i=0;i < spacegroup_class.size();i++)
- //{
- // if (spacegroup_class[i] != 0)
- // {
- //  ofilename << "infofile_" << spacegroup_class[i] << ".dat";
- //  filename=ofilename.str();
- //  if (remove(filename.c_str()) != 0) std::cout << "Could not delete file " << filename << std::endl;
- //  ofilename.str("");  // Clear filename string before using it (to avoid chaining subsequent strings together)
- // }
- //}
+// Function to output ascii files to be read by R (produced in Mode 1, dendrogram-only version)
+void statistics_with_R2(std::vector<scala::hkl_unmerge_list>& hkl_list,std::multimap<int,int> sg_to_crystal,
+                          std::vector<int> spacegroup_class,std::vector<int> crystal_flag,std::string R_program,int Rscp)
+{
+ // Build map container for bravais lattice number to symbol correspondence
+ std::map<int,std::string> bl_number_to_symbol;
+ std::map<int,std::string>::iterator pos_bl;
+ bl_number_to_symbol.insert(std::make_pair<int,std::string>(1,"aP"));
+ bl_number_to_symbol.insert(std::make_pair<int,std::string>(2,"mP"));
+ bl_number_to_symbol.insert(std::make_pair<int,std::string>(3,"mS"));
+ bl_number_to_symbol.insert(std::make_pair<int,std::string>(4,"oP"));
+ bl_number_to_symbol.insert(std::make_pair<int,std::string>(5,"oS"));
+ bl_number_to_symbol.insert(std::make_pair<int,std::string>(6,"oF"));
+ bl_number_to_symbol.insert(std::make_pair<int,std::string>(7,"oI"));
+ bl_number_to_symbol.insert(std::make_pair<int,std::string>(8,"tP"));
+ bl_number_to_symbol.insert(std::make_pair<int,std::string>(9,"tI"));
+ bl_number_to_symbol.insert(std::make_pair<int,std::string>(10,"hP"));
+ //bl_number_to_symbol.insert(std::make_pair<int,std::string>(11,"hR"));
+ bl_number_to_symbol.insert(std::make_pair<int,std::string>(11,"hH"));
+ bl_number_to_symbol.insert(std::make_pair<int,std::string>(12,"cP"));
+ bl_number_to_symbol.insert(std::make_pair<int,std::string>(13,"cF"));
+ bl_number_to_symbol.insert(std::make_pair<int,std::string>(14,"cI"));
+
+ // Objects needed to output information from each crystal dataset
+ scala::Xdataset dataset;
+ scala::Scell unitcell;
+ scala::ResoRange resorange;
+ scala::reflection reflection;
+ scala::observation observation;
+ clipper::Cell_descr ccell_descr;
+ clipper::Cell ccell;
+
+ // File "forR_macropar.dat" containing cell parameters and mosaicity for all crystals
+ std::ofstream forR_file2("forR_macropar.dat",std::ios::out);
+ forR_file2.setf(std::ios::fixed);   // Permanent until reset
+
+ // Ascii files with tables to be read by R. Names change from bravais lattice to bravais lattice
+ std::string filename;
+ std::ostringstream ofilename;
+
+ // Iterators
+ std::multimap<int,int>::iterator pos_cs;
+ std::pair<std::multimap<int,int>::iterator,std::multimap<int,int>::iterator> pos_pair;
+
+ // Loop over different space groups
+ for (unsigned int i=0;i < spacegroup_class.size();i++)
+ {
+  if (spacegroup_class[i] != 0)
+  {
+   // Pair of iterators pointing at beginning and end of values (crystals) with same key (spacegroup number)
+   pos_pair=sg_to_crystal.equal_range(spacegroup_class[i]);
+   for (pos_cs=pos_pair.first;pos_cs != pos_pair.second;++pos_cs)
+   {
+    if (crystal_flag[pos_cs->second] == 0)
+    {
+     resorange=hkl_list[pos_cs->second].ResRange();
+     dataset=hkl_list[pos_cs->second].xdataset(0);   // At present we only consider crystals with 1 dataset
+     unitcell=dataset.cell();
+     ccell_descr=clipper::Cell_descr(unitcell.UnitCell()[0],unitcell.UnitCell()[1],unitcell.UnitCell()[2],unitcell.UnitCell()[3],unitcell.UnitCell()[4],unitcell.UnitCell()[5]);
+     ccell=clipper::Cell(ccell_descr);
+     scala::Batch batch=hkl_list[pos_cs->second].batch(0);  // I'm using any batch (for instance number 0) just to recover crystal-to-detector distance
+     CMtz::MTZBAT batchmtz=batch.batchdata();
+     float ctoddist=batchmtz.dx[0];
+     float wlength=dataset.wavelength();
+     //std::cout << "WAVELENGTH " << wlength << std::endl;
+
+     // Write to file "forR_macropar.dat"
+     forR_file2 << "  " << std::setw(10) << pos_cs->second+1 << std::setw(10) << std::setprecision(3) << unitcell.UnitCell()[0]
+                                                             << std::setw(10) << std::setprecision(3) << unitcell.UnitCell()[1]
+                                                             << std::setw(10) << std::setprecision(3) << unitcell.UnitCell()[2]
+                                                             << std::setw(9) << std::setprecision(2) << unitcell.UnitCell()[3]
+                                                             << std::setw(9) << std::setprecision(2) << unitcell.UnitCell()[4]
+                                                             << std::setw(9) << std::setprecision(2) << unitcell.UnitCell()[5]
+                                                             << std::setw(11) << std::setprecision(5) << dataset.Mosaicity()
+                                                             << std::setw(12) << std::setprecision(2) << ctoddist
+                                                             << std::setw(10) << std::setprecision(5) << wlength
+                                                             << std::endl;
+    }
+   }
+  }
+ }
+ forR_file2.close();
+
+ // Run R script to perform statistical analysis.
+ int R_status;
+ std::ostringstream R_command_line;
+ if (Rscp == 0)
+ {  
+  R_command_line << "Rscript " << R_program;
+ }
+ else
+ {
+  R_command_line << "Rscript.exe " << R_program;
+ }
+ R_status=std::system((R_command_line.str()).c_str());   // The ostringstream object is first turned into a string and this into a cstring
+ if (R_status != 0)
+ {
+  int nerr=13;
+  throw nerr;
+ }
+ 
+ return;    // Remove this when using standard BLEND
 }
 
 // Overlaps matrix
-std::vector< std::vector<float> > build_overlaps_matrix(std::vector<scala::hkl_unmerge_list>& hkl_list,std::vector<int> crystals_choice)
-{
- int msize=crystals_choice.size();
- std::vector<std::vector<float> > overlaps_matrix;
-
- // Initialise matrix (so that all diagonal elements will be 1)
- for (int irow=0;irow < msize;irow++)
- {
-  overlaps_matrix.push_back(std::vector<float> ());
-  for (int icol=0;icol < msize;icol++)
-  {
-   overlaps_matrix[irow].push_back(1.0);
-  }
- }
-
- // Vector containing number of reflections for chosen crystals
- int nobs;
- scala::hkl_symmetry symmetry;
- std::vector<int> nrefs;
- for (int i=0;i < msize;i++)
- {
-  // Symmetry info extracted only once (all crystal belongs to same symmetry) 
-  if (i == 0) symmetry=hkl_list[crystals_choice[i]].symmetry();
-
-  // Number of unique reflections obtained while preparing data
-  nrefs.push_back(hkl_list[crystals_choice[i]].prepare());   // prepare() put all reflections in CCP4 asymmetric unit
-  nobs=hkl_list[crystals_choice[i]].sum_partials();   // Needed as part of data preparation
- }
- 
- // Work out off-diagonal elements of the overlaps matrix; upper triangle
- //int isym;
- scala::reflection this_refl1,this_refl2;
- scala::Hkl hkl1;
- for (int irow=0;irow < msize-1;irow++)
- {
-  for (int icol=irow+1;icol < msize;icol++)
-  {
-   // Insert here bit to compute reflections overlap. Use hkl_list[i] and hkl_list[j]
-   int noverlaps=0;
-   for (int iref=0;iref < nrefs[irow];iref++)
-   {
-    this_refl1=hkl_list[crystals_choice[irow]].get_reflection(iref);
-    hkl1=this_refl1.hkl();
-    int k=hkl_list[crystals_choice[icol]].get_reflection(this_refl2,hkl1);
-    if (k != -1) noverlaps++;
-   }
-   overlaps_matrix[irow][icol]=float(noverlaps)/float(std::max(nrefs[irow],nrefs[icol]));
-  }
- }
-
- // Copy lower triangle off-diagonal elements of the overlaps matrix
- for (int i=1;i < msize;i++)
- {
-  for (int j=0;j < i;j++)
-  {
-   overlaps_matrix[i][j]=overlaps_matrix[j][i];
-  }
- }
-
- return overlaps_matrix;
-}
+//std::vector< std::vector<float> > build_overlaps_matrix(std::vector<scala::hkl_unmerge_list>& hkl_list,std::vector<int> crystals_choice)
+//{
+// int msize=crystals_choice.size();
+// std::vector<std::vector<float> > overlaps_matrix;
+//
+// // Initialise matrix (so that all diagonal elements will be 1)
+// for (int irow=0;irow < msize;irow++)
+// {
+//  overlaps_matrix.push_back(std::vector<float> ());
+//  for (int icol=0;icol < msize;icol++)
+//  {
+//   overlaps_matrix[irow].push_back(1.0);
+//  }
+// }
+//
+// // Vector containing number of reflections for chosen crystals
+// int nobs;
+// scala::hkl_symmetry symmetry;
+// std::vector<int> nrefs;
+// for (int i=0;i < msize;i++)
+// {
+//  // Symmetry info extracted only once (all crystal belongs to same symmetry) 
+//  if (i == 0) symmetry=hkl_list[crystals_choice[i]].symmetry();
+//
+//  // Number of unique reflections obtained while preparing data
+//  nrefs.push_back(hkl_list[crystals_choice[i]].prepare());   // prepare() put all reflections in CCP4 asymmetric unit
+//  nobs=hkl_list[crystals_choice[i]].sum_partials();   // Needed as part of data preparation
+// }
+// 
+// // Work out off-diagonal elements of the overlaps matrix; upper triangle
+// //int isym;
+// scala::reflection this_refl1,this_refl2;
+// scala::Hkl hkl1;
+// for (int irow=0;irow < msize-1;irow++)
+// {
+//  for (int icol=irow+1;icol < msize;icol++)
+//  {
+//   // Insert here bit to compute reflections overlap. Use hkl_list[i] and hkl_list[j]
+//   int noverlaps=0;
+//   for (int iref=0;iref < nrefs[irow];iref++)
+//   {
+//    this_refl1=hkl_list[crystals_choice[irow]].get_reflection(iref);
+//    hkl1=this_refl1.hkl();
+//    int k=hkl_list[crystals_choice[icol]].get_reflection(this_refl2,hkl1);
+//    if (k != -1) noverlaps++;
+//   }
+//   overlaps_matrix[irow][icol]=float(noverlaps)/float(std::max(nrefs[irow],nrefs[icol]));
+//  }
+// }
+//
+// // Copy lower triangle off-diagonal elements of the overlaps matrix
+// for (int i=1;i < msize;i++)
+// {
+//  for (int j=0;j < i;j++)
+//  {
+//   overlaps_matrix[i][j]=overlaps_matrix[j][i];
+//  }
+// }
+//
+// return overlaps_matrix;
+//}
 
 // ISDIR: Returns 1 if the string is a directory,
 //                0 if it's a file,
