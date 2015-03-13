@@ -6,11 +6,13 @@
 <h2>NAME</h2>
 <span style="font-weight: bold;">blend<br></span><b>&nbsp;</b>- management and processing of multiple crystals / multiple data sets
 <h2>SYNOPSIS</h2>
-<p><b>blend -a</b> <i>foo_in.dat</i>
+<p><b>blend -a</b> <i>foo_in.dat</i> or <i>/path/to/data</i>
+<p><b>blend -aDO</b> <i>foo_in.dat</i> or <i>/path/to/data</i>
 <p><b>blend -s</b> <i>cut_level_high</i> <i>[cut_level_low]</i>
 <p><b>blend -sLCV</b> <i>cut_LCV_level_high</i> <i>[cut_LCV_level_low]</i>
 <p><b>blend -saLCV</b> <i>cut_absolute_LCV_level_high</i> <i>[cut_absolute_LCV_level_low]</i>
 <p><b>blend -c</b> <i>d1</i> <i>d2</i>  <i>d3</i>  <i>d4</i>  <i>...</i> or <i>[d1] [d2] [[d3-d4]] ...</i>, etc.
+<p><b>blend -g</b> <b>D</b> <i>clN</i> <i>N</i>
 <br>
 <br>
 <br>
@@ -46,7 +48,11 @@ phasing, model building and refinement. <a href=#variantsLCV>Variants</a> of the
 synthesis mode using absolute LCV values (see <a href=#LCV>later</a> for meaning of LCV and absolute LCV). 
 The combination mode allows users to carry out the same
 tasks enabled by the synthesis mode, this time for any combination of datasets, not necessarily those
-grouped in clusters.
+grouped in clusters.<br>
+<br>
+Two additional modes have been introduced as tools to facilitate data analysis. The dendrogram-only mode (option -aDO) allows BLEND
+to skip data analysis and simply calculate the dendrogram based on cell parameters. The graphics mode is used to produce specific types
+of 
 <h2><a name="input_preparation"></a>Input preparation</h2>
 Input for the program is a group of unmerged reflection files produced by integration programs. At present only files from the MOSFLM 
 and XDS integration software can be handled. Reflection files can be either included in a single directory, or spread across several 
