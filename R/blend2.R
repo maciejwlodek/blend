@@ -378,7 +378,13 @@ rwin = FALSE
 if (ostuff["sysname"] == "Windows") rwin = TRUE
 
 # Load content of previous R run
-load("BLEND.RData",.GlobalEnv)
+if (file.exists("BLEND.RData")) load("BLEND.RData",.GlobalEnv)
+if (!file.exists("BLEND.RData"))
+{
+ msg <- "File BLEND.RData (produced by a previous run of BLEND in analysis mode) not found.\n"
+ cat(msg)
+ q(save = "no", status = 1, runLast = FALSE)
+}
 
 # To avoid warning messages set warn to a negative value 
 options(warn = -1)

@@ -10,6 +10,9 @@
 /********* included in the root directory of this package.                                          *********/
 /************************************************************************************************************/
 /************************************************************************************************************/
+// CHANGES IN VERSION 0.6.4  -  16/03/2015
+// - Added error catch code to module "blend2.R" and "blend3.R", acting when BLEND.RData has not
+//   been found.
 // CHANGES IN VERSION 0.6.3  -  12/03/2015
 // - Fixed bug in "blend4.R" to compute annotated dendrogram when only part of dendrogram's nodes
 //   have been merged and scaled.
