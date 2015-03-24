@@ -156,7 +156,7 @@ Wplots <- function(data,nbin,nwin=1,m=NA,M=NA)
 }
 
 #
-mrad <- function(wplots)
+mrad <- function(wplots,addbit=0.1)
 {
  # Find out when plots start to be empty
  ikey <- checkEmptyPlots(wplots)
@@ -172,24 +172,18 @@ mrad <- function(wplots)
  RR <- c()
  for (i in ikey)
  {
-  y <- wplots[[2]][,i]
-  nneg <- length(y[y <= 0])
-  if ((length(y)-nneg) >= 0.5*length(y))
-  {
-   y[y <= 0] <- NA                # To avoid NaN and -Inf in logarithm of negative numbers or zero
-   x <- 1:length(y)
-   model <- lm(log(y)~x,na.action=na.omit)
-   cff <- unname(coef(model))
-   I0 <- c(I0,exp(cff[1]))
-   B <- c(B,-cff[2])
-   RR <- c(RR,summary(model)[[8]][1])
-  }
-  if ((length(y)-nneg) < 0.5*length(y))
-  {
-   I0 <- c(I0,NA)
-   B <- c(B,NA)
-   RR <- c(RR,NA)
-  }
+  y0 <- wplots[[2]][,i]
+  minY <- min(y0,na.rm=TRUE)
+  if (minY > 0) y <- y0
+  if (minY <= 0) y <- y0-minY+addbit
+  #y[y == 0] <- NA                # To avoid NaN and -Inf in logarithm of zero
+  x <- 1:length(y)
+  model <- lm(log(y)~x,na.action=na.omit)
+  cff <- unname(coef(model))
+  if (minY > 0) I0 <- c(I0,exp(cff[1]))
+  if (minY < 0) I0 <- c(I0,exp(cff[1])+minY-addbit)
+  B <- c(B,-cff[2])
+  RR <- c(RR,summary(model)[[8]][1])
  }
  lista_exponential <- list(s=ss,I0=I0,B=B,RR=RR)
 
@@ -224,12 +218,23 @@ newraddam <- function(wplots)
  attributes(coefs) <- NULL
 
  ans <- NULL
- if (coefs[1] < 0) ans <- FALSE
- if (coefs[2] > 0)
+ if (!is.na(coefs[1]))
  {
-  if (coefs[1]-coefs[2] <= 0) ans <- FALSE
-  if (coefs[1]-coefs[2] > 0) ans <- TRUE
+  if (coefs[1] < 0) ans <- FALSE
  }
+ if (is.na(coefs[1])) ans <- FALSE
+ if (!is.na(coefs[2]))
+ {
+  if (!is.na(coefs[1]))
+  {
+   if (coefs[2] > 0)
+   {
+    if (coefs[1]-coefs[2] <= 0) ans <- FALSE
+    if (coefs[1]-coefs[2] > 0) ans <- TRUE
+   }
+  }
+ }
+ if (is.na(coefs[2])) ans <- FALSE
 
  # If ans is FALSE return infinity
  if (ans)
@@ -383,12 +388,10 @@ nparWilson <- function(listBplots,cn,nref=1,cumprob=0.95)
  for (i in 1:length(listBplots))
  {
   tmp <- wScale(wref[[3]],listBplots[[i]][[3]])
-  #kk <- scale_two_functions(wref[[3]],listBplots[[i]][[3]])
-  #listBplots[[i]][[3]] <- kk*listBplots[[i]][[3]]
   listBplots[[i]][[3]] <- tmp
  }
 
- # Build data rame
+ # Build data frame
  wpar <- matrix(listBplots[[1]][[3]],nrow=1,byrow=TRUE)
  for (i in 2:length(listBplots)) wpar <- rbind(wpar,matrix(listBplots[[i]][[3]],nrow=1,byrow=TRUE))
 
@@ -415,11 +418,14 @@ nparWilson <- function(listBplots,cn,nref=1,cumprob=0.95)
 raiseWplots <- function(listWplots,addbit=100)
 {
  # Find plots minimum
- mWP <- min(listWplots[[1]][[3]])
- for (i in 2:length(listWplots))   if (min(listWplots[[i]][[3]],na.rm=TRUE) < mWP) mWP <- min(listWplots[[i]][[3]])
+ mWP <- min(listWplots[[1]][[3]],na.rm=TRUE)
+ for (i in 2:length(listWplots))   if (min(listWplots[[i]][[3]],na.rm=TRUE) < mWP) mWP <- min(listWplots[[i]][[3]],na.rm=TRUE)
 
- # Now raise all plots
- for (i in 1:length(listWplots)) listWplots[[i]][[3]] <- listWplots[[i]][[3]]+mWP+addbit
+ # Now raise all plots (if mWP is negative)
+ if (!is.na(mWP))
+ {
+  if (mWP < 0) for (i in 1:length(listWplots)) listWplots[[i]][[3]] <- listWplots[[i]][[3]]-mWP+addbit
+ }
 
  return(listWplots)
 }
@@ -976,7 +982,7 @@ for (data in listData)
 }
 
 # Get rid of listData to avoid dumping redundant information in R image
-#rm(listData)
+rm(listData)
 
 # Choose reference dataset
 tmp <- c()
@@ -1007,8 +1013,8 @@ for (i in 1:length(listWplots))
 }
 
 # Get rid of listWplots and listSDWplots to avoid dumping redundant information in R image
-#rm(listWplots)
-#rm(listSDWplots)
+rm(listWplots)
+rm(listSDWplots)
 
 #######################################################################################################
 #######################################################################################################
@@ -1073,7 +1079,7 @@ names(highresos) <- maindf$cn
 nparW <- nparWilson(listBplots,maindf$cn,nref=idxref,cumprob=0.95)
 
 # Get rid of listBplots to avoid dumping redundant information in R image
-#rm(listBplots)
+rm(listBplots)
 
 #######################################################################################################
 #######################################################################################################
@@ -1106,12 +1112,6 @@ if (as.numeric(tmp[[6]]) >= 3 & as.numeric(tmp[[7]]) >= 1) {
 } else {
  npar.hc_ward <- hclust(distAll,method="ward")
 }
-
-# Before plotting out dendrogram, rescale heights linearly to cell variation.
-#dMat <- evaluateMaxChange(maindf)
-#a <- max(dMat)/npar.hc_ward$height[length(npar.hc_ward$height)]
-#tmp <- a*npar.hc_ward$height
-#$npar.hc_ward$height <- tmp
 
 # Dendrogram and resolution information are stored in list groups
 groups <- treeToList(npar.hc_ward,lowresos,highresos)

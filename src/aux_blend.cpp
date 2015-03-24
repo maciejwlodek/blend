@@ -103,7 +103,7 @@ std::vector<scala::hkl_unmerge_list> load_crystals(std::string filename,int runm
 
  // Loop over input mtz files.
  std::cout << std::endl;
- std::cout << "Loading datasets from all valid reflection files ........." << std::endl;
+ std::cout << "Loading datasets .........";
  for (unsigned int i=0;i < mtz_file.size();i++)
  {
   // MTZ valid or not

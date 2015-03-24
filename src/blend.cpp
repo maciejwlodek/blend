@@ -10,6 +10,12 @@
 /********* included in the root directory of this package.                                          *********/
 /************************************************************************************************************/
 /************************************************************************************************************/
+// CHANGES IN VERSION 0.6.5  -  24/03/2015
+// - Included a few print lines in log file to allow users to understand why a file has been rejected
+//   (modules blend.cpp and aux_blend.cpp).
+// - Fixed a bug in the radiation damage routine. Also now the estimate is possible even in those cases
+//   where intensities are negative (simply raise temporarily plot to positive values) (module blend1.R).
+// - Fixed a bug in the resolution interpolation procedure (module blend1.R).
 // CHANGES IN VERSION 0.6.4  -  16/03/2015
 // - Added error catch code to module "blend2.R" and "blend3.R", acting when BLEND.RData has not
 //   been found.
@@ -890,6 +896,14 @@ int main(int argc, char* argv[])
    std::cout << "<!--SUMMARY_END--></FONT></B>" << std::endl;
    std::cout << std::endl;
    
+   // Rejection information (if any) for users
+   std::cout << "TYPES OF FLAGS ASSIGNED BY BLEND TO DATA SETS:" << std::endl;
+   std::cout << std::endl;
+   std::cout << "   crystal_flag = 0:   crystal is accepted for further processing" << std::endl;
+   std::cout << "   crystal_flag = 1:   crystal is rejected because data file contains no reflections" << std::endl;
+   std::cout << "   crystal_flag = 2:   crystal is rejected because data file is made up of multiple runs" << std::endl;
+   std::cout << "   crystal_flag = 3:   crystal is rejected because data file is made up of multiple datasets" << std::endl;
+   std::cout << std::endl;
    // Load crystals in unmerged data structures
    std::vector<scala::hkl_unmerge_list> hkl_list=load_crystals(filename,runmode);   // This is the correct expression for a copy constructor. Defining hkl_list first
                                                                                     // and then using hkl_list=load_crystals(filename) doesn't work. Ultimately this is
@@ -905,7 +919,10 @@ int main(int argc, char* argv[])
 
    // Label crystals
    crystal_flag=label_crystals(hkl_list,crystal_flag);
-   //for (int i=0;i < crystal_flag.size();i++) std::cout << "crystal flag " << i+1 << ": " << crystal_flag[i] << std::endl;
+   std::cout << "FLAGS have been assigned as follows:" << std::endl;
+   std::cout << std::endl;
+   for (int i=0;i < crystal_flag.size();i++) std::cout << "   crystal flag for data set " << std::setw(4) << i+1 << ": " << crystal_flag[i] << std::endl;
+   std::cout << std::endl;
    
    // Maps to store types of crystals belonging to different bravais lattices. These maps contain the "sg" bit as initially we were
    // handling space groups, rather than bravais lattices. Bravais lattice numbers are as follows:
