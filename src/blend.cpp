@@ -10,6 +10,10 @@
 /********* included in the root directory of this package.                                          *********/
 /************************************************************************************************************/
 /************************************************************************************************************/
+// CHANGES IN VERSION 0.6.6  -  01/04/2015
+// - Added two columns in file "CLUSTERS.txt" which tell two datasets having current values of 
+//   LCV and aLCV (module blend1.R).
+// - Fixed bug for mode "-g D". Now data sets at the bottom are printed correctly (module blend4.R).
 // CHANGES IN VERSION 0.6.5  -  24/03/2015
 // - Included a few print lines in log file to allow users to understand why a file has been rejected
 //   (modules blend.cpp and aux_blend.cpp).

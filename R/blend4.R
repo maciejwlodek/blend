@@ -42,7 +42,7 @@ annotate_tree <- function(clN,N,Tree,mStats,groups1,macropar,file_name)
  # Data frame with nodes coordinates
  Dnodesxy <- as.data.frame(nodesxy)[ulidx,]
 
- # Extend of dendrogram details along X
+ # Extent of dendrogram details along X
  clns <- groups1[[clN]]
  tmpidx <- match(as.character(clns),dtmp$labels)
  idx <- which(dtmp$order %in% tmpidx)
@@ -63,8 +63,8 @@ annotate_tree <- function(clN,N,Tree,mStats,groups1,macropar,file_name)
  png(file=fname,width=800,height=1000)
  par(mar=c(5,2,3,4))
  plot(ndend,xlim=xlim,ylim=ylim,yaxt='n',leaflab="none",edgePar=list(lwd=3))
- points(Dnodesxy,pch=16,cex=8,col="grey")
- text(Dnodesxy$x,Dnodesxy$y,labels=ulidx,cex=2.3,col="white")
+ points(Dnodesxy,pch=16,cex=6,col="grey")
+ text(Dnodesxy$x,Dnodesxy$y,labels=ulidx,cex=1.5,col="white")
  labels <- c()
  rownum <- as.integer(rownames(mStats))
  uulidx <- match(ulidx,rownum)
@@ -108,15 +108,21 @@ annotate_tree <- function(clN,N,Tree,mStats,groups1,macropar,file_name)
   ee <- edges[[uu]]
   if (ee[1]%%1 < 0.000001) 
   {
-   text <- c(text,ee[1])
    eles <- -dtmp$merge[uu,1]
-   labels <- c(labels,dtmp$labels[eles])
+   if (eles == dtmp$order[as.integer(ee[1])])
+   {
+    text <- c(text,ee[1])
+    labels <- c(labels,dtmp$labels[eles])
+   }
   }
   if (ee[2]%%1 < 0.000001) 
   {
-   text <- c(text,ee[2])
    eles <- -dtmp$merge[uu,2]
-   labels <- c(labels,dtmp$labels[eles])
+   if (eles == dtmp$order[as.integer(ee[2])])
+   {
+    text <- c(text,ee[2])
+    labels <- c(labels,dtmp$labels[eles])
+   }
   }
  }
  if (length(text) > 0) mtext(text=labels,side=1,at=text,col=2,line=1,cex=1.0)
@@ -172,15 +178,21 @@ annotate_tree <- function(clN,N,Tree,mStats,groups1,macropar,file_name)
   ee <- edges[[uu]]
   if (ee[1]%%1 < 0.000001) 
   {
-   text <- c(text,ee[1])
    eles <- -dtmp$merge[uu,1]
-   labels <- c(labels,dtmp$labels[eles])
+   if (eles == dtmp$order[as.integer(ee[1])])
+   {
+    text <- c(text,ee[1])
+    labels <- c(labels,dtmp$labels[eles])
+   }
   }
   if (ee[2]%%1 < 0.000001) 
   {
-   text <- c(text,ee[2])
    eles <- -dtmp$merge[uu,2]
-   labels <- c(labels,dtmp$labels[eles])
+   if (eles == dtmp$order[as.integer(ee[2])])
+   {
+    text <- c(text,ee[2])
+    labels <- c(labels,dtmp$labels[eles])
+   }
   }
  }
  if (length(text) > 0) mtext(text=labels,side=1,at=text,col=2,line=1,cex=1.0)
