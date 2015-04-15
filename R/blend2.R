@@ -270,8 +270,8 @@ merge_datasets <- function(mtz_names,selection,suffix,pointless_keys,aimless_key
    for (i in idx) file.remove(dircontents[i])
    idx <- grep("pointless",dircontents,fixed=TRUE)
    for (i in idx) file.remove(dircontents[i])
-   idx <- grep("reference",dircontents,fixed=TRUE)
-   for (i in idx) file.remove(dircontents[i])
+   #idx <- grep("reference",dircontents,fixed=TRUE)
+   #for (i in idx) file.remove(dircontents[i])
  
    return(list(Mstats,exeaimless))
   }
@@ -326,8 +326,8 @@ merge_datasets <- function(mtz_names,selection,suffix,pointless_keys,aimless_key
   if (length(idx) != 0) for (i in idx) file.remove(dircontents[i])
   idx <- grep("pointless",dircontents,fixed=TRUE)
   if (length(idx) != 0) for (i in idx) file.remove(dircontents[i])
-  idx <- grep("reference",dircontents,fixed=TRUE)
-  if (length(idx) != 0) for (i in idx) file.remove(dircontents[i])
+  #idx <- grep("reference",dircontents,fixed=TRUE)
+  #if (length(idx) != 0) for (i in idx) file.remove(dircontents[i])
  
   # Remove files produced to scale mtz's
   dircontents <- list.files("./")

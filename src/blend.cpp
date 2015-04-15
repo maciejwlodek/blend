@@ -10,6 +10,9 @@
 /********* included in the root directory of this package.                                          *********/
 /************************************************************************************************************/
 /************************************************************************************************************/
+// CHANGES IN VERSION 0.6.7  -  15/04/2015
+// - Fixed a bug responsible for the deletion of any file whose name includes "reference". This is not
+//   necessary (modules blend2.R and blend3.R).
 // CHANGES IN VERSION 0.6.6  -  01/04/2015
 // - Added two columns in file "CLUSTERS.txt" which tell two datasets having current values of 
 //   LCV and aLCV (module blend1.R).
