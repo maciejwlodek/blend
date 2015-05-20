@@ -10,6 +10,9 @@
 /********* included in the root directory of this package.                                          *********/
 /************************************************************************************************************/
 /************************************************************************************************************/
+// CHANGES IN VERSION 0.6.8  -  20/05/2015
+// - Fixed a "nasty" (and wrong piece of code!) bug in routine okRadDam that would make data sets with
+//   less than 6 images still undergo radiation damage routine (module blend1.R).
 // CHANGES IN VERSION 0.6.7  -  15/04/2015
 // - Fixed a bug responsible for the deletion of any file whose name includes "reference". This is not
 //   necessary (modules blend2.R and blend3.R).

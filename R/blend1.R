@@ -42,8 +42,11 @@ okRadDam <- function(data,minIma=6,minReso=5)
  ansR <- TRUE
 
  # Number of images
- images <- data$V4
- if (length(images) < minIma) ansR <- FALSE
+ #images <- data$V4
+ tmp <- range(data$V4,na.rm=TRUE)
+ rima <- tmp[2]-tmp[1]
+ #if (length(images) < minIma) ansR <- FALSE
+ if (rima < minIma) ansR <- FALSE
 
  # Resolution range
  resos <- data$V9
