@@ -117,7 +117,9 @@ std::vector<scala::hkl_unmerge_list> load_crystals(std::string filename,int runm
 
   // Fill hkl_list[i]
   const int verbose=+1;
+  std::cout << "   Trying with dataset " << mtz_file[i] << " ......... ";
   fileread=(mtzin.AddHklList(i,mtz_file[i],file_sel,column_selection,column_list,controls,PxdName(),Scell(),double(2.0),output,verbose,hkl_list[i])).Read();
+  std::cout << "Done." << std::endl;
   if (!fileread) nwrong_mtz++;
   //std::cout << "Partial controls: " << controls.partials.accept_fract_min() << "        " << controls.partials.accept_fract_max() << std::endl;
  }

@@ -6,10 +6,10 @@
 #define PROGRAM_NAME     std::string("POINTLESS")
 #define BLEND_PROGRAM_NAME     std::string("BLEND")
 #define PROGRAM_VERSION  "1.6.4"
-#define BLEND_PROGRAM_VERSION  std::string("0.6.8")
+#define BLEND_PROGRAM_VERSION  std::string("0.6.9")
 #define PROGRAM_DATE     "17th August 2011"
 #define PROGRAM_DATE2    "2011/08/17"
-#define BLEND_PROGRAM_DATE2    "2015/05/20"
+#define BLEND_PROGRAM_DATE2    "2015/05/28"
 #define PROGRAM_EXPIRES  bool(false)
 #define EXPIRE_DAY       int(1)
 #define EXPIRE_MONTH     int(1)

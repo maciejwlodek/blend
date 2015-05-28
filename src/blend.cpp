@@ -10,6 +10,10 @@
 /********* included in the root directory of this package.                                          *********/
 /************************************************************************************************************/
 /************************************************************************************************************/
+// CHANGES IN VERSION 0.6.9  -  28/05/2015
+// - Fixed a bug concerning interpolation of NA's in dynamic wilson plots for secondary descriptors
+// - Added print message while loading datasets to find out which one is not including data
+//   (modules aux_blend.cpp, blend1.R).
 // CHANGES IN VERSION 0.6.8  -  20/05/2015
 // - Fixed a "nasty" (and wrong piece of code!) bug in routine okRadDam that would make data sets with
 //   less than 6 images still undergo radiation damage routine (module blend1.R).

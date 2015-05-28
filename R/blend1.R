@@ -750,10 +750,12 @@ interpolateNA <- function(x,M)
   idx <- which(is.na(M[i,]))
   jdx <- which(!is.na(M[i,]))
 
-  # 10-degree polynomial interpolation
+  # 10-degree polynomial interpolation (normally degree 10; lower if less points available)
   xr <- x[jdx]
   yr <- M[i,jdx]
-  model <- lm(yr~poly(xr,degree=10))
+  dgree <- min(length(yr),11)-1
+  #model <- lm(yr~poly(xr,degree=10))
+  model <- lm(yr~poly(xr,degree=dgree))
   xp <- x
   yp <- predict(model,list(xr=xp))
 
