@@ -10,6 +10,9 @@
 /********* included in the root directory of this package.                                          *********/
 /************************************************************************************************************/
 /************************************************************************************************************/
+// CHANGES IN VERSION 0.6.10  -  14/07/2015
+// - Now aLCV has priority over LCV as the first one is directly connected to resolution (both in A).
+//   (modules blend0.R and blend1.R)
 // CHANGES IN VERSION 0.6.9  -  28/05/2015
 // - Fixed a bug concerning interpolation of NA's in dynamic wilson plots for secondary descriptors
 // - Added print message while loading datasets to find out which one is not including data

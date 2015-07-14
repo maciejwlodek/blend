@@ -221,20 +221,30 @@ maxRatio <- function(cpar)
  }
 
  # Calculate maxRatio matrix for the 3 diagonals vectors and extract max value for each matrix
- mab <- max(distRatio(dab))
- iab <- which(distRatio(dab) == max(distRatio(dab)))
- sab <- adistRatio(dab)[iab]
- mac <- max(distRatio(dac))
- iac <- which(distRatio(dac) == max(distRatio(dac)))
- sac <- adistRatio(dac)[iac]
- mbc <- max(distRatio(dbc))
- ibc <- which(distRatio(dbc) == max(distRatio(dbc)))
- sbc <- adistRatio(dbc)[ibc]
+ #mab <- max(distRatio(dab))
+ mab <- max(adistRatio(dab))
+ #iab <- which(distRatio(dab) == max(distRatio(dab)))
+ iab <- which(adistRatio(dab) == max(adistRatio(dab)))
+ #sab <- adistRatio(dab)[iab]
+ sab <- distRatio(dab)[iab]
+ #mac <- max(distRatio(dac))
+ mac <- max(adistRatio(dac))
+ #iac <- which(distRatio(dac) == max(distRatio(dac)))
+ iac <- which(adistRatio(dac) == max(adistRatio(dac)))
+ #sac <- adistRatio(dac)[iac]
+ sac <- distRatio(dac)[iac]
+ #mbc <- max(distRatio(dbc))
+ mbc <- max(adistRatio(dbc))
+ #ibc <- which(distRatio(dbc) == max(distRatio(dbc)))
+ ibc <- which(adistRatio(dbc) == max(adistRatio(dbc)))
+ #sbc <- adistRatio(dbc)[ibc]
+ sbc <- distRatio(dbc)[ibc]
  vv <- c(sab[1],sac[1],sbc[1])
- imall <- which(c(mab,mac,mbc) == max(c(mab,mac,mbc)))
+ imall <- which(c(mab,mac,mbc) == max(c(mab,mac,mbc)))[1]
  Mpar <- vv[imall]
 
- return(c(max(mab,mac,mbc),Mpar))
+ #return(c(max(mab,mac,mbc),Mpar))
+ return(c(Mpar,max(mab,mac,mbc)))
 }
 
 find_nodes_coords <- function(clst, clns, cn)

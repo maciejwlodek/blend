@@ -645,18 +645,27 @@ maxRatio <- function(macropar,idx)
  }
 
  # Calculate maxRatio matrix for the 3 diagonals vectors and extract max value for each matrix
- mab <- max(distRatio(dab))
- iab <- which(distRatio(dab) == max(distRatio(dab)))
+ #mab <- max(distRatio(dab))
+ mab <- max(adistRatio(dab))
+ #iab <- which(distRatio(dab) == max(distRatio(dab)))
+ iab <- which(adistRatio(dab) == max(adistRatio(dab)))
  ijab <- get_indices(iab[1],n)
- sab <- adistRatio(dab)[iab]
- mac <- max(distRatio(dac))
- iac <- which(distRatio(dac) == max(distRatio(dac)))
+ #sab <- adistRatio(dab)[iab]
+ sab <- distRatio(dab)[iab]
+ #mac <- max(distRatio(dac))
+ mac <- max(adistRatio(dac))
+ #iac <- which(distRatio(dac) == max(distRatio(dac)))
+ iac <- which(adistRatio(dac) == max(adistRatio(dac)))
  ijac <- get_indices(iac[1],n)
- sac <- adistRatio(dac)[iac]
- mbc <- max(distRatio(dbc))
- ibc <- which(distRatio(dbc) == max(distRatio(dbc)))
+ #sac <- adistRatio(dac)[iac]
+ sac <- distRatio(dac)[iac]
+ #mbc <- max(distRatio(dbc))
+ mbc <- max(adistRatio(dbc))
+ #ibc <- which(distRatio(dbc) == max(distRatio(dbc)))
+ ibc <- which(adistRatio(dbc) == max(adistRatio(dbc)))
  ijbc <- get_indices(ibc[1],n)
- sbc <- adistRatio(dbc)[ibc]
+ #sbc <- adistRatio(dbc)[ibc]
+ sbc <- distRatio(dbc)[ibc]
  vv <- c(sab[1],sac[1],sbc[1])
  ij <- matrix(c(ijab,ijac,ijbc),ncol=3)
  imall <- which(c(mab,mac,mbc) == max(c(mab,mac,mbc)))[1]
@@ -664,7 +673,8 @@ maxRatio <- function(macropar,idx)
  ijs <- ij[,imall]
  cns <- macropar[idx[ijs],"cn"]
 
- return(c(max(mab,mac,mbc),Mpar,cns[1],cns[2]))
+ #return(c(max(mab,mac,mbc),Mpar,cns[1],cns[2]))
+ return(c(Mpar,max(mab,mac,mbc),cns[1],cns[2]))
 }
 
 find_nodes_coords <- function(clst, clns, cn)
