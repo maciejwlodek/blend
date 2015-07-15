@@ -10,6 +10,10 @@
 /********* included in the root directory of this package.                                          *********/
 /************************************************************************************************************/
 /************************************************************************************************************/
+// CHANGES IN VERSION 0.6.11  -  15/07/2015
+// - Added aLCV values to annotated dendrogram, if no "BLEND.RMergingStatistics" is found in working directory.
+//   In this case the nodes in the annotated dendrogram have square, rather than circular shape.
+//   (modules affected blend4.R)
 // CHANGES IN VERSION 0.6.10  -  14/07/2015
 // - Now aLCV has priority over LCV as the first one is directly connected to resolution (both in A).
 //   (modules blend0.R and blend1.R)

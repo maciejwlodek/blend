@@ -23,7 +23,7 @@
 # 
 # Main function to build the annotated dendrogram
 #
-annotate_tree <- function(clN,N,Tree,mStats,groups1,macropar,file_name)
+annotate_tree <- function(clN,N,Tree,mStats,groups1,macropar,file_name,aLCVs)
 {
  # Modify tree distances for better display
  dtmp <- simplify_heights(Tree,groups1)
@@ -63,8 +63,16 @@ annotate_tree <- function(clN,N,Tree,mStats,groups1,macropar,file_name)
  png(file=fname,width=800,height=1000)
  par(mar=c(5,2,3,4))
  plot(ndend,xlim=xlim,ylim=ylim,yaxt='n',leaflab="none",edgePar=list(lwd=3))
- points(Dnodesxy,pch=16,cex=6,col="grey")
- text(Dnodesxy$x,Dnodesxy$y,labels=ulidx,cex=1.5,col="white")
+ if (!is.na(aLCVs[1])) 
+ {
+  points(Dnodesxy,pch=15,cex=6.7,col="grey")
+  text(Dnodesxy$x,Dnodesxy$y,labels=ulidx,cex=1.5,col="white",adj=c(0.5,-0.08))
+ }
+ if (is.na(aLCVs[1])) 
+ {
+  points(Dnodesxy,pch=16,cex=6,col="grey")
+  text(Dnodesxy$x,Dnodesxy$y,labels=ulidx,cex=1.5,col="white")
+ }
  labels <- c()
  rownum <- as.integer(rownames(mStats))
  uulidx <- match(ulidx,rownum)
@@ -97,6 +105,18 @@ annotate_tree <- function(clN,N,Tree,mStats,groups1,macropar,file_name)
  text(Dnodesxy$x,Dnodesxy$y,labels=labels,cex=1,col=2,adj=c(-0.3,-2.5))
  greyL <- rgb(0.5,0.5,0.5)
  points(idx,rep(ylim[1],times=length(idx)),type="h",col=greyL)
+
+ # Print aLCV_values only for "a" and "aDO" modes (where we pass NA, rather than aLCV_values)
+ if (!is.na(aLCVs[1]))
+ {
+  labels <- c()
+  for (ii in uulidx)
+  {
+   tmp <- sprintf("%7.2f",aLCVs[ii])
+   labels <- c(labels,tmp)
+  }
+  text(Dnodesxy$x,Dnodesxy$y,labels=labels,cex=0.9,col=4,adj=c(0.6,1.65))
+ }
 
  # Print data set number only if tree branch ends in data set, not in cluster
  edges <- find_nodes_edges(dtmp,groups1,macropar)
@@ -379,7 +399,13 @@ if (args[1] == "D")
  }
 
  # Check if synthesis mode has been executed
- if (file.exists("BLEND.RMergingStatistics")) load("BLEND.RMergingStatistics",.GlobalEnv)
+ if (file.exists("BLEND.RMergingStatistics")) 
+ {
+  load("BLEND.RMergingStatistics",.GlobalEnv)
+
+  # We also need to pass NA, rather than aLCV_values, as these won't be displayed
+  aLCVs <- NA
+ }
  if (!file.exists("BLEND.RMergingStatistics"))
  {
   # Create a mergingStatistics data frame with all NA's, because synthesis has not been carried out yet
@@ -411,6 +437,9 @@ if (args[1] == "D")
                                   LowRes=vecLow,HighRes=vecHigh,
                                   CC12=rep(NA,times=ncls),                          # Later to be changed according to new code
                                   Mn2=rep(NA,times=ncls))                           # Later to be changed according to new code
+
+  # We also need to pass aLCV_values, as these will be displayed
+  aLCVs <- aLCV_values
  }
 
  # Default cluster is top cluster and number of clusters levels downward is 2
@@ -514,7 +543,7 @@ if (args[1] == "D")
  file_name <- sprintf("./graphics/annotated_dendrogram_cluster_%03d_level_%03d.",clN,N)
 
  # Create annotated dendrograms (png and ps)
- tmp <- annotate_tree(clN,N,npar.hc_ward,mergingStatistics,groups1,macropar,file_name)
+ tmp <- annotate_tree(clN,N,npar.hc_ward,mergingStatistics,groups1,macropar,file_name,aLCVs)
 
  # Normal termination
  q(save = "no", status = 0, runLast = FALSE)
