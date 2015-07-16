@@ -10,6 +10,10 @@
 /********* included in the root directory of this package.                                          *********/
 /************************************************************************************************************/
 /************************************************************************************************************/
+// CHANGES IN VERSION 0.6.12  -  16/07/2015
+// - When only 1 dataset is to be scaled now use EXCLUDE BATCH ...", rather than "EXCLUDE FILE 1 BATCH ... "
+//   in POINTLESS. This cause POINTLESS to ignore the cuts.
+//   (modules blend2.R and blend3.R)
 // CHANGES IN VERSION 0.6.11  -  15/07/2015
 // - Added aLCV values to annotated dendrogram, if no "BLEND.RMergingStatistics" is found in working directory.
 //   In this case the nodes in the annotated dendrogram have square, rather than circular shape.

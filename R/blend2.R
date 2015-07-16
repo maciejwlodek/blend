@@ -82,7 +82,8 @@ merge_mtzs <- function(mtz_list,selection,mtzout,pointless_keys,hklref,rwin=FALS
   finbatch <- blist[length(blist)]
   if (inibatch > 0)
   {
-   linea <- sprintf("EXCLUDE FILE %d BATCH %d TO %d\n",imtz,inibatch,finbatch)
+   if (length(mtz_list) > 1) linea <- sprintf("EXCLUDE FILE %d BATCH %d TO %d\n",imtz,inibatch,finbatch)
+   if (length(mtz_list) == 1) linea <- sprintf("EXCLUDE BATCH %d TO %d\n",inibatch,finbatch)
    cat(linea,file="pointless_keywords.dat",append=TRUE)
   }
  }
