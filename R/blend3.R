@@ -164,11 +164,12 @@ merge_datasets <- function(mtz_names,selection,suffix,pointless_keys,aimless_key
 
   # Rename POINTLESS log
   log_file <- paste(suffix[1],paste("pointless_",suffix[2],".log",sep=""),sep="/")
-  for (linea in exemerge)
-  {
-   linea <- paste(linea,"\n",sep="")
-   cat(linea,file=log_file,append=TRUE)
-  }
+  cat(exemerge,file=log_file,sep="\n")
+  #for (linea in exemerge)
+  #{
+  # linea <- paste(linea,"\n",sep="")
+  # cat(linea,file=log_file,append=TRUE)
+  #}
 
   # Aimless keywords file
   linea_out <- paste(suffix[1],paste("scaled_",suffix[2],".mtz",sep=""),sep="/")
@@ -315,11 +316,12 @@ merge_datasets <- function(mtz_names,selection,suffix,pointless_keys,aimless_key
 
   # Write AIMLESS log file
   log_file <- paste(suffix[1],paste("aimless_",suffix[2],".log",sep=""),sep="/")
-  for (linea in exeaimless)
-  {
-   linea <- paste(linea,"\n",sep="")
-   cat(linea,file=log_file,append=TRUE)
-  }
+  cat(exeaimless,file=log_file,sep="\n")
+  #for (linea in exeaimless)
+  #{
+  # linea <- paste(linea,"\n",sep="")
+  # cat(linea,file=log_file,append=TRUE)
+  #}
 
   # Remove files produced to merge mtz's
   dircontents <- list.files("./")
@@ -356,16 +358,18 @@ merge_datasets <- function(mtz_names,selection,suffix,pointless_keys,aimless_key
 
   # Rename POINTLESS log
   log_file <- paste(suffix[1],paste("pointless_",suffix[2],".log",sep=""),sep="/")
-  for (linea in exemerge)
-  {
-   linea <- paste(linea,"\n",sep="")
-   cat(linea,file=log_file,append=TRUE)
-  }
+  cat(exemerge,file=log_file,sep="\n")
+  #for (linea in exemerge)
+  #{
+  # linea <- paste(linea,"\n",sep="")
+  # cat(linea,file=log_file,append=TRUE)
+  #}
   
   return(list(Mstats,exemerge))
  }
 }
 
+#
 # Function to interpret input for the combination mode.
 # 1) individual numbers, like 2 4 8 17 etc., simply means that the group is formed of individual data sets: "2 4 8 17"
 # 2) individual numbers separated by commas, like 2,4,8,17, means: "2 4 8 17"
@@ -479,6 +483,221 @@ interpretGcore <- function(gcore)
  return(glist)
 }
 
+#
+# Given a table "tbl", which is, in fact, a vector of strings obtained while reading
+# a table from an ascii file, this function returns a list whose elements are vectors of
+# values corresponding to the table columns, whose positions are given by vector "pns".
+get_vectors_from_table <- function(tbl,pns)
+{
+ # Turn vector of strings into a list of vectors
+ tmpsplit <- strsplit(tbl,split=" ",fixed=TRUE)
+ m <- length(tmpsplit)
+ ltmp <- list()
+ for (i in 1:m)
+ {
+  vec <- tmpsplit[[i]]
+  idx <- which(vec == "")
+  ltmp <- c(ltmp,list(vec[-idx]))
+ }
+ tmpsplit <- lapply(ltmp,as.numeric)
+ rm(ltmp)
+
+ # Create final matrix
+ n <- length(pns)
+ M <- matrix(nrow=m,ncol=n)
+ for (i in 1:m)
+ {
+  M[i,] <- tmpsplit[[i]][pns]
+ }
+ rm(tmpsplit)
+
+ return(M)
+}
+
+#
+# Pruning plan
+pruning_plan <- function(tbl,completeness,cutf,icyc)
+{
+ # Partition all images in runs
+ prt <- floor(tbl[,1]/1000)
+ rns <- unique(prt)
+ istart <- c()
+ iend <- c()
+ for (i in rns)
+ {
+  idx <- which(prt == i)
+  istart <- c(istart,idx[1])
+  iend <- c(iend,tail(idx,n=1))
+ }
+ Mruns <- matrix(c(istart,iend),ncol=2)
+
+ # Number of images that need to be excluded (based on default or user value of "completeness")
+ idx <- which(tbl[,3] >= completeness)
+ n_im_elim <- length(idx)
+
+ # Partition number of discarded images among all runs (proportionally to each dataset)
+ neq <- c()
+ for (irun in rns)
+ {
+  idx <- which(prt == irun)
+  r <- n_im_elim*length(idx)/length(prt)
+  neq <- c(neq,floor(r))
+ }
+
+ # Select run with highest mean Rmerge
+ mean_Rmerge <- c()
+ Images <- c()
+ for (i in rns)
+ {
+  j <- i+1
+  mean_Rmerge <- c(mean_Rmerge,mean(tbl[Mruns[j,1]:Mruns[j,2],2],na.rm=TRUE))
+  Images <- c(Images,length(Mruns[j,1]:Mruns[j,2]))
+ }
+ mean_Rmerge[mean_Rmerge < 0] <- NA
+
+ isel <- which(mean_Rmerge == max(mean_Rmerge,na.rm=TRUE))
+ if (length(isel) == 0) isel <- 1
+
+ # Find exact values of images to eliminate
+ neq[isel] <- floor(cutf*neq[isel])
+ if (neq[isel] > 0) ini_ima <- tbl[Mruns[isel,2]-neq[isel]+1,1]
+ fin_ima <- tbl[Mruns[isel,2],1]
+ if (neq[isel] == 0) ini_ima <- fin_ima
+ 
+ # If number of images left after elimination is less than a hard value (5) suspend pruning
+ HARD_VALUE <- 5
+ idx <- tbl[Mruns[isel,1]:(Mruns[isel,2]-neq[isel]),1]
+ if (length(idx) < HARD_VALUE)
+ {
+  neq[isel] <- 0
+  stmp <- sprintf("Only %d images left for run %d.\n",length(idx),isel)
+  cat(stmp)
+ }
+
+ return(list(ini_ima=ini_ima,fin_ima=fin_ima,n_im_elim=n_im_elim,neq=neq,isel=isel,mean_Rmerge=mean_Rmerge,Images=Images))
+}
+
+#
+# Run AIMLESS on previously created unscaled file, with additional keywords for exclusion of images
+simple_merge_datasets <- function(suffix,aimless_keys,rwin=FALSE)
+{
+ # AIMLESS keywords file
+ cat(aimless_keys,file="aimless_keywords.dat",sep="\n")
+ 
+ # Aimless scaled file
+ linea_out <- paste(suffix[1],paste("scaled_",suffix[2],".mtz",sep=""),sep="/")
+
+ # Run AIMLESS
+ cat("Re-running AIMLESS on the unscaled file ...\n")
+ if (rwin)
+ {
+  stringa <- sprintf("aimless.exe < aimless_keywords.dat")
+  exeaimless <- shell(stringa,intern=TRUE, ignore.stderr = TRUE)
+ }
+ else
+ {
+  stringa <- sprintf("aimless < aimless_keywords.dat")
+  exeaimless <- system(stringa,intern=TRUE, ignore.stderr = TRUE)
+ }
+
+ # Collect and organize AIMLESS output
+ nexeaimless <- length(exeaimless)
+ if (length(grep("End of aimless job,", exeaimless[(nexeaimless - 1)], fixed = TRUE)) == 0)
+ {
+  Mstats <- data.frame(Rmeas=c(NA,NA,NA),Rpim=c(NA,NA,NA),Completeness=c(NA,NA,NA),Multiplicity=c(NA,NA,NA),
+                       LowRes=c(NA,NA,NA),HighRes=c(NA,NA,NA))
+  log_file <- paste(suffix[1],paste("aimless_",suffix[2],".log",sep=""),sep="/")
+  cat(exeaimless,file=log_file,sep="\n")
+ 
+  # Clean directory from unnecessary files
+  dircontents <- list.files("./")
+  idx <- grep("ANOMPLOT",dircontents,fixed=TRUE)
+  if (length(idx) != 0) for (jj in idx) file.remove(dircontents[jj])
+  idx <- grep("CORRELPLOT",dircontents,fixed=TRUE)
+  if (length(idx) != 0) for (jj in idx) file.remove(dircontents[jj])
+  idx <- grep("NORMPLOT",dircontents,fixed=TRUE)
+  if (length(idx) != 0) for (jj in idx) file.remove(dircontents[jj])
+  idx <- grep("ROGUEPLOT",dircontents,fixed=TRUE)
+  if (length(idx) != 0) for (jj in idx) file.remove(dircontents[jj])
+  idx <- grep("ROGUES",dircontents,fixed=TRUE)
+  if (length(idx) != 0) for (jj in idx) file.remove(dircontents[jj])
+  idx <- grep("SCALES",dircontents,fixed=TRUE)
+  if (length(idx) != 0) for (jj in idx) file.remove(dircontents[jj])
+  idx <- grep("aimless_keywords",dircontents,fixed=TRUE)
+  if (length(idx) != 0) for (jj in idx) file.remove(dircontents[jj])
+
+  # Remove files produced to merge mtz's
+  dircontents <- list.files("./")
+  idx <- grep("mtzdump",dircontents,fixed=TRUE)
+  for (i in idx) file.remove(dircontents[i])
+ 
+  return(list(Mstats,exeaimless))
+ }
+
+ # Aimless output is OK. Carry on collecting information
+ # Extract info on B factors and scales
+ gRmeas <- grep("Rmeas (all",exeaimless,fixed=TRUE)
+ lineRmeas <- exeaimless[gRmeas]
+ tmpsplit <- strsplit(lineRmeas," ")
+ idx <- which(nchar(tmpsplit[[1]]) != 0)
+ Rmeas_values <- as.numeric(tmpsplit[[1]][idx[6:8]]) 
+ gRpim <- grep("Rpim (all",exeaimless,fixed=TRUE)
+ lineRpim <- exeaimless[gRpim]
+ tmpsplit <- strsplit(lineRpim," ")
+ idx <- which(nchar(tmpsplit[[1]]) != 0)
+ Rpim_values <- as.numeric(tmpsplit[[1]][idx[6:8]]) 
+ gCompleteness <- grep("Completeness  ",exeaimless,fixed=TRUE)
+ lineCompleteness <- exeaimless[gCompleteness]
+ tmpsplit <- strsplit(lineCompleteness," ")
+ idx <- which(nchar(tmpsplit[[1]]) != 0)
+ Completeness_values <- as.numeric(tmpsplit[[1]][idx[2:4]]) 
+ gMultiplicity <- grep("Multiplicity  ",exeaimless,fixed=TRUE)
+ lineMultiplicity <- exeaimless[gMultiplicity]
+ tmpsplit <- strsplit(lineMultiplicity," ")
+ idx <- which(nchar(tmpsplit[[1]]) != 0)
+ Multiplicity_values <- as.numeric(tmpsplit[[1]][idx[2:4]]) 
+ gLowResos <- grep("Low resolution limit",exeaimless,fixed=TRUE)
+ lineLowResos <- exeaimless[gLowResos]
+ tmpsplit <- strsplit(lineLowResos," ")
+ idx <- which(nchar(tmpsplit[[1]]) != 0)
+ LowResos_values <- as.numeric(tmpsplit[[1]][idx[4:6]])
+ gHighResos <- grep("High resolution limit",exeaimless,fixed=TRUE)
+ lineHighResos <- exeaimless[gHighResos]
+ tmpsplit <- strsplit(lineHighResos," ")
+ idx <- which(nchar(tmpsplit[[1]]) != 0)
+ HighResos_values <- as.numeric(tmpsplit[[1]][idx[4:6]])
+ 
+ Mstats <- data.frame(Rmeas=Rmeas_values,Rpim=Rpim_values,Completeness=Completeness_values,Multiplicity=Multiplicity_values,
+                      LowRes=LowResos_values,HighRes=HighResos_values)
+
+ # Write AIMLESS log file
+ log_file <- paste(suffix[1],paste("aimless_",suffix[2],".log",sep=""),sep="/")
+ cat(exeaimless,file=log_file,sep="\n")
+
+ # Remove files produced to merge mtz's
+ dircontents <- list.files("./")
+ idx <- grep("mtzdump",dircontents,fixed=TRUE)
+ if (length(idx) != 0) for (i in idx) file.remove(dircontents[i])
+ 
+ # Remove files produced to scale mtz's
+ dircontents <- list.files("./")
+ idx <- grep("ANOMPLOT",dircontents,fixed=TRUE)
+ if (length(idx) != 0) for (jj in idx) file.remove(dircontents[jj])
+ idx <- grep("CORRELPLOT",dircontents,fixed=TRUE)
+ if (length(idx) != 0) for (jj in idx) file.remove(dircontents[jj])
+ idx <- grep("NORMPLOT",dircontents,fixed=TRUE)
+ if (length(idx) != 0) for (jj in idx) file.remove(dircontents[jj])
+ idx <- grep("ROGUEPLOT",dircontents,fixed=TRUE)
+ if (length(idx) != 0) for (jj in idx) file.remove(dircontents[jj])
+ idx <- grep("ROGUES",dircontents,fixed=TRUE)
+ if (length(idx) != 0) for (jj in idx) file.remove(dircontents[jj])
+ idx <- grep("SCALES",dircontents,fixed=TRUE)
+ if (length(idx) != 0) for (jj in idx) file.remove(dircontents[jj])
+ idx <- grep("aimless_keywords",dircontents,fixed=TRUE)
+ if (length(idx) != 0) for (jj in idx) file.remove(dircontents[jj])
+
+ return(list(Mstats,exeaimless))
+}
 
 
 ######################################################################################################################
@@ -505,6 +724,10 @@ options(warn = -1)
 
 # Retrieve value from command line
 args <- commandArgs(trailingOnly=TRUE)
+combination_type <- as.integer(args[1])
+tmp <- args
+args <- tmp[2:length(tmp)]
+rm(tmp)
 cat("\n")
 cat(paste("Input string:   ",paste(args,collapse=" ")))
 n <- length(args)
@@ -532,6 +755,12 @@ for (i in 1:n)
   glist <- interpretGcore(gcore)
   for (j in glist) 
   {
+   if (j < 1 | j > length(groups[[1]]))
+   {
+    stmp <- sprintf(" USER ERROR! Cluster %3d does not exist.\n",j)
+    cat(stmp)
+    q(save = "no", status = 1, runLast = FALSE)
+   }
    msg <- sprintf("         Cluster %3d - Includes data sets     : %s\n",j,paste(groups[[1]][[j]],collapse=" "))
    cat(msg)
   }
@@ -653,13 +882,9 @@ if (file.exists("BLEND_KEYWORDS.dat"))
 {
  contents <- scan("BLEND_KEYWORDS.dat", what="character",sep="\n",quiet=TRUE)
 
- # POINTLESS
- idxs <- grep("POINTLESS KEYWORDS",contents,fixed=TRUE)
- idxe <- grep("AIMLESS KEYWORDS",contents,fixed=TRUE)
- if ((idxe-idxs) > 1) for (line in contents[(idxs+1):(idxe-1)]) pointless_keys <- c(pointless_keys,line)
-
+ # BLEND KEYWORDS
  # Reference dataset (from BLEND KEYWORDS section)
- tmp <- grep("DATAREF",contents,fixed=TRUE)
+ tmp <- grep("DATA",contents,fixed=TRUE)
  if (length(tmp) != 0)
  {
   tmp <- contents[tmp[1]]    # [1] in case somebody add DATAREF line more than once
@@ -668,6 +893,7 @@ if (file.exists("BLEND_KEYWORDS.dat"))
   idxref_char <- tmp[[1]][jdx[length(jdx)]]
   idxref <- as.integer(idxref_char)
  } else idxref_char <- as.character(idxref)
+
  # Read in "FINAL_list_of_files.dat" to associate reference dataset to file path (just in some cases)
  indata <- read.table(file="FINAL_list_of_files.dat")
  indata[,1] <- as.character(indata[,1])
@@ -683,6 +909,44 @@ if (file.exists("BLEND_KEYWORDS.dat"))
  cat(messaggio)
  cat("\n")
 
+ # Maximum number of cycles for BLEND -cP mode (from BLEND KEYWORDS section)
+ tmp <- grep("MAXC",contents,fixed=TRUE)
+ if (length(tmp) != 0)
+ {
+  tmp <- contents[tmp[1]]    # [1] in case somebody add MAXCYCLE line more than once
+  tmp <- strsplit(tmp," ")
+  jdx <- which(nchar(tmp[[1]]) != 0)
+  maxcycle_char <- tmp[[1]][jdx[length(jdx)]]
+  maxcycle <- as.integer(maxcycle_char)
+ } else maxcycle <- 5
+
+ # Minimum data completeness for BLEND -cP mode (from BLEND KEYWORDS section)
+ tmp <- grep("COMP",contents,fixed=TRUE)
+ if (length(tmp) != 0)
+ {
+  tmp <- contents[tmp[1]]    # [1] in case somebody add COMPLETENESS line more than once
+  tmp <- strsplit(tmp," ")
+  jdx <- which(nchar(tmp[[1]]) != 0)
+  completeness_char <- tmp[[1]][jdx[length(jdx)]]
+  completeness <- as.numeric(completeness_char)
+ } else completeness <- 95.0
+
+ # Fraction of images to be eliminated for BLEND -cp mode (from BLEND KEYWORDS section)
+ tmp <- grep("CUTF",contents,fixed=TRUE)
+ if (length(tmp) != 0)
+ {
+  tmp <- contents[tmp[1]]    # [1] in case somebody add COMPLETENESS line more than once
+  tmp <- strsplit(tmp," ")
+  jdx <- which(nchar(tmp[[1]]) != 0)
+  cutfraction_char <- tmp[[1]][jdx[length(jdx)]]
+  cutfraction <- as.numeric(cutfraction_char)
+ } else cutfraction <- 0.5
+
+ # POINTLESS KEYWORDS
+ idxs <- grep("POINTLESS KEYWORDS",contents,fixed=TRUE)
+ idxe <- grep("AIMLESS KEYWORDS",contents,fixed=TRUE)
+ if ((idxe-idxs) > 1) for (line in contents[(idxs+1):(idxe-1)]) pointless_keys <- c(pointless_keys,line)
+
  # AIMLESS
  idxs <- idxe
  idxe <- length(contents)
@@ -693,8 +957,563 @@ if (file.exists("BLEND_KEYWORDS.dat"))
 if (!file.exists(outdir)) dir.create(outdir)   # Create "combined_files" directory, if it does not exist
 ftail <- sprintf("%03d",(length(gidx)+1))
 suffix <- c(outdir,ftail)
-tmp <- merge_datasets("FINAL_list_of_files.dat",selection=cln,suffix,pointless_keys,aimless_keys,
-                      resomax=resosel,nref=idxref_char,rwin=rwin)
+if (combination_type == 0)
+{
+ tmp <- merge_datasets("FINAL_list_of_files.dat",selection=cln,suffix,pointless_keys,aimless_keys,
+                       resomax=resosel,nref=idxref_char,rwin=rwin)
+
+ # Get table of average Rmerges per run
+ if (!is.na(tmp[[1]]$Rmeas[1]))
+ {
+  # Read AIMLESS log and store some info
+  log_aimless <- paste(suffix[1],paste("aimless_",suffix[2],".log",sep=""),sep="/")
+  contents_aimless <- scan(log_aimless,what="character",sep="\n",quiet=TRUE)
+ 
+  # Rmerge values
+  gRmerge <- grep("Rmerge",contents_aimless,fixed=TRUE)
+  istart <- gRmerge[5]+1
+  iend <- gRmerge[6]-2
+  line_Rmerge <- contents_aimless[istart:iend]
+  tbl <- get_vectors_from_table(line_Rmerge,c(2,6,9,13))
+  lista <- pruning_plan(tbl,100,1,0)
+  mean_Rmerge <- lista$mean_Rmerge
+  Images <- lista$Images
+  rm(lista)
+
+  # Output table for average Rmerge and Images per datasets plots 
+  nruns_final <- length(mean_Rmerge)
+  cat("\n")
+  cat("$TABLE: Image number and average Rmerge for all datasets :\n")
+  cat("$GRAPHS:    Number of images per dataset       : N : 1, 2 :\n")
+  cat("       :    Average Rmerge per dataset         : N : 1, 3 :\n")
+  cat("$$\n")
+  cat("  Datasets   Images    mean(Rmerge)  $$\n")
+  cat("$$\n")
+  for (irun in 1:nruns_final)
+  {
+   stmp <- sprintf("%10d %8d %15.3f\n",cln[irun],Images[irun],mean_Rmerge[irun])
+   cat(stmp)
+  }
+  cat("$$\n")
+  cat("\n")
+ }
+}
+if (combination_type == 1)
+{
+ cat("\n")
+ cat("Working out strategy to improve merging statistics ...\n")
+ cat("\n")
+
+ # Create two lists to store aimless keywords and merging statistics.
+ stored_results <- list()
+ stored_aimkeys <- list()
+
+ # Run default POINTLESS and AIMLESS to load starting information
+ cat("### Cycle 0 ###\n")
+ tmp <- merge_datasets("FINAL_list_of_files.dat",selection=cln,suffix,pointless_keys,aimless_keys,
+                       resomax=resosel,nref=idxref_char,rwin=rwin)
+ if (!is.na(tmp[[1]]$Rmeas[1]))
+ {
+  stored_results <- c(stored_results,list(tmp[[1]]))
+  stored_aimkeys <- c(stored_aimkeys,list(aimless_keys))
+
+  # Read AIMLESS log and store some info
+  log_aimless <- paste(suffix[1],paste("aimless_",suffix[2],".log",sep=""),sep="/")
+  contents_aimless <- scan(log_aimless,what="character",sep="\n",quiet=TRUE)
+
+  # Rmeas, Rpim and Completeness for this (starting) cycle
+  gRmeas <- grep("Rmeas (all",contents_aimless,fixed=TRUE)
+  lineRmeas <- contents_aimless[gRmeas]
+  tmpsplit <- strsplit(lineRmeas," ")
+  idx <- which(nchar(tmpsplit[[1]]) != 0)
+  Rmeas_values <- as.numeric(tmpsplit[[1]][idx[6:8]]) 
+  gRpim <- grep("Rpim (all",contents_aimless,fixed=TRUE)
+  lineRpim <- contents_aimless[gRpim]
+  tmpsplit <- strsplit(lineRpim," ")
+  idx <- which(nchar(tmpsplit[[1]]) != 0)
+  Rpim_values <- as.numeric(tmpsplit[[1]][idx[6:8]]) 
+  gCompleteness <- grep("Completeness  ",contents_aimless,fixed=TRUE)
+  lineCompleteness <- contents_aimless[gCompleteness]
+  tmpsplit <- strsplit(lineCompleteness," ")
+  idx <- which(nchar(tmpsplit[[1]]) != 0)
+  Completeness_values <- as.numeric(tmpsplit[[1]][idx[2:4]]) 
+  stmp <- sprintf("Rmeas, Rpim and Completeness for this cycle: %10.3f, %10.3f, %10.1f\n",Rmeas_values[1],Rpim_values[1],Completeness_values[1])
+  cat(stmp)
+ 
+  # Rmerge
+  gRmerge <- grep("Rmerge",contents_aimless,fixed=TRUE)
+  istart <- gRmerge[5]+1
+  iend <- gRmerge[6]-2
+  line_Rmerge <- contents_aimless[istart:iend]
+  tbl <- get_vectors_from_table(line_Rmerge,c(2,6,9,13))
+
+  # This bit is just to write out values to be loaded in an interactive R session 
+  # for testing 
+  #fff <- "./ddd.dat"
+  #stmp <- sprintf("%6d %10.3f %8.3f %8.3f\n",tbl[1,1],tbl[1,2],tbl[1,3],tbl[1,4])
+  #cat(stmp,file=fff)
+  #for (i in 2:length(tbl[,1]))
+  #{
+  # stmp <- sprintf("%6d %10.3f %8.3f %8.3f\n",tbl[i,1],tbl[i,2],tbl[i,3],tbl[i,4])
+  # cat(stmp,file=fff,append=TRUE)
+  #}
+
+  # Store average Rmerge and Images per Run
+  list_Rmerges <- list()
+  list_Images <- list()
+
+  # First exclusion plan
+  lista <- pruning_plan(tbl,completeness,cutfraction,0)
+  ini_ima <- lista$ini_ima
+  fin_ima <- lista$fin_ima
+  n_im_elim <- lista$n_im_elim
+  neq <- lista$neq
+  isel <- lista$isel
+  list_Rmerges <- c(list_Rmerges,list(lista$mean_Rmerge))
+  list_Images <- c(list_Images,list(lista$Images))
+  rm(lista)
+  if (neq[isel] == 0)
+  {
+   stmp <- "=> No images can be further eliminated without either decreasing target completeness or cancelling a whole dataset.\n"
+   stmp <- paste(stmp,"  Pruning cycles will be skipped.\n")
+   cat(stmp)
+  }
+  if (neq[isel] > 0)
+  {
+   cat(paste("=> ",n_im_elim," images can be further eliminated without affecting completeness.\n"))
+   cat(paste("   ",neq[isel]," images will be eliminated from run ",isel,".\n"))
+   cat("\n")
+ 
+   # Cycles
+   icyc <- 0
+   repeat
+   {
+    icyc <- icyc+1
+    if (icyc > maxcycle) 
+    {
+     stmp <- "=> Max. number of cycles reached.\n"
+     stmp <- paste(stmp,"Pruning cycles will be stopped\n")
+     cat(stmp)
+     break
+    }
+    cat(paste("### Cycle",icyc,"###\n"))
+ 
+    # Load fixed aimless keywords
+    gkeys1 <- grep("Input command lines",contents_aimless,fixed=TRUE)
+    gkeys2 <- grep("End of input",contents_aimless,fixed=TRUE)
+    aimless_keys <- contents_aimless[(gkeys1+1):(gkeys2-1)]
+    idx <- which(aimless_keys == "END")
+    if (length(idx) != 0) aimless_keys <- aimless_keys[-idx]
+
+    # Additional line for aimless keywords to exclude images
+    stmp <- paste("EXCLUDE BATCH",ini_ima,"TO",fin_ima)
+    aim_keys <- aimless_keys
+    aim_keys <- c(aim_keys,stmp,"END")
+    tmp <- simple_merge_datasets(suffix,aim_keys,rwin=rwin)                 ### AIMLESS EXECUTION!!!
+    stored_results <- c(stored_results,list(tmp[[1]]))
+    stored_aimkeys <- c(stored_aimkeys,list(aim_keys))
+    if (is.na(tmp[[1]]$Rmeas[1])) 
+    {
+     stmp <- "AIMLESS cannot converge to finite results.\n"
+     cat(stmp)
+     stmp <- "Pruning cycles will be stopped.\n"
+     cat(stmp)
+     break 
+    } 
+
+    # Read AIMLESS log for next cycle and store some info
+    log_aimless <- paste(suffix[1],paste("aimless_",suffix[2],".log",sep=""),sep="/")
+    contents_aimless <- scan(log_aimless,what="character",sep="\n",quiet=TRUE)
+ 
+    # Rpim and Completeness for this cycle
+    gRmeas <- grep("Rmeas (all",contents_aimless,fixed=TRUE)
+    lineRmeas <- contents_aimless[gRmeas]
+    tmpsplit <- strsplit(lineRmeas," ")
+    idx <- which(nchar(tmpsplit[[1]]) != 0)
+    Rmeas_values <- as.numeric(tmpsplit[[1]][idx[6:8]]) 
+    gRpim <- grep("Rpim (all",contents_aimless,fixed=TRUE)
+    lineRpim <- contents_aimless[gRpim]
+    tmpsplit <- strsplit(lineRpim," ")
+    idx <- which(nchar(tmpsplit[[1]]) != 0)
+    Rpim_values <- as.numeric(tmpsplit[[1]][idx[6:8]]) 
+    gCompleteness <- grep("Completeness  ",contents_aimless,fixed=TRUE)
+    lineCompleteness <- contents_aimless[gCompleteness]
+    tmpsplit <- strsplit(lineCompleteness," ")
+    idx <- which(nchar(tmpsplit[[1]]) != 0)
+    Completeness_values <- as.numeric(tmpsplit[[1]][idx[2:4]]) 
+    stmp <- sprintf("Rmeas, Rpim and Completeness for this cycle: %10.3f, %10.3f, %10.1f\n",Rmeas_values[1],Rpim_values[1],Completeness_values[1])
+    cat(stmp)
+
+    # If completeness is below the input threshold stop and delete results for this cycle
+    if (Completeness_values[1] < completeness)
+    {
+     stored_results[[length(stored_results)]] <- NULL
+     stored_aimkeys[[length(stored_aimkeys)]] <- NULL
+     stmp <- "=> No images can be further eliminated without either decreasing target completeness or cancelling a whole dataset.\n"
+     stmp <- paste(stmp,"Pruning cycles will be stopped\n")
+     cat(stmp)
+     break
+    }
+
+    # Rmerge and cumulative completeness
+    gRmerge <- grep("Rmerge",contents_aimless,fixed=TRUE)
+    istart <- gRmerge[5]+1
+    iend <- gRmerge[6]-2
+    line_Rmerge <- contents_aimless[istart:iend]
+    tbl <- get_vectors_from_table(line_Rmerge,c(2,6,9,13))
+  
+    # This bit is just to write out values to be loaded in an interactive R session 
+    # for testing 
+    #fff <- "./ddd.dat"
+    #stmp <- sprintf("%6d %10.3f %8.3f %8.3f\n",tbl[1,1],tbl[1,2],tbl[1,3],tbl[1,4])
+    #cat(stmp,file=fff)
+    #for (i in 2:length(tbl[,1]))
+    #{
+    # stmp <- sprintf("%6d %10.3f %8.3f %8.3f\n",tbl[i,1],tbl[i,2],tbl[i,3],tbl[i,4])
+    # cat(stmp,file=fff,append=TRUE)
+    #}
+ 
+    # Exclusion plan for next cycle
+    lista <- pruning_plan(tbl,completeness,cutfraction,icyc)
+    ini_ima <- lista$ini_ima
+    fin_ima <- lista$fin_ima
+    n_im_elim <- lista$n_im_elim
+    neq <- lista$neq
+    isel <- lista$isel
+    list_Rmerges <- c(list_Rmerges,list(lista$mean_Rmerge))
+    list_Images <- c(list_Images,list(lista$Images))
+    rm(lista)
+    if (neq[isel] == 0)
+    {
+     stmp <- "=> No images can be further eliminated without either decreasing target completeness or cancelling a whole dataset.\n"
+     stmp <- paste(stmp,"Pruning cycles will be stopped\n")
+     cat(stmp)
+     break
+    }
+    if (neq[isel] > 0)
+    {
+     cat(paste("=> ",n_im_elim," images can be further eliminated at the next cycle without affecting completeness.\n"))
+     cat(paste("   ",neq[isel]," images will be eliminated from run ",isel,".\n"))
+     cat("\n")
+    }
+   }
+  }
+
+  # Decide which cycle has been the best (for now in terms of Rpim) and re-run AIMLESS
+  # job to store related results
+  Rpims <- c()
+  tCmpl <- c()
+  for (icyc in 1:length(stored_results))
+  {
+   Rpims <- c(Rpims,stored_results[[icyc]]$Rpim[1])
+   tCmpl <- c(tCmpl,stored_results[[icyc]]$Completeness[1])
+  }
+  Rpims[Rpims < 0] <- NA
+  idx <- which(Rpims == min(Rpims,na.rm=TRUE))
+  if (length(idx > 1))                          # All this (and tCmpl) is because, accidentally, you can have two minimum Rpims
+  {
+   jdx <- which(tCmpl[idx] == max(tCmpl[idx]))
+   idx <- idx[jdx[1]]
+  }
+  cat("\n")
+  cat(paste("Best results have been produced at cycle",(idx-1),". Re-running that cycle ...\n"))
+  if (idx == 1)
+  {
+   aimless_keys <- stored_aimkeys[[idx]]
+   tmp <- merge_datasets("FINAL_list_of_files.dat",selection=cln,suffix,pointless_keys,aimless_keys,
+                         resomax=resosel,nref=idxref_char,rwin=rwin)
+  }
+  if (idx > 1)
+  {
+   aim_keys <- stored_aimkeys[[idx]]
+   tmp <- simple_merge_datasets(suffix,aim_keys,rwin=rwin)
+  }
+ }
+ if (is.na(tmp[[1]]$Rmeas[1]))
+ {
+  cat("\n")
+  stmp <- "Starting combination cannot be scaled by AIMLESS (see AIMLESS log). Review keywords and run BLEND again.\n"
+  cat(stmp)
+ }
+
+ # Prepare and output table with Images and average Rmerge per run at every cycle
+ tmp_n <- length(stored_aimkeys)
+ tmp_m <- length(list_Images)
+ ncycs_final <- min(tmp_n,tmp_m)
+ nruns_final <- length(list_Images[[1]])
+ mat_Rmerges_final <- matrix(ncol=nruns_final,nrow=ncycs_final)
+ mat_Images_final <- matrix(ncol=nruns_final,nrow=ncycs_final)
+ for (i in 1:ncycs_final)
+ {
+  for (j in 1:nruns_final)
+  {
+   mat_Rmerges_final[i,j] <- list_Rmerges[[i]][j] 
+   mat_Images_final[i,j] <- list_Images[[i]][j] 
+  }
+ }
+ cat("\n")
+ stmp <- "$TABLE: Image number per cycle for all datasets :\n"
+ cat(stmp)
+ stmp <- "$GRAPHS:    Number of images per cycle         : N : 1"
+ for (j in 2:(nruns_final+1))
+ {
+  stmp <- paste(stmp,sprintf(", %3d",j),sep="")
+ }
+ stmp <- paste(stmp," :\n",sep="")
+ cat(stmp)
+ cat("$$\n")
+ stmp <- "  Cycle"
+ for (j in 1:nruns_final)
+ {
+  stmp <- paste(stmp,sprintf("    Dataset_%03d",cln[j]),sep="")
+ }
+ stmp <- paste(stmp," $$\n",sep="")
+ cat(stmp)
+ cat("$$\n")
+ for (i in 1:ncycs_final)
+ {
+  stmp <- sprintf("%7d",i)
+  for (j in 1:nruns_final)
+  {
+   stmp <- paste(stmp,sprintf(" %15d",mat_Images_final[i,j]),sep="")
+  }
+  stmp <- paste(stmp,"\n",sep="")
+  cat(stmp)
+ }
+ cat("$$\n")
+ cat("\n")
+ stmp <- "$TABLE: Average Rmerge per cycle for all datasets :\n"
+ cat(stmp)
+ stmp <- "$GRAPHS:    Average Rmerge per cycle         : N : 1"
+ for (j in 2:(nruns_final+1))
+ {
+  stmp <- paste(stmp,sprintf(", %3d",j),sep="")
+ }
+ stmp <- paste(stmp," :\n",sep="")
+ cat(stmp)
+ cat("$$\n")
+ stmp <- "  Cycle"
+ for (j in 1:nruns_final)
+ {
+  stmp <- paste(stmp,sprintf("    Dataset_%03d",cln[j]),sep="")
+ }
+ stmp <- paste(stmp," $$\n",sep="")
+ cat(stmp)
+ cat("$$\n")
+ for (i in 1:ncycs_final)
+ {
+  stmp <- sprintf("%7d",i)
+  for (j in 1:nruns_final)
+  {
+   stmp <- paste(stmp,sprintf("%15.3f",mat_Rmerges_final[i,j]),sep="")
+  }
+  stmp <- paste(stmp,"\n",sep="")
+  cat(stmp)
+ }
+ cat("$$\n")
+ cat("\n")
+}
+if (combination_type == 2)
+{
+ # Group of datasets is constantly updated
+ current_cln <- cln
+
+ # Create two lists to store aimless keywords and merging statistics.
+ stored_results <- list()
+ stored_selections <- list()
+
+ # Initial run of AIMLESS
+ cat("### Cycle 0 ###\n")
+ cat("No filtering for the initial cycle.\n")
+ tmp <- merge_datasets("FINAL_list_of_files.dat",selection=current_cln,suffix,pointless_keys,aimless_keys,
+                       resomax=resosel,nref=idxref_char,rwin=rwin)
+
+ # Get table of average Rmerges per run
+ if (!is.na(tmp[[1]]$Rmeas[1]))
+ {
+  stored_results <- c(stored_results,list(tmp[[1]]))
+  stored_selections <- c(stored_selections,list(current_cln))
+
+  # Read AIMLESS log and store some info
+  log_aimless <- paste(suffix[1],paste("aimless_",suffix[2],".log",sep=""),sep="/")
+  contents_aimless <- scan(log_aimless,what="character",sep="\n",quiet=TRUE)
+ 
+  # Rpim and Completeness for this (starting) cycle
+  gRmeas <- grep("Rmeas (all",contents_aimless,fixed=TRUE)
+  lineRmeas <- contents_aimless[gRmeas]
+  tmpsplit <- strsplit(lineRmeas," ")
+  idx <- which(nchar(tmpsplit[[1]]) != 0)
+  Rmeas_values <- as.numeric(tmpsplit[[1]][idx[6:8]]) 
+  gRpim <- grep("Rpim (all",contents_aimless,fixed=TRUE)
+  lineRpim <- contents_aimless[gRpim]
+  tmpsplit <- strsplit(lineRpim," ")
+  idx <- which(nchar(tmpsplit[[1]]) != 0)
+  Rpim_values <- as.numeric(tmpsplit[[1]][idx[6:8]])
+  gCompleteness <- grep("Completeness  ",contents_aimless,fixed=TRUE)
+  lineCompleteness <- contents_aimless[gCompleteness]
+  tmpsplit <- strsplit(lineCompleteness," ")
+  idx <- which(nchar(tmpsplit[[1]]) != 0)
+  Completeness_values <- as.numeric(tmpsplit[[1]][idx[2:4]])
+  stmp <- sprintf("Rmeas, Rpim and Completeness for this cycle: %10.3f, %10.3f, %10.1f\n",Rmeas_values[1],Rpim_values[1],Completeness_values[1])
+  cat(stmp)
+
+  # Rmerge
+  gRmerge <- grep("Rmerge",contents_aimless,fixed=TRUE)
+  istart <- gRmerge[5]+1
+  iend <- gRmerge[6]-2
+  line_Rmerge <- contents_aimless[istart:iend]
+  tbl <- get_vectors_from_table(line_Rmerge,c(2,6,9,13))
+
+  # Store average Rmerge and Images per Run
+  list_Rmerges <- list()
+  list_Images <- list()
+
+  # First exclusion plan
+  lista <- pruning_plan(tbl,100,1,0)
+  mean_Rmerge <- abs(lista$mean_Rmerge)
+  list_Rmerges <- c(list_Rmerges,list(mean_Rmerge))
+  list_Images <- c(list_Images,list(lista$Images))
+  rm(lista)
+ 
+  # Cycle through decreasing datasets
+  icyc <- 0
+  repeat
+  {
+   icyc <- icyc+1
+   if (icyc > maxcycle)
+   {
+    stmp <- "=> Max. number of cycles reached.\n"
+    stmp <- paste(stmp,"Pruning cycles will be stopped\n")
+    cat(stmp)
+    break
+   }
+   if (length(mean_Rmerge) == 1)
+   {
+    stmp <- "=> No more datasets left to be processed. Filtering completed\n"
+    cat(stmp)
+    break
+   }
+   cat("\n")
+   cat(paste("### Cycle",icyc,"###\n"))
+
+   # Determine which dataset produced by the previous AIMLESS run has worst Rmerge
+   idxrun <- which(mean_Rmerge == max(mean_Rmerge,na.rm=TRUE))[1]
+   stmp <- sprintf("Filtering out dataset %d.\n",current_cln[idxrun])
+   cat(stmp)
+
+   # Eliminate dataset from combination and re-run POINTLESS+AIMLESS
+   current_cln <- current_cln[-idxrun]
+   tmp <- merge_datasets("FINAL_list_of_files.dat",selection=current_cln,suffix,pointless_keys,aimless_keys,
+                         resomax=resosel,nref=idxref_char,rwin=rwin)
+   stored_results <- c(stored_results,list(tmp[[1]]))
+   stored_selections <- c(stored_selections,list(current_cln))
+   if (is.na(tmp[[1]]$Rmeas[1]))
+   {
+    stmp <- "AIMLESS cannot converge to finite results.\n"
+    cat(stmp)
+    stmp <- "Pruning cycles will be stopped.\n"
+    cat(stmp)
+    break
+   }
+ 
+   # Read AIMLESS log for next cycle and store some info
+   log_aimless <- paste(suffix[1],paste("aimless_",suffix[2],".log",sep=""),sep="/")
+   contents_aimless <- scan(log_aimless,what="character",sep="\n",quiet=TRUE)
+
+   # Rpim and Completeness for this cycle
+   gRmeas <- grep("Rmeas (all",contents_aimless,fixed=TRUE)
+   lineRmeas <- contents_aimless[gRmeas]
+   tmpsplit <- strsplit(lineRmeas," ")
+   idx <- which(nchar(tmpsplit[[1]]) != 0)
+   Rmeas_values <- as.numeric(tmpsplit[[1]][idx[6:8]]) 
+   gRpim <- grep("Rpim (all",contents_aimless,fixed=TRUE)
+   lineRpim <- contents_aimless[gRpim]
+   tmpsplit <- strsplit(lineRpim," ")
+   idx <- which(nchar(tmpsplit[[1]]) != 0)
+   Rpim_values <- as.numeric(tmpsplit[[1]][idx[6:8]])
+   gCompleteness <- grep("Completeness  ",contents_aimless,fixed=TRUE)
+   lineCompleteness <- contents_aimless[gCompleteness]
+   tmpsplit <- strsplit(lineCompleteness," ")
+   idx <- which(nchar(tmpsplit[[1]]) != 0)
+   Completeness_values <- as.numeric(tmpsplit[[1]][idx[2:4]])
+   stmp <- sprintf("Rmeas, Rpim and Completeness for this cycle: %10.3f, %10.3f, %10.1f\n",Rmeas_values[1],Rpim_values[1],Completeness_values[1])
+   cat(stmp)
+
+   # If completeness is below the input threshold stop and delete results for this cycle
+   if (Completeness_values[1] < completeness)
+   {
+    stored_results[[length(stored_results)]] <- NULL
+    stored_selections[[length(stored_selections)]] <- NULL
+    stmp <- "=> This datasets cannot be eliminated without decreasing target completeness.\n"
+    stmp <- paste(stmp,"Pruning cycles will be stopped\n")
+    cat(stmp)
+    break
+   }
+
+   # Rmerge
+   gRmerge <- grep("Rmerge",contents_aimless,fixed=TRUE)
+   istart <- gRmerge[5]+1
+   iend <- gRmerge[6]-2
+   line_Rmerge <- contents_aimless[istart:iend]
+   tbl <- get_vectors_from_table(line_Rmerge,c(2,6,9,13))
+
+   # Exclusion plan for next cycle
+   lista <- pruning_plan(tbl,100,1,icyc)
+   mean_Rmerge <- abs(lista$mean_Rmerge)
+   list_Rmerges <- c(list_Rmerges,list(mean_Rmerge))
+   list_Images <- c(list_Images,list(lista$Images))
+   rm(lista)
+  }
+
+  # Collect all results and decide which one to select
+  Rpims <- c()
+  tCmpl <- c()
+  for (icyc in 1:length(stored_results))
+  {
+   Rpims <- c(Rpims,stored_results[[icyc]]$Rpim[1])
+   tCmpl <- c(tCmpl,stored_results[[icyc]]$Completeness[1])
+  }
+  Rpims[Rpims < 0] <- NA
+  idx <- which(Rpims == min(Rpims,na.rm=TRUE))
+  if (length(idx > 1))                          # All this (and tCmpl) is because, accidentally, you can have two minimum Rpims
+  {
+   jdx <- which(tCmpl[idx] == max(tCmpl[idx]))
+   idx <- idx[jdx[1]]
+  }
+  cat("\n")
+  cat(paste("Best results have been produced at cycle",(idx-1),". Re-running that cycle ...\n"))
+  current_cln <- stored_selections[[idx]]
+  tmp <- merge_datasets("FINAL_list_of_files.dat",selection=current_cln,suffix,pointless_keys,aimless_keys,
+                        resomax=resosel,nref=idxref_char,rwin=rwin)
+
+  # Output table with Rpim and Rmeas for each cycle
+  ncycs <- length(stored_results)
+  cat("\n")
+  cat("$TABLE: Rmeas and Rpim for all cycles :\n")
+  cat("$GRAPHS:    Overall Rmeas and Rpim        : N : 1, 2, 3 :\n")
+  cat("$$\n")
+  cat("     Cycle           Rmeas            Rpim  $$\n")
+  cat("$$\n")
+  for (icyc in 1:ncycs)
+  {
+   stmp <- sprintf("%10d %15.3f %15.3f\n",(icyc-1),stored_results[[icyc]]$Rmeas[1],stored_results[[icyc]]$Rpim[1])
+   cat(stmp)
+  }
+  cat("$$\n")
+  cat("\n")
+ }
+
+ # Terminate if no results come from initial scaling
+ if (is.na(tmp[[1]]$Rmeas[1]))
+ {
+  cat("\n")
+  stmp <- "Starting combination cannot be scaled by AIMLESS (see AIMLESS log). Review keywords and run BLEND again.\n"
+  cat(stmp)
+ }
+}
+
+# Carry on with displaying results
+cat("\n")
 cat(" Statistics for this group:\n")
 
 # Change row names for display purpose

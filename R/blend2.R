@@ -437,7 +437,8 @@ if (length(idx) > 0)
   if ((idxe-idxs) > 1) for (line in contents[(idxs+1):(idxe-1)]) pointless_keys <- c(pointless_keys,line)
 
   # Reference dataset (from BLEND KEYWORDS section)
-  tmp <- grep("DATAREF",contents,fixed=TRUE)
+  #tmp <- grep("DATAREF",contents,fixed=TRUE)
+  tmp <- grep("DATA",contents,fixed=TRUE)
   if (length(tmp) != 0)
   {
    tmp <- contents[tmp[1]]    # [1] in case somebody add DATAREF line more than once

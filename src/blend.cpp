@@ -10,6 +10,14 @@
 /********* included in the root directory of this package.                                          *********/
 /************************************************************************************************************/
 /************************************************************************************************************/
+// CHANGES IN VERSION 0.6.13  -  30/07/2015
+// - Fixed inconsistencies in keywords length. Now all keywords can also be typed as 4-initial-letters.
+// - Added variant "-cP" to combination mode. Input groups of data follow the usual syntax. Based on the first
+//   run of AIMLESS on these group, individual runs are progressively cut to obtain better statistics in an
+//   automated way.
+// - Added variant "-cF" to combination mode. Whole data sets are filtered out one after the other until
+//   default or user-selected completeness is reached, or until a maximum number of cycles is reached. In the
+//   end the result with lowest Rpim is chosen for output.
 // CHANGES IN VERSION 0.6.12  -  16/07/2015
 // - When only 1 dataset is to be scaled now use EXCLUDE BATCH ...", rather than "EXCLUDE FILE 1 BATCH ... "
 //   in POINTLESS. This cause POINTLESS to ignore the cuts.
@@ -301,6 +309,7 @@ int main(int argc, char* argv[])
   // Check comand line input is well formatted
   int runmode=0;
   int addrunmode2 = 0; // mode_string "-sLCV" gives addrunmode2 = 1; mode_string "-saLCV" gives addrunmode2 = 2
+  int addrunmode3 = 0; // mode_string "-c" gives addrunmode3 = 0; mode_string "-cP" gives addrunmode3 = 1
   float dlevel_top,dlevel_bottom;
   std::string mode_string,filename,cl_mode,cl_height;
   //std::vector<int> arbitrary_datasets;
@@ -316,9 +325,10 @@ int main(int argc, char* argv[])
    int nerr=1;
    throw nerr;
   }
-  if (mode_string != "-a" && mode_string != "-s" && mode_string != "-c" &&      // First argument after program name "blend" needs to be either "-a"
-      mode_string != "-sLCV" && mode_string != "-saLCV" &&                      // or "-s" or "-sLCV" or "-saLCV" or "-c"
-      mode_string != "-g" && mode_string != "-aDO")                             // or "-g" or "-aDO"
+  if (mode_string != "-a" && mode_string != "-aDO" &&                              // First argument after program name "blend" needs to be either "-a" or "-aDO"
+      mode_string != "-s" && mode_string != "-sLCV" && mode_string != "-saLCV" &&  // or "-s" or "-sLCV" or "-saLCV"
+      mode_string != "-c" && mode_string != "-cP" && mode_string != "-cF" &&       // or "-c" or "-cP" or "-cF"
+      mode_string != "-g")                                                         // or "-g"
   {
    int nerr=1;
    throw nerr;
@@ -331,21 +341,24 @@ int main(int argc, char* argv[])
    std::vector<std::string> akeys, dvkeywdline;
    akeys.push_back("NBIN");
    dvkeywdline.push_back("NBIN      20");
-   akeys.push_back("RADFRAC");
+   akeys.push_back("RADF");
    dvkeywdline.push_back("RADFRAC   0.750");
-   akeys.push_back("ISIGI");
+   akeys.push_back("ISIG");
    dvkeywdline.push_back("ISIGI     1.500");
-   akeys.push_back("CPARWT");
+   akeys.push_back("CPAR");
    dvkeywdline.push_back("CPARWT    1.000");
-   akeys.push_back("DATAREF");
-   akeys.push_back("LAUEGROUP");
-   akeys.push_back("TOLERANCE");
-   akeys.push_back("CHOOSE");
+   akeys.push_back("DATA");
+   akeys.push_back("LAUE");
+   akeys.push_back("MAXC");
+   akeys.push_back("COMP");
+   akeys.push_back("CUTF");
+   akeys.push_back("TOLE");
+   akeys.push_back("CHOO");
    akeys.push_back("RESO");
-   akeys.push_back("SDCOR");
-   akeys.push_back("ANOMALOUS");
-   akeys.push_back("SCALES");
-   akeys.push_back("EXCLUDE");
+   akeys.push_back("SDCO");
+   akeys.push_back("ANOM");
+   akeys.push_back("SCAL");
+   akeys.push_back("EXCL");
    akeys.push_back("RUN");
 
    // Load in keywords from standard input
@@ -451,7 +464,7 @@ int main(int argc, char* argv[])
     }
     if (k == 0) keywd_ostream << dvkeywdline[i] << std::endl;
    }
-   for (int i = 4; i < 6; ++i)
+   for (int i = 4; i < 9; ++i)
    {
     for (unsigned int j = 0; j < vkeywdline.size(); ++j)
     {
@@ -461,7 +474,7 @@ int main(int argc, char* argv[])
     }
    }
    keywd_ostream << "POINTLESS KEYWORDS" << std::endl;
-   for (int i = 6; i < 8; ++i)
+   for (int i = 9; i < 11; ++i)
    {
     for (unsigned int j = 0; j < vkeywdline.size(); ++j)
     {
@@ -471,7 +484,7 @@ int main(int argc, char* argv[])
     }
    }
    keywd_ostream << "AIMLESS KEYWORDS" << std::endl;
-   for (int i = 8; i < 14; ++i)
+   for (int i = 11; i < 17; ++i)
    {
     for (unsigned int j = 0; j < vkeywdline.size(); ++j)
     {
@@ -543,21 +556,24 @@ int main(int argc, char* argv[])
    std::vector<std::string> akeys, dvkeywdline;
    akeys.push_back("NBIN");
    dvkeywdline.push_back("NBIN      20");
-   akeys.push_back("RADFRAC");
+   akeys.push_back("RADF");
    dvkeywdline.push_back("RADFRAC   0.750");
-   akeys.push_back("ISIGI");
+   akeys.push_back("ISIG");
    dvkeywdline.push_back("ISIGI     1.500");
-   akeys.push_back("CPARWT");
+   akeys.push_back("CPAR");
    dvkeywdline.push_back("CPARWT    1.000");
-   akeys.push_back("DATAREF");
-   akeys.push_back("LAUEGROUP");
-   akeys.push_back("TOLERANCE");
-   akeys.push_back("CHOOSE");
+   akeys.push_back("DATA");
+   akeys.push_back("LAUE");
+   akeys.push_back("MAXC");
+   akeys.push_back("COMP");
+   akeys.push_back("CUTF");
+   akeys.push_back("TOLE");
+   akeys.push_back("CHOO");
    akeys.push_back("RESO");
-   akeys.push_back("SDCOR");
-   akeys.push_back("ANOMALOUS");
-   akeys.push_back("SCALES");
-   akeys.push_back("EXCLUDE");
+   akeys.push_back("SDCO");
+   akeys.push_back("ANOM");
+   akeys.push_back("SCAL");
+   akeys.push_back("EXCL");
    akeys.push_back("RUN");
 
    // Load in keywords from standard input
@@ -663,7 +679,7 @@ int main(int argc, char* argv[])
     }
     if (k == 0) keywd_ostream << dvkeywdline[i] << std::endl;
    }
-   for (int i = 4; i < 6; ++i)
+   for (int i = 4; i < 9; ++i)
    {
     for (unsigned int j = 0; j < vkeywdline.size(); ++j)
     {
@@ -673,7 +689,7 @@ int main(int argc, char* argv[])
     }
    }
    keywd_ostream << "POINTLESS KEYWORDS" << std::endl;
-   for (int i = 6; i < 8; ++i)
+   for (int i = 9; i < 11; ++i)
    {
     for (unsigned int j = 0; j < vkeywdline.size(); ++j)
     {
@@ -683,7 +699,7 @@ int main(int argc, char* argv[])
     }
    }
    keywd_ostream << "AIMLESS KEYWORDS" << std::endl;
-   for (int i = 8; i < 14; ++i)
+   for (int i = 11; i < 17; ++i)
    {
     for (unsigned int j = 0; j < vkeywdline.size(); ++j)
     {
@@ -718,7 +734,7 @@ int main(int argc, char* argv[])
    if (dlevel_bottom > dlevel_top) {int nerr=12; throw nerr;}
    //std::cout << "DLEVEL_TOP = " << dlevel_top << ". DLEVEL_BOTTOM = " << dlevel_bottom << std::endl;
   }
-  if (mode_string == "-c")     // Combination pass
+  if (mode_string == "-c" || mode_string == "-cP" || mode_string == "-cF")     // Combination pass
   {
    // In order to line up BLEND with the way ccp4i works (with stdin passed keywords) this is what has been added
 
@@ -726,21 +742,24 @@ int main(int argc, char* argv[])
    std::vector<std::string> akeys, dvkeywdline;
    akeys.push_back("NBIN");
    dvkeywdline.push_back("NBIN      20");
-   akeys.push_back("RADFRAC");
+   akeys.push_back("RADF");
    dvkeywdline.push_back("RADFRAC   0.750");
-   akeys.push_back("ISIGI");
+   akeys.push_back("ISIG");
    dvkeywdline.push_back("ISIGI     1.500");
-   akeys.push_back("CPARWT");
+   akeys.push_back("CPAR");
    dvkeywdline.push_back("CPARWT    1.000");
-   akeys.push_back("DATAREF");
-   akeys.push_back("LAUEGROUP");
-   akeys.push_back("TOLERANCE");
-   akeys.push_back("CHOOSE");
+   akeys.push_back("DATA");
+   akeys.push_back("LAUE");
+   akeys.push_back("MAXC");
+   akeys.push_back("COMP");
+   akeys.push_back("CUTF");
+   akeys.push_back("TOLE");
+   akeys.push_back("CHOO");
    akeys.push_back("RESO");
-   akeys.push_back("SDCOR");
-   akeys.push_back("ANOMALOUS");
-   akeys.push_back("SCALES");
-   akeys.push_back("EXCLUDE");
+   akeys.push_back("SDCO");
+   akeys.push_back("ANOM");
+   akeys.push_back("SCAL");
+   akeys.push_back("EXCL");
    akeys.push_back("RUN");
 
    // Load in keywords from standard input
@@ -846,7 +865,7 @@ int main(int argc, char* argv[])
     }
     if (k == 0) keywd_ostream << dvkeywdline[i] << std::endl;
    }
-   for (int i = 4; i < 6; ++i)
+   for (int i = 4; i < 9; ++i)
    {
     for (unsigned int j = 0; j < vkeywdline.size(); ++j)
     {
@@ -856,7 +875,7 @@ int main(int argc, char* argv[])
     }
    }
    keywd_ostream << "POINTLESS KEYWORDS" << std::endl;
-   for (int i = 6; i < 8; ++i)
+   for (int i = 9; i < 11; ++i)
    {
     for (unsigned int j = 0; j < vkeywdline.size(); ++j)
     {
@@ -866,7 +885,7 @@ int main(int argc, char* argv[])
     }
    }
    keywd_ostream << "AIMLESS KEYWORDS" << std::endl;
-   for (int i = 8; i < 14; ++i)
+   for (int i = 11; i < 17; ++i)
    {
     for (unsigned int j = 0; j < vkeywdline.size(); ++j)
     {
@@ -879,6 +898,8 @@ int main(int argc, char* argv[])
 
    // Carry on checking correct command-line input
    runmode=3;
+   if (mode_string == "-cP")  addrunmode3 = 1;
+   if (mode_string == "-cF")  addrunmode3 = 2;
 
    // Turn arguments into integer numbers (in vector "arbitrary_datasets") to be later used in R code
    //for (int i=2;i < argc;i++) arbitrary_datasets.push_back(atoi(argv[i])); 
@@ -1184,11 +1205,13 @@ int main(int argc, char* argv[])
    //R_command_line << "R --vanilla --slave --quiet < " << R_program3 << " --args " << tmp.str();
    if (Rscp == 0)
    {
-    R_command_line << "Rscript " << R_program3 << " " << tmp.str();
+    //R_command_line << "Rscript " << R_program3 << " " << tmp.str();
+    R_command_line << "Rscript " << R_program3 << " " << addrunmode3 << " " << tmp.str();
    }
    else
    {
-    R_command_line << "Rscript.exe " << R_program3 << " " << tmp.str();
+    //R_command_line << "Rscript.exe " << R_program3 << " " << tmp.str();
+    R_command_line << "Rscript.exe " << R_program3 << " " << addrunmode3 << " " << tmp.str();
    }
    //std::cout << R_command_line.str() << std::endl;
    R_status=std::system((R_command_line.str()).c_str());
@@ -1230,7 +1253,7 @@ int main(int argc, char* argv[])
 
    // Run R code
    std::cout << std::endl;
-   std::cout << "Running R code to read information from previous runs of BLEND and produce annotated dendrograms..." << std::endl; 
+   std::cout << "Running R code to read information from previous runs of BLEND and produce some graphics..." << std::endl; 
    std::cout << std::endl;
    int R_status;
    std::ostringstream R_command_line,tmp;
@@ -1258,26 +1281,28 @@ int main(int argc, char* argv[])
    std::cerr << "\n BLEND ERROR!\n"
              << "Wrong command line format. Correct format is:\n"
              << "                                  \n"
-             << "   blend -aDO name_of_file.dat                                    (dendrogram-only mode)\n"
+             << "   blend -aDO name_of_file.dat                                            (dendrogram-only mode)\n"
              << "                 or               \n"
-             << "   blend -aDO /path/to/directory                                  (dendrogram-only mode)\n"
+             << "   blend -aDO /path/to/directory                                          (dendrogram-only mode)\n"
              << "                 or               \n"
-             << "   blend -a name_of_file.dat                                             (analysis mode)\n"
+             << "   blend -a name_of_file.dat                                                     (analysis mode)\n"
              << "                 or               \n"
-             << "   blend -a /path/to/directory                                           (analysis mode)\n"
+             << "   blend -a /path/to/directory                                                   (analysis mode)\n"
              << "                 or               \n"
-             << "   blend -s l1 (numeric height in dendrogram)                           (synthesis mode)\n"
+             << "   blend -s l1 (numeric height in dendrogram)                                   (synthesis mode)\n"
              << "   blend -sLCV l1 (LCV value) \n"
              << "   blend -saLCV l1 (aLCV value) \n"
              << "                 or               \n"
-             << "   blend -s l1 l2 (numeric heights in dendrogram)                       (synthesis mode)\n"
+             << "   blend -s l1 l2 (numeric heights in dendrogram)                               (synthesis mode)\n"
              << "   blend -sLCV l1 l2 (LCV values) \n"
              << "   blend -saLCV l1 (aLCV values) \n"
              << "                 or               \n"
-             << "   blend -c d1 d2 d3 ... (serial number of datasets)                  (combination mode)\n" 
+             << "   blend -c  d1 d2 d3 ... (serial number of datasets)                         (combination mode)\n" 
+             << "   blend -cP d1 d2 d3 ... (serial number of datasets)                                           \n" 
+             << "   blend -cF d1 d2 d3 ... (serial number of datasets)                                           \n" 
              << "                 or               \n"
-             << "   blend -g D ... clN (cluster number) lN (level)                        (graphics mode:\n"
-             << "                                                                   annotated dendrogram)\n"
+             << "   blend -g D clN (cluster number) lN (level)              (graphics mode: annotated dendrogram)\n"
+             //<< "   blend -g RM d1 d2 d3 ... (serial number of datasets)             (graphics mode: Rmerge means\n"
              << std::endl;
    return EXIT_FAILURE;
   }

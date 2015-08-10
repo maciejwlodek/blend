@@ -827,9 +827,12 @@ if (file.exists("BLEND_KEYWORDS.dat"))
   for (i in 1:length(tmp[,1]))
   {
    if (as.character(tmp[i,1]) == "NBIN" | as.character(tmp[i,1]) == "nbin") nbin <- as.numeric(tmp[i,2])
-   if (as.character(tmp[i,1]) == "RADFRAC" | as.character(tmp[i,1]) == "radfrac") fdrop <- as.numeric(tmp[i,2])
-   if (as.character(tmp[i,1]) == "ISIGI" | as.character(tmp[i,1]) == "isigi") isigi <- as.numeric(tmp[i,2])
-   if (as.character(tmp[i,1]) == "CPARWT" | as.character(tmp[i,1]) == "cparwt") cparweight <- as.numeric(tmp[i,2])
+   if (as.character(tmp[i,1]) == "RADFRAC" | as.character(tmp[i,1]) == "radfrac" |
+       as.character(tmp[i,1]) == "RADF"    | as.character(tmp[i,1]) == "radf") fdrop <- as.numeric(tmp[i,2])
+   if (as.character(tmp[i,1]) == "ISIGI" | as.character(tmp[i,1]) == "isigi" |
+       as.character(tmp[i,1]) == "ISIG"  | as.character(tmp[i,1]) == "isig") isigi <- as.numeric(tmp[i,2])
+   if (as.character(tmp[i,1]) == "CPARWT" | as.character(tmp[i,1]) == "cparwt" |
+       as.character(tmp[i,1]) == "CPAR"   | as.character(tmp[i,1]) == "cpar") cparweight <- as.numeric(tmp[i,2])
   }
 
   # Turn indices back to their initial value for following section
@@ -850,17 +853,17 @@ if (file.exists("BLEND_KEYWORDS.dat"))
    linea <- sprintf("NBIN      %d\n",as.integer(nbin))
    cat(linea,file="BLEND_KEYWORDS.dat",append=TRUE)
   }
-  if (!("RADFRAC" %in% nomi) & !("radfrac" %in% nomi))
+  if (!("RADFRAC" %in% nomi) & !("radfrac" %in% nomi) & !("RADF" %in% nomi) & !("radf" %in% nomi))
   {
    linea <- sprintf("RADFRAC   %5.3f\n",as.numeric(fdrop))
    cat(linea,file="BLEND_KEYWORDS.dat",append=TRUE)
   }
-  if (!("ISIGI" %in% nomi) & !("isigi" %in% nomi))
+  if (!("ISIGI" %in% nomi) & !("isigi" %in% nomi) & !("ISIG" %in% nomi) & !("isig" %in% nomi))
   {
    linea <- sprintf("ISIGI     %5.3f\n",as.numeric(isigi))
    cat(linea,file="BLEND_KEYWORDS.dat",append=TRUE)
   }
-  if (!("CPARWT" %in% nomi) & !("cparwt" %in% nomi))
+  if (!("CPARWT" %in% nomi) & !("cparwt" %in% nomi) & !("CPAR" %in% nomi) & !("cpar" %in% nomi))
   {
    linea <- sprintf("CPARWT    %5.3f\n",as.numeric(cparweight))
    cat(linea,file="BLEND_KEYWORDS.dat",append=TRUE)

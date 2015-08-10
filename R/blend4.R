@@ -372,6 +372,14 @@ cat("\n")
 # D   :   Build PNG annotated dendrograms
 #
 
+# Exit if none of the graphics modes is met
+if (args[1] != "D")
+{
+ msg <- sprintf("Type %s in command line is unrecognised\n",args[1])
+ cat(msg)
+ q(save = "no", status = 1, runLast = FALSE)
+}
+
 # D: Build PNG annotated dendrograms
 if (args[1] == "D")
 {
@@ -547,10 +555,4 @@ if (args[1] == "D")
 
  # Normal termination
  q(save = "no", status = 0, runLast = FALSE)
-}
-if (args[1] != "D")
-{
- msg <- sprintf("Type %s in command line is unrecognised\n",args[1])
- cat(msg)
- q(save = "no", status = 1, runLast = FALSE)
 }
