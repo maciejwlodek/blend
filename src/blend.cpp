@@ -10,6 +10,9 @@
 /********* included in the root directory of this package.                                          *********/
 /************************************************************************************************************/
 /************************************************************************************************************/
+// CHANGES IN VERSION 0.6.14  -  12/08/2015
+// - Fixed a bug connected to mode "-cF" that wrote wrong cominations in GROUPS.info
+//   (module blend3.R)
 // CHANGES IN VERSION 0.6.13  -  30/07/2015
 // - Fixed inconsistencies in keywords length. Now all keywords can also be typed as 4-initial-letters.
 // - Added variant "-cP" to combination mode. Input groups of data follow the usual syntax. Based on the first
@@ -18,6 +21,7 @@
 // - Added variant "-cF" to combination mode. Whole data sets are filtered out one after the other until
 //   default or user-selected completeness is reached, or until a maximum number of cycles is reached. In the
 //   end the result with lowest Rpim is chosen for output.
+//   (modules blend.cpp blend1.R blend2.R and blend3.R)
 // CHANGES IN VERSION 0.6.12  -  16/07/2015
 // - When only 1 dataset is to be scaled now use EXCLUDE BATCH ...", rather than "EXCLUDE FILE 1 BATCH ... "
 //   in POINTLESS. This cause POINTLESS to ignore the cuts.

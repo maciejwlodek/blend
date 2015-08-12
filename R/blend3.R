@@ -1501,6 +1501,9 @@ if (combination_type == 2)
   }
   cat("$$\n")
   cat("\n")
+
+  # Before moving on to final part of the program, copy chosen cln to cln
+  cln <- current_cln 
  }
 
  # Terminate if no results come from initial scaling
