@@ -373,7 +373,7 @@ cat("\n")
 #
 
 # Exit if none of the graphics modes is met
-if (args[1] != "D")
+if (args[1] != "D" & args[1] != "DO")
 {
  msg <- sprintf("Type %s in command line is unrecognised\n",args[1])
  cat(msg)
@@ -381,7 +381,7 @@ if (args[1] != "D")
 }
 
 # D: Build PNG annotated dendrograms
-if (args[1] == "D")
+if (args[1] == "D" | args[1] == "DO")
 {
 
  # Load contents of previous R run from blend1.R and blend2.R
@@ -414,7 +414,7 @@ if (args[1] == "D")
   # We also need to pass NA, rather than aLCV_values, as these won't be displayed
   aLCVs <- NA
  }
- if (!file.exists("BLEND.RMergingStatistics"))
+ if (!file.exists("BLEND.RMergingStatistics") | args[1] == "DO")
  {
   # Create a mergingStatistics data frame with all NA's, because synthesis has not been carried out yet
 
@@ -548,7 +548,14 @@ if (args[1] == "D")
  if (!file.exists("./graphics")) dir.create("./graphics")
 
  # Create annotated dendrogram PNG file base name
- file_name <- sprintf("./graphics/annotated_dendrogram_cluster_%03d_level_%03d.",clN,N)
+ if (!is.na(aLCVs[1]))
+ {
+  file_name <- sprintf("./graphics/aLCV_annotated_dendrogram_cluster_%03d_level_%03d.",clN,N)
+ }
+ if (is.na(aLCVs[1]))
+ {
+  file_name <- sprintf("./graphics/stats_annotated_dendrogram_cluster_%03d_level_%03d.",clN,N)
+ }
 
  # Create annotated dendrograms (png and ps)
  tmp <- annotate_tree(clN,N,npar.hc_ward,mergingStatistics,groups1,macropar,file_name,aLCVs)

@@ -10,6 +10,11 @@
 /********* included in the root directory of this package.                                          *********/
 /************************************************************************************************************/
 /************************************************************************************************************/
+// CHANGES IN VERSION 0.6.15  -  17/11/2015
+// - The graphics mode now includes a "DO" option (in addition to the "D") option. This is meant to produce
+//   an annotated dendrogram with only the aLCV values even when the synthesis mode has been executed.
+//   Furthermore, the dendrogram with the aLCV annotations is called "aLCV_annotated*", while the one
+//   including all statistics is called "stats_annotated*".
 // CHANGES IN VERSION 0.6.14  -  12/08/2015
 // - Fixed a bug connected to mode "-cF" that wrote wrong cominations in GROUPS.info
 //   (module blend3.R)
@@ -1285,27 +1290,28 @@ int main(int argc, char* argv[])
    std::cerr << "\n BLEND ERROR!\n"
              << "Wrong command line format. Correct format is:\n"
              << "                                  \n"
-             << "   blend -aDO name_of_file.dat                                            (dendrogram-only mode)\n"
+             << "   blend -aDO name_of_file.dat                                                 (dendrogram-only mode)\n"
              << "                 or               \n"
-             << "   blend -aDO /path/to/directory                                          (dendrogram-only mode)\n"
+             << "   blend -aDO /path/to/directory                                               (dendrogram-only mode)\n"
              << "                 or               \n"
-             << "   blend -a name_of_file.dat                                                     (analysis mode)\n"
+             << "   blend -a name_of_file.dat                                                          (analysis mode)\n"
              << "                 or               \n"
-             << "   blend -a /path/to/directory                                                   (analysis mode)\n"
+             << "   blend -a /path/to/directory                                                        (analysis mode)\n"
              << "                 or               \n"
-             << "   blend -s l1 (numeric height in dendrogram)                                   (synthesis mode)\n"
+             << "   blend -s l1 (numeric height in dendrogram)                                        (synthesis mode)\n"
              << "   blend -sLCV l1 (LCV value) \n"
              << "   blend -saLCV l1 (aLCV value) \n"
              << "                 or               \n"
-             << "   blend -s l1 l2 (numeric heights in dendrogram)                               (synthesis mode)\n"
+             << "   blend -s l1 l2 (numeric heights in dendrogram)                                    (synthesis mode)\n"
              << "   blend -sLCV l1 l2 (LCV values) \n"
              << "   blend -saLCV l1 (aLCV values) \n"
              << "                 or               \n"
-             << "   blend -c  d1 d2 d3 ... (serial number of datasets)                         (combination mode)\n" 
-             << "   blend -cP d1 d2 d3 ... (serial number of datasets)                                           \n" 
-             << "   blend -cF d1 d2 d3 ... (serial number of datasets)                                           \n" 
+             << "   blend -c  d1 d2 d3 ... (serial number of datasets)                              (combination mode)\n" 
+             << "   blend -cP d1 d2 d3 ... (serial number of datasets)                                                \n" 
+             << "   blend -cF d1 d2 d3 ... (serial number of datasets)                                                \n" 
              << "                 or               \n"
-             << "   blend -g D clN (cluster number) lN (level)              (graphics mode: annotated dendrogram)\n"
+             << "   blend -g DO clN (cluster number) lN (level)             (graphics mode: aLCV annotated dendrogram)\n"
+             << "   blend -g D clN (cluster number) lN (level)    (graphics mode: merging stats. annotated dendrogram)\n"
              //<< "   blend -g RM d1 d2 d3 ... (serial number of datasets)             (graphics mode: Rmerge means\n"
              << std::endl;
    return EXIT_FAILURE;
