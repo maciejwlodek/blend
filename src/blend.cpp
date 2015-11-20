@@ -10,11 +10,15 @@
 /********* included in the root directory of this package.                                          *********/
 /************************************************************************************************************/
 /************************************************************************************************************/
+// CHANGES IN VERSION 0.6.16  -  20/11/2015
+// - Added missing code for displaying correctly aLCV annotated dendrograms in PS format.
+//   (module blend4.R)
 // CHANGES IN VERSION 0.6.15  -  17/11/2015
 // - The graphics mode now includes a "DO" option (in addition to the "D") option. This is meant to produce
 //   an annotated dendrogram with only the aLCV values even when the synthesis mode has been executed.
 //   Furthermore, the dendrogram with the aLCV annotations is called "aLCV_annotated*", while the one
 //   including all statistics is called "stats_annotated*".
+//   (module blend4.R)
 // CHANGES IN VERSION 0.6.14  -  12/08/2015
 // - Fixed a bug connected to mode "-cF" that wrote wrong cominations in GROUPS.info
 //   (module blend3.R)

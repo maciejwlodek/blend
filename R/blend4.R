@@ -153,8 +153,16 @@ annotate_tree <- function(clN,N,Tree,mStats,groups1,macropar,file_name,aLCVs)
  postscript(file=fname,paper = "a4",horizontal=FALSE)
  par(mar=c(5,2,3,4))
  plot(ndend,xlim=xlim,ylim=ylim,yaxt='n',leaflab="none",edgePar=list(lwd=3))
- points(Dnodesxy,pch=16,cex=8,col="grey")
- text(Dnodesxy$x,Dnodesxy$y,labels=ulidx,cex=2.3,col="white")
+ if (!is.na(aLCVs[1])) 
+ {
+  points(Dnodesxy,pch=15,cex=6.7,col="grey")
+  text(Dnodesxy$x,Dnodesxy$y,labels=ulidx,cex=1.5,col="white",adj=c(0.5,-0.08))
+ }
+ if (is.na(aLCVs[1])) 
+ {
+  points(Dnodesxy,pch=16,cex=8,col="grey")
+  text(Dnodesxy$x,Dnodesxy$y,labels=ulidx,cex=2.3,col="white")
+ }
  labels <- c()
  rownum <- as.integer(rownames(mStats))
  uulidx <- match(ulidx,rownum)
@@ -187,6 +195,18 @@ annotate_tree <- function(clN,N,Tree,mStats,groups1,macropar,file_name,aLCVs)
  text(Dnodesxy$x,Dnodesxy$y,labels=labels,cex=0.7,col=2,adj=c(-0.2,-3.9))
  greyL <- rgb(0.5,0.5,0.5)
  points(idx,rep(ylim[1],times=length(idx)),type="h",col=greyL)
+
+ # Print aLCV_values only for "a" and "aDO" modes (where we pass NA, rather than aLCV_values)
+ if (!is.na(aLCVs[1]))
+ {
+  labels <- c()
+  for (ii in uulidx)
+  {
+   tmp <- sprintf("%7.2f",aLCVs[ii])
+   labels <- c(labels,tmp)
+  }
+  text(Dnodesxy$x,Dnodesxy$y,labels=labels,cex=0.9,col=4,adj=c(0.6,1.65))
+ }
 
  # Print data set number only if tree branch ends in data set, not in cluster
  edges <- find_nodes_edges(dtmp,groups1,macropar)
