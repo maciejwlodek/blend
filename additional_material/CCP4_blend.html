@@ -12,7 +12,10 @@
 <p><b>blend -sLCV</b> <i>cut_LCV_level_high</i> <i>[cut_LCV_level_low]</i>
 <p><b>blend -saLCV</b> <i>cut_absolute_LCV_level_high</i> <i>[cut_absolute_LCV_level_low]</i>
 <p><b>blend -c</b> <i>d1</i> <i>d2</i>  <i>d3</i>  <i>d4</i>  <i>...</i> or <i>[d1] [d2] [[d3-d4]] ...</i>, etc.
+<p><b>blend -cF</b> <i>d1</i> <i>d2</i>  <i>d3</i>  <i>d4</i>  <i>...</i> or <i>[d1] [d2] [[d3-d4]] ...</i>, etc.
+<p><b>blend -cP</b> <i>d1</i> <i>d2</i>  <i>d3</i>  <i>d4</i>  <i>...</i> or <i>[d1] [d2] [[d3-d4]] ...</i>, etc.
 <p><b>blend -g</b> <b>D</b> <i>clN</i> <i>N</i>
+<p><b>blend -g</b> <b>DO</b> <i>clN</i> <i>N</i>
 <br>
 <br>
 <br>
@@ -22,13 +25,14 @@
 <a href="#miscellaneous">Miscellaneous and problems</a><br>
 <a href="#references">References</a> <br>
 <a href="#authors">Authors and credits</a> <br>
+<a href="#citations">How to cite BLEND</a> <br>
 <br>
 <h2><a name="description"></a>DESCRIPTION</h2>
 X-ray data collection from a single crystal is not always feasible. Very often crystallographers try to
 collect data from multiple crystals or from multiple locations on a single crystal. The resulting
 datasets are normally incomplete, or show low redundancy. Using any of them individually does not
 make for reliable phasing or model building and refinement. It is, rather, potentially better
-to try and merge all diverse datasets in more-complete ones. While solving the incompleteness
+to try and merge all diverse datasets into more-complete ones. While solving the incompleteness
 issue, this merging produces datasets which, although inherently less precise, have a tendency to be
 more accurate because systematic errors interfere destructively when coming from different sources
 (multiple crystals). This, in turn, translates in better-quality structure factors, with positive effects
@@ -37,22 +41,23 @@ signal, when this is needed.<br>
 <br>
 BLEND is a program for the management of multiple datasets. It simplifies the analysis and greatly
 reduces the combinatorial explosion involved in the formation of multiple groups from the original
-set of data. The program can run in three different modes. In the analysis mode (option -a) it reads
+set of data. The program can run in three different modes. In the <a href=#running_analysis><em>analysis mode</em></a> (option -a) it reads
 in multiple unmerged reflection files produced by an integration program(either MOSFLM <a href=#references>[2]</a> or
 XDS <a href=#references>[3]</a>), and carries out cluster analysis on one or two types of statistical descriptors, extracted or
 calculated from each dataset. Results produced by the program in analysis mode can, then, be used
-running the program in synthesis mode (option -s), or in combination mode (option -c). In synthesis
+running the program in <a href=#running_synthesis><em>synthesis mode</em></a> (option -s), or in combination mode (option -c). In synthesis
 mode datasets belonging to clusters previously determined are scaled together and output into
 individual merged reflection files in MTZ format, ready to be used in all subsequent stages of
 phasing, model building and refinement. <a href=#variantsLCV>Variants</a> of the synthesis mode are synthesis mode using LCV values and
 synthesis mode using absolute LCV values (see <a href=#LCV>later</a> for meaning of LCV and absolute LCV). 
-The combination mode allows users to carry out the same
+The <a href=#running_combination><em>combination mode</em></a> (option -c) allows users to carry out the same
 tasks enabled by the synthesis mode, this time for any combination of datasets, not necessarily those
-grouped in clusters.<br>
+grouped in clusters. <a href=#variants_c>Variants</a> exist also for the combination mode, when automated datasets deletion or individual dataset
+pruning is required.<br>
 <br>
-Two additional modes have been introduced as tools to facilitate data analysis. The dendrogram-only mode (option -aDO) allows BLEND
-to skip data analysis and simply calculate the dendrogram based on cell parameters. The graphics mode is used to produce specific types
-of 
+An additional mode, the <a href=#running_graphics><em>graphics mode</em></a> (option -g), 
+has been added to the three main modes previously listed so to have some visual tools 
+to facilitate data analysis.
 <h2><a name="input_preparation"></a>Input preparation</h2>
 Input for the program is a group of unmerged reflection files produced by integration programs. At present only files from the MOSFLM 
 and XDS integration software can be handled. Reflection files can be either included in a single directory, or spread across several 
@@ -90,6 +95,13 @@ Several files will be produced by the program in analysis mode (see <a href=#Inp
 Those describing datasets clustering are "tree.png" (a postscript version, "tree.ps") and "CLUSTERS.txt". Others files are 
 needed for bookkeeping. The important binary file "BLEND.RData" contains essential information needed by the program to run 
 in synthesis mode; it cannot be deleted.
+<p>
+<h3><a name="variantsana"></a>Variants of run in analysis mode</h3>
+The execution time of BLEND in analysis mode can be substantially increased by datasets analysis and by the procedure for early
+detection of radiation damage. Quicker runs can be achieved if only the dendrogram based on cell parameters is all that is required. 
+In this case the input will be the same as the input for the standard analysis mode, but the command line will include "-aDO", rather
+than "-a". Some of the output produced for the simple analysis mode will not be present if the variant "-aDO" is used.
+</p>
 <h2><a name="running_synthesis"></a>Running the program in synthesis mode</h2>
 By running BLEND in synthesis mode the user aims at producing new datasets out of two or more individual datasets.
 Each node in the dendrogram can give rise to a scaled dataset. The easiest option for the user is to force BLEND 
@@ -168,7 +180,68 @@ clusters or groups of clusters, and to exclude individual data sets or groups of
                                                blend -c [1] [9] [[14]] 1 7    equivalent to       blend -c 1 2 3 4 5 6 7            or    blend 1-7 </pre>
 
 The ability to create scaled data out of any desired combinations confers flexibility to the program.
-<br>
+</p>
+<h3><a name="variants_c"></a>Variants of run in combination mode</h3>
+<p>
+Filtering of the individual datasets forming a cluster can be also carried out in an automated way using a variant of the combination mode called 
+<em>filtering</em> (option "-cF"). In this variant individual datasets are discarded one at a time based on Rmerge values, until a pre-defined or user-defined
+overall data completeness is reached. At each cycle the dataset with highest overall Rmerge is discarded. The process terminates when either the 
+maximum number of cycles is reached (default 5, keyword MAXCYCLE), or when the specific dataset removed causes overall data to drop below a specific target 
+completeness (default 95%, keyword COMPLETENESS). At the end of the process results from the cycle displaying the lowest overall Rmerge are selected for
+output. It is also possible to remove the terminal part (given number of images) of each dataset forming a cluster in an attempt of reducing that part of
+data affected by radiation damage. This variant is named <em>pruning</em> (option "-cP"). 
+At each cycle the overall number of images that can be removed to keep completeness at a specific value 
+(default 95%, keyword COMPLETENESS) is counted and displayed. This overall number is partitioned across all datasets forming the specific cluster. Removal
+occurs for the individual dataset having highest overall Rmerge in the current cycle. 
+The amount of images (always at the end of the rotation sweep) to be removed from this
+dataset is a fraction of the allocated share (default 0.5, keyword CUTFRACTION). The process is terminated when a maximum number of cycles is reached (default 
+5, keyword MAXCYCLE), when target completeness is reached (default 95%, keyword COMPLETENESS) or when deletion of the next chunk of images completely 
+removes one specific dataset. In this
+case it is suggested to re-run BLEND (still with the pruning variant if wished) without that specific dataset.
+</p>
+<h2><a name="running_graphics"></a>Running the program in graphics mode</h2>
+<p>
+BLEND graphics mode has been implemented as a visual aid to assist in the selection and filtering of datasets in clusters. This is especially the case
+when dealing with several datasets because the dendrogram is densely populated and it is difficult to understand clusters composition.
+Furthermore, the graphics mode yields so-called <em>annotated dendrograms</em> with numbers or descriptions included in the tree. These
+are particularly useful to work out which clusters are good for a specific purpose, or which datasets are affecting a given group or cluster negatively.
+</p>
+<p>
+The graphics mode is executed using the "-g" option, followed by an uppercase character indicating the type of graphics to be produced. 
+The annotated dendrograms produced in graphics mode have the tree nodes at heights different from Ward's heights. The nodes are, instead, placed at
+integer levels, 1, 2, 3, ..., corresponding to merging levels. In the first level are located all nodes corresponding to the union of two datasets. At
+level two we find nodes corresponding to clusters with 3 datasets; these can be formed by the union of a cluster at level one and a dataset. At level three
+nodes corresponding to clusters with four datasets are placed. Higher and higher levels are formed with the inclusion of more datasets. The convenience
+of using levels, rather than Ward's height, is in highlighting similarities and differences among clusters with the same number of datasets.
+Another convenience of displaying dendrograms using levels rather than Ward's heights is that for densely populated dendrograms it is possible to fix
+the number of levels down the specific dendrogram; in this case only part of the dendrogram will be displayed. This action is roughly equivalent to
+zooming in the dendrogram around the specified cluster. All graphics files produced in graphics mode are stored in the directory "graphics".
+</p>
+<p>
+Listed below are the possible graphics types with the related command lines:
+<ul>
+ <li>type "DO"<br>
+     An annotated dendrogram is produced when using the "DO" type. The annotation here includes cluster number and aLCV value. 
+     This annotated dendrogram is produced with the following command line:
+<pre>         blend -g DO clN N</pre>
+     where clN is the cluster number (default is the top cluster), while N is the level of details (how many levels to display, including cluster
+     clN's one. An example could be,
+<pre>         blend -g DO 12 3 </pre>
+     which will display the annotated dendrogram displaying cluster 12 and two more levels of clusters below cluster 12. The type "DO" can be executed
+     after execution of BLEND in analysis (both simple and dendrogram-only variants) mode.</li>
+ <li>type "D"<br>
+     An annotated dendrogram is produced when using the "D" type. The annotation here includes Rmeas, completeness and resolution estimated as
+     value of CC1/2=0.3 (see AIMLESS log file). This type of graphics can only be executed after having run BLEND in synthesis mode. The command
+     line is the same as the one used for the "DO" type:
+<pre>         blend -g DO clN N</pre></li>
+</ul>
+</p>
+<!-- <h3><a name="variants_g"></a>Variants of run in graphics mode</h3>
+<p>
+5, keyword MAXCYCLE), when target completeness is reached (default 95%, keyword COMPLETENESS) or when deletion of the next chunk of images completely 
+removes one specific dataset. In this
+case it is suggested to re-run BLEND (still with the pruning variant if wished) without that specific dataset.
+</p> -->
 <br>
 <h2><a name="InputOutput"></a>INPUT AND OUTPUT FILES</h2>
 <h3>Input</h3>
@@ -190,7 +263,9 @@ Input can be either a file (no fixed name, but here it is indicated as "foo_in.d
 Execution of BLEND in different modes (analysis "-a", synthesis "-s" or "-sLCV" or "-saLCV", combination "-c" implies different output files. <br>
 <!-- <span style="font-family: monospace;"><br> -->
  <br>
- (a) From analysis mode:
+ (a) From analysis mode:<br>
+     ( WARNING!!! Files "FINAL_list_of_files.dat" and "BLEND.RData" will be slightly different to what described below, when the variant dendrogram-only (-aDO)
+     is used. In particular, file "BLEND.RData" is, in this case, called "BLEND0.RData" )
  <dl compact="compact">
   <dt> BLEND_SUMMARY.txt
        <dd> is an ASCII file with tabulated information for all datasets being
@@ -320,6 +395,9 @@ The reason
        <dd> full logs from the AIMLESS runs. The user can
        benefit from these files to find out detailed information on merging statistics and scaling in
        general <br>
+       <br>
+  <dt> BLEND.RMergingStatistics
+       <dd>This is a binary file used by BLEND when executed in graphics mode to display annotated dendrograms with merging statistics.
  </dl>
  <br>
  (c) From combination mode:
@@ -351,6 +429,13 @@ The reason
        benefit from these files to find out detailed information on merging statistics and scaling in
        general <br>
  </dl>
+ (d) From graphics mode:
+ <dl compact="compact">
+  <dt> aLCV_annotated_dendrogram_cluster_[clN]_level_[N].png, aLCV_annotated_dendrogram_cluster_[clN]_level_[N].ps (inside directory "graphics")
+       <dd> These plots are created when running BLEND in graphics mode, using the "DO" graphics type<br>
+       <br>
+  <dt> stats_annotated_dendrogram_cluster_[clN]_level_[N].png, stats_annotated_dendrogram_cluster_[clN]_level_[N].ps (inside directory "graphics")
+       <dd> These plots are created when running BLEND in graphics mode, using the "D" graphics type<br>
 <br>
 <h2><a name="keywords"></a>KEYWORDED INPUT</h2>
 BLEND keywords can be divided in three groups, as they control essentially three different parts of the program. Keywords with
@@ -360,7 +445,10 @@ their default values are summarized here:
         <pre>CPARWT              1.000
 ISIGI               1.500
 LAUEGROUP           (laue or space group symbol, as used in POINTLESS)
-RADFRAC             0.750</pre></li>
+RADFRAC             0.750
+COMPLETENESS        95.0
+CUTFRACTION         0.5
+MAXCYCLE            5</pre></li>
    <li> Group 2
         <pre>CHOOSE SPACEGROUP   (space group, as used in POINTLESS)
 DATAREF             ()
@@ -373,9 +461,10 @@ RESOLUTION          HIGH [smallest among highest resolutions of all composing da
 SCALES              ROTATION SPACING 5 SECONDARY  BFACTOR ON BROTATION SPACING 20 (see AIMLESS)
 SDCORRECTION        REFINE INDIVIDUAL (see AIMLESS)</pre></li>
 </ol>
-Keywords in group 1 control data preparation, analysis and clustering. Keywords in group 2 are keywords used in 
-POINTLESS <a href=#references>[4]</a>, 
-while keywords in group 3 are keywords used in AIMLESS <a href=#references>[4]</a>.
+Keywords in group 1 are specific for BLEND and used to control data preparation, analysis and clustering, 
+and also for the combination mode filtering and prunig variants. 
+Keywords in group 2 are keywords used in POINTLESS <a href=#references>[4]</a>, while keywords in group 3 are keywords used in 
+AIMLESS <a href=#references>[4]</a>. 
 <br>
 In the definitions below "[]" encloses optional items,
 "|" delineates alternatives. All keywords are
@@ -396,6 +485,9 @@ case-insensitive, but are listed below in upper-case.
 <a href="#scales">SCALES</a>, 
 <a href="#sdcorrection">SDCORRECTION</a>, 
 <a href="#tolerance">TOLERANCE</a> 
+<a href="#completeness">COMPLETENESS</a> 
+<a href="#cutfraction">CUTFRACTION</a> 
+<a href="#maxcycle">MAXCYCLE</a> 
 </b>
 <h3><a name="anomalous"></a>ANOMALOUS [OFF | ON]</h3>
 Default value is OFF. ANOMALOUS is the same keyword used in AIMLESS. By default all I+ and I- observations
@@ -491,7 +583,7 @@ can have cell parameters very dissimilar with each other (non isomorphism). When
 needed to calculate a mid or low resolution electron density, then POINTLESS might need instructions to avoid
 halting because large cell variations are encountered. Essentially the program is told to stop execution when
 cell difference among all component data sets goes beyond a threshold (the TOLERANCE value). The higher the TOLERANCE
-the more cell parameters are allowed to change, i.e. the more non-isomorphism is tolerated. 
+the more cell parameters are allowed to change, i.u. the more non-isomorphism is tolerated. 
 Use high values (say 100) if you do not care about cell variability.
 <h3><a name="sdcorrection"></a>SDCORRECTION [[NO]REFINE]&nbsp;&nbsp;[INDIVIDUAL | SAME&nbsp; [FIXSDB]</h3>
 Default is REFINE INDIVIDUAL.
@@ -504,7 +596,26 @@ possible to re-run BLEND using different values for the SDCORRECTION keyword, si
 what is prescribed in AIMLESS. Quite often the provision,
 <pre>         SDCORRECTION SAME</pre>
 is sufficient to take to completion failed scaling jobs. If no solution is found for obtaining refined SD values, no refinement
-(NOREFINE) is the only option left.<br>     
+(NOREFINE) is the only option left.
+<h3><a name="maxcycle"></a>MAXCYCLE</h3>
+Parameters to be used with variants filtering and pruning of the combination mode. The default number of cycles for both variants is
+5, so to avoid long execution times. In general convergence to merging statistics with better values than the starting ones is achieved within
+5 cycles. But the number of cycles can be increased or decreased using the MAXCYCLE keyword.
+<h3><a name="cutfraction"></a>CUTFRACTION</h3>
+This is used in conjunction with the pruning variant of combination mode. At the end of each cycle the total number of images that
+can be deleted is calculated and partitioned proportionally among all datasets forming the starting group or cluster. Then, at the
+start of the following cycle, the dataset with highest overall Rmerge is selected for images removal. The number of images to be removed
+is CUTFRACTION times the number assigned to that dataset. Default value is 0.5. Smaller values will determine slower and more gradual
+change of the merging statistics, while greater values than 0.5 will result in abrupt changes to the same statistics. As scaling integrated
+data is a non linear process, it seems wiser to remove a smaller number of images while, at the same time, increasing the maximum number
+allowed of cycles.
+<h3><a name="completeness"></a>COMPLETENESS</h3>
+This keyword can be used for both filtering and pruning variants of the combination mode. Whole datasets or
+portions of them, more precisely a certain number of images at the end of a run, are subtracted from a specific cluster or group
+in a cyclical fashion. The subtraction continues until overall data completeness has decreased to reach the COMPLETENESS value.
+Default is 95% (COMPLETENESS 95). Cycles can also stop if the maximum number of cycles allowed (keyword MAXCYCLE, default 5) is reached.
+Pruning cycles can also be halted if the progressive deletion of images result in the deletion of a whole dataset. This last occurrence can,
+obviously, be achieved more quickly filtering out the specific dataset using the combination mode.<br>
 <br>
 <h2><a name="miscellaneous"></a>MISCELLANEOUS AND PROBLEMS</h2>
 Problems (and, alas, crashes!) could happen in BLEND, as it is the case with any software.
@@ -583,12 +694,41 @@ any time soon.<br>
 <br>
 <a name="authors"></a>
   <h2>AUTHORS AND CREDITS</h2>
-  <p>James Foadi, Membrane Protein Laboratory, Imperial College and Diamond Light Source (j.foadi@imperial.ac.uk, james_foadi@diamond.ac.uk)
+  <p>James Foadi, Diamond Light Source (james_foadi@diamond.ac.uk)
   <br>
   Gwyndaf Evans, Diamond Light Source (gwyndaf.evans@diamond.ac.uk)
   </p>
   <p>
-  Special thanks to David Waterman (CCP4 core team) for implementing BLEND GUI version and Pierre Aller (Diamond Light Source) for BLEND tutorials.
+  Special thanks to David Waterman (CCP4 core team) for implementing the BLEND GUI version and Pierre Aller (Diamond Light Source) for BLEND tutorials.
+  </p>
+<br>
+<a name="citations"></a>
+  <h2>HOW TO CITE BLEND</h2>
+  <p>
+  The main reference for BLEND is:<br>
+  <br>
+  <span style="color: rgb(80, 80, 255);">
+  J. Foadi, P. Aller, Y. Alguel, A. Cameron, D. Axford, R.L. Owen, W. Armour, D.G. Waterman, S. Iwata and G. Evans<br>
+  <em>Clustering procedures for the optimal selection of data sets from multiple crystals in macromolecular crystallography"</em><br>
+  Acta Cryst. (2013), D69, 1617-1632
+  </span>
+  </p>
+  <p>
+  The following reference should also be included when citing BLEND because the software makes frequent use of the CCP4 programs POINTLESS and AIMLESS:<br>
+  <br>
+  For POINTLESS cite<br>
+  <span style="color: rgb(80, 80, 255);">
+  P.R.Evans<br>
+  <em>An introduction to data reduction: space-group determination, scaling and intensity statistics</em><br>
+  Acta Cryst. (2011), D67, 282-292
+  </span>
+  <br>
+  For AIMLESS cite<br>
+  <span style="color: rgb(80, 80, 255);">
+  P.R.Evans and G.N. Murshudov<br>
+  <em>How good are my data and what is the resolution?</em><br>
+  Acta Cryst. (2013), D69, 1204-1214
+  </span>
   </p>
 <br>
 <h2>SEE ALSO</h2>
