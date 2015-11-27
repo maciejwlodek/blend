@@ -10,6 +10,9 @@
 /********* included in the root directory of this package.                                          *********/
 /************************************************************************************************************/
 /************************************************************************************************************/
+// CHANGES IN VERSION 0.6.17  -  28/11/2015
+// - Fixed a bug responsible for wrong output of the level of certain clusters.
+//   (module blend4.R)
 // CHANGES IN VERSION 0.6.16  -  20/11/2015
 // - Added missing code for displaying correctly aLCV annotated dendrograms in PS format.
 //   (module blend4.R)

@@ -244,12 +244,16 @@ interface, but the user
  containing all 14 data sets; this is probably an indication of some
  minor form of non-isomorphism. Tests done so far with BLEND show that
  some structural dissimilarities can be noticed for values of LCV
- higher than 1 – 1.5%.
+ higher than 1 – 1.5%. It is probably more appropriate to use absolute
+ values in order to make judgments on crystals isomorphism. The reason is
+ that the absolute Linear Cell Variation (aLCV) is expressed in angstroms and,
+ thus, it can immediately give sensible numbers in relation to cell parameters
+ differences. 
  </FONT>
 </P>
 <P>
  <FONT SIZE=4>
- LCV
+ LCV and aLCV
  values for all clusters are reported in the file “CLUSTERS.txt”:
  </FONT>
 </P>
@@ -354,7 +358,7 @@ interface, but the user
  <FONT SIZE=4>
  Next,
  we associate this directory to a new project directory in ccp4i,
- called “BLEND_TURORIAL_AMENDED_INSULIN”, and select this project
+ called “BLEND_TUTORIAL_AMENDED_INSULIN”, and select this project
  directory. BLEND can now be executed again in analysis mode, this
  time selecting  the “original.dat” file as starting point, rather
  than the whole directory containing all 14 insulin data sets:
@@ -420,7 +424,8 @@ interface, but the user
  time “FINAL_list_of_files.dat” shows some difference in the
  number of images discarded. For data set 9 discarded images range 102
  to 122, while before it ranged 108 to 122, and images 93 to 100 are
- now discarded from data set 7, while no images were previously discarded:
+ now discarded from data set 7, while no images were previously discarded.
+A small change also occurs for data set 1:
  </FONT>
 </P>
 <P ALIGN=CENTER
@@ -532,6 +537,13 @@ interface, but the user
 </P>
 <P ALIGN=CENTER>
 <img src="imagesBT/BLEND_0.5.1_tutorial_html_1522a9ab.png">
+</P>
+<P>
+ <FONT SIZE=4>
+ Cluster selection can also be based on LCV or aLCV values. This might make sense when one's only interest is in finding the most 
+ compact groups of crystals. The selection of all clusters just reported can be also achieved by selecting "aLCV values" instead
+ of "Dendrogram heights" and inputting for example "0.85" (so to cover all clusters), rather than "14".
+ </FONT>
 </P>
 <P>
  <FONT SIZE=4>
@@ -888,12 +900,23 @@ interface, but the user
 <P>
  <FONT SIZE=4>
  To run BLEND in synthesis mode and
- produce scaled data for all nodes of the dendrogram, type:
+ produce scaled data for all nodes of the dendrogram, we could type:
  </FONT>
 </P>
 <P ALIGN=CENTER>
  <FONT SIZE=4 COLOR="#008000">
  blend -s 14 &lt; bkeys.dat &gt; blend_synthesis.log
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ But, just to show that the same results are obtained using aLCV, rather than the dendrogram's height, we 
+ executed BLEND in the following way:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+ <FONT SIZE=4 COLOR="#008000">
+ blend -saLCV 0.85 &lt; bkeys.dat &gt; blend_synthesis.log
  </FONT>
 </P>
 <P>
@@ -1018,7 +1041,7 @@ interface, but the user
 </P>
 <P ALIGN=CENTER>
  <FONT SIZE=4 COLOR="#008000">
- mkdir lysozyme_test
+ mkdir lysozyme
  </FONT>
 </P>
 <P>
@@ -1053,7 +1076,7 @@ interface, but the user
  <FONT SIZE=4>
  The
  overall Linear Cell Variation (LCV) has a high value. This is
- certainly caused by the couple of crystals in the isolated branch on
+ certainly caused by the two of crystals in the isolated branch on
  the left of the dendrogram, as it can be confirmed by looking at cell
  parameters plots in BLEND log file (new style):
  </FONT>
@@ -1072,13 +1095,13 @@ interface, but the user
  set), therefore we can get rid of sweeps 19 and 21 without loosing
  much data and re-run BLEND in analysis mode. One way of
  executing BLEND using the same data without sweeps 19 and 21
- is by renaming file "mtz_names.dat" as "original.dat" and
+ is by copying file "mtz_names.dat" into "original.dat" and
  deleting the lines pointing to these sweeps:
  </FONT>
 </P>
 <P ALIGN=CENTER>
  <FONT SIZE=4 COLOR="#008000">
- mv lysozyme/blend_1/mtz_names.dat lysozyme/original.dat
+ cp lysozyme/blend_1/mtz_names.dat lysozyme/original.dat
  <br>
  [edit "lysozyme/original.dat" and delete lines containing "dataset_019.mtz" and "dataset_021.mtz"]
  </FONT>
@@ -1112,7 +1135,7 @@ interface, but the user
 <P>
  <FONT SIZE=4>
  As
- we can see, the new LCV is much smaller, although the value 1.68% (and the absolute LCV value 1.46 &Aring;)
+ we can see, the new LCV is much smaller, although the value 1.40% (and the absolute LCV value 1.54 &Aring;)
  still indicates some non-isomorphism among all crystals. We know this
  is the case because crystals have been assembled from
  differently-prepared structures. Indeed, LCV values computed
@@ -1194,16 +1217,41 @@ interface, but the user
  "merged_files" directory, and they are ready for further
  investigations. Some of the statistics can be improved by filtering
  out certain sweeps from specific clusters. A visualization of the
- above table is provided in the following picture,
- where clusters with completeness around 90% or better are represented
- by grey circles and the corresponding R<SUB>meas</SUB> value is typed
- underneath:
+ above table can be conveniently created running BLEND in graphics
+ mode. The program needs to be pointed at the directory in which the
+ run in synthesis mode has been executed. Three types of results from
+ the statistics produced by AIMLESS will be annotated in the dendrogram
+ around a user-specified cluster. Furthermore details of the dendrogram
+ are determined by the user-selected number of levels down the chosen
+ cluster. For the specific case treated here we would like to view merging
+ statistics in an annotated dendrogram starting from the top cluster (cluster 25)
+ and going down 10 levels (this is normally enough for a first view of
+ the tree). For executing this mode the gui is arranged as in the following
+ picture:
  </FONT>
 </P>
 <P ALIGN=CENTER>
 <img src="imagesBT/BLEND_0.5.1_tutorial_html_7e484900.png">
 <br>
 <br>
+</P>
+<P>
+ <FONT SIZE=4>
+ And this is the annotated dendrogram created:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+<img src="imagesBT/annotated_dendrogram01.png">
+<br>
+<br>
+</P>
+<P>
+ <FONT SIZE=4>
+ In the above annotated dendrogram clusters at a same level are formed by the same number of data sets. If the dendrogram is
+ densely populated it might be difficult to see which data set belong to which cluster. For example clusters 13 and 14 are both
+ formed by 4 data sets; clusters 18 and 19 both formed by 5 data sets. It is clear that the height of the level does not always
+ correspond to higher number of data sets.
+ </FONT>
 </P>
 <P>
  <FONT SIZE=4>

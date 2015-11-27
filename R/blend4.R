@@ -252,7 +252,8 @@ simplify_heights <- function(Tree,groups1)
  ulist <- unlist(ltmp)
 
  # Assign order number to increasingly complex clusters
- idss <- unique(ulist)
+ #idss <- unique(ulist)
+ idss <- sort(unique(ulist))
  Tree$height <- match(ulist,idss)
 
  return(Tree)
