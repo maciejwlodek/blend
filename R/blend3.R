@@ -1075,7 +1075,7 @@ if (combination_type == 1)
   if (neq[isel] == 0)
   {
    stmp <- "=> No images can be further eliminated without either decreasing target completeness or cancelling a whole dataset.\n"
-   stmp <- paste(stmp,"  Pruning cycles will be skipped.\n")
+   stmp <- paste(stmp,"  Cycles will be skipped.\n")
    cat(stmp)
   }
   if (neq[isel] > 0)
@@ -1092,7 +1092,7 @@ if (combination_type == 1)
     if (icyc > maxcycle) 
     {
      stmp <- "=> Max. number of cycles reached.\n"
-     stmp <- paste(stmp,"Pruning cycles will be stopped\n")
+     stmp <- paste(stmp,"Cycles will be stopped\n")
      cat(stmp)
      break
     }
@@ -1116,7 +1116,7 @@ if (combination_type == 1)
     {
      stmp <- "AIMLESS cannot converge to finite results.\n"
      cat(stmp)
-     stmp <- "Pruning cycles will be stopped.\n"
+     stmp <- "Cycles will be stopped.\n"
      cat(stmp)
      break 
     } 
@@ -1150,7 +1150,7 @@ if (combination_type == 1)
      stored_results[[length(stored_results)]] <- NULL
      stored_aimkeys[[length(stored_aimkeys)]] <- NULL
      stmp <- "=> No images can be further eliminated without either decreasing target completeness or cancelling a whole dataset.\n"
-     stmp <- paste(stmp,"Pruning cycles will be stopped\n")
+     stmp <- paste(stmp,"Cycles will be stopped\n")
      cat(stmp)
      break
     }
@@ -1186,7 +1186,7 @@ if (combination_type == 1)
     if (neq[isel] == 0)
     {
      stmp <- "=> No images can be further eliminated without either decreasing target completeness or cancelling a whole dataset.\n"
-     stmp <- paste(stmp,"Pruning cycles will be stopped\n")
+     stmp <- paste(stmp,"Cycles will be stopped\n")
      cat(stmp)
      break
     }
@@ -1383,7 +1383,7 @@ if (combination_type == 2)
    if (icyc > maxcycle)
    {
     stmp <- "=> Max. number of cycles reached.\n"
-    stmp <- paste(stmp,"Pruning cycles will be stopped\n")
+    stmp <- paste(stmp,"Cycles will be stopped\n")
     cat(stmp)
     break
    }
@@ -1411,7 +1411,7 @@ if (combination_type == 2)
    {
     stmp <- "AIMLESS cannot converge to finite results.\n"
     cat(stmp)
-    stmp <- "Pruning cycles will be stopped.\n"
+    stmp <- "Cycles will be stopped.\n"
     cat(stmp)
     break
    }
@@ -1445,7 +1445,7 @@ if (combination_type == 2)
     stored_results[[length(stored_results)]] <- NULL
     stored_selections[[length(stored_selections)]] <- NULL
     stmp <- "=> This datasets cannot be eliminated without decreasing target completeness.\n"
-    stmp <- paste(stmp,"Pruning cycles will be stopped\n")
+    stmp <- paste(stmp,"Cycles will be stopped\n")
     cat(stmp)
     break
    }

@@ -1249,19 +1249,13 @@ A small change also occurs for data set 1:
  <FONT SIZE=4>
  In the above annotated dendrogram clusters at a same level are formed by the same number of data sets. If the dendrogram is
  densely populated it might be difficult to see which data set belong to which cluster. For example clusters 13 and 14 are both
- formed by 4 data sets; clusters 18 and 19 both formed by 5 data sets. It is clear that the height of the level does not always
- correspond to higher number of data sets.
- </FONT>
-</P>
-<P>
- <FONT SIZE=4>
- Clusters
- 21, 22, 23 and 25 have clearly high R<SUB>meas</SUB> values,
+ formed by 4 data sets; clusters 18 and 19 both formed by 5 data sets. Clusters
+ 21, 22, 23 and 25 have high R<SUB>meas</SUB> values,
  while values for clusters 15 and 24 can, perhaps, be improved. The
  main way to improve statistics at this point is by running BLEND
  in combination mode. Let's try, for instance, to improve the
  statistics for cluster 15. As the R<SUB>meas</SUB> value jumps from
- 0.111 for cluster 11 to 0.154 for cluster 15 and as cluster 15 is
+ 0.114 for cluster 11 to 0.161 for cluster 15 and as cluster 15 is
  simply cluster 11 with the addition of sweep 23, it is
  straightforward to impute the reason for the increase to the bad
  quality of sweep 23. But there might also be other possibilities. For
@@ -1283,7 +1277,7 @@ A small change also occurs for data set 1:
 </P>
 <P>
  <FONT SIZE=4>
- For
+ we have excluded data set 18. For
  the second combination:
  </FONT>
 </P>
@@ -1304,24 +1298,24 @@ A small change also occurs for data set 1:
 <P ALIGN=LEFT STYLE="margin-bottom: 0in; font-weight: normal"><BR>
 </P>
 <P ALIGN=LEFT STYLE="margin-bottom: 0in; font-weight: normal"><FONT COLOR="#000000"><FONT SIZE=3>combination
-21 23 24 25 26 (equivalent to cluster 15 without data set 21) points to directory “lysozyme/blend_2”</FONT></FONT></P>
+21 23 24 25 26 (equivalent to cluster 15 without data set 18) points to directory “lysozyme/blend_2”</FONT></FONT></P>
 <P ALIGN=LEFT STYLE="margin-bottom: 0in; font-weight: normal"><FONT COLOR="#000000"><FONT SIZE=3>combination
-18 23 24 25 26 (equivalent to cluster 15 without data set 18) points to directory “lysozyme/blend_4”</FONT></FONT></P>
+18 23 24 25 26 (equivalent to cluster 15 without data set 21) points to directory “lysozyme/blend_5”</FONT></FONT></P>
 <P ALIGN=LEFT STYLE="margin-bottom: 0in; font-weight: normal"><FONT COLOR="#000000"><FONT SIZE=3>combination
-18 21 24 25 26 (equivalent to cluster 15 without data set 23) points to directory “lysozyme/blend_5”</FONT></FONT></P>
+18 21 24 25 26 (equivalent to cluster 15 without data set 23) points to directory “lysozyme/blend_6”</FONT></FONT></P>
 <P ALIGN=LEFT STYLE="margin-bottom: 0in; font-weight: normal"><FONT COLOR="#000000"><FONT SIZE=3>combination
-18 21 23 25 26 (equivalent to cluster 15 without data set 24) points to directory “lysozyme/blend_6”</FONT></FONT></P>
+18 21 23 25 26 (equivalent to cluster 15 without data set 24) points to directory “lysozyme/blend_7”</FONT></FONT></P>
 <P ALIGN=LEFT STYLE="margin-bottom: 0in; font-weight: normal"><FONT COLOR="#000000"><FONT SIZE=3>combination
-18 21 23 24 26 (equivalent to cluster 15 without data set 25) points to directory “lysozyme/blend_7”</FONT></FONT></P>
+18 21 23 24 26 (equivalent to cluster 15 without data set 25) points to directory “lysozyme/blend_8”</FONT></FONT></P>
 <P ALIGN=LEFT STYLE="margin-bottom: 0in; font-weight: normal"><FONT COLOR="#000000"><FONT SIZE=3>combination
-18 21 23 24 25 (equivalent to cluster 15 without data set 26) points to directory “lysozyme/blend_8”</FONT></FONT></P>
+18 21 23 24 25 (equivalent to cluster 15 without data set 26) points to directory “lysozyme/blend_9”</FONT></FONT></P>
 <P ALIGN=LEFT STYLE="margin-bottom: 0in; font-weight: normal"><BR>
 </P>
 <P>
  <FONT SIZE=4>
  Final
  statistics can be viewed in the "MERGED_STATISTICS.info" file
- under "lysozyme/blend_8/combined_files" or simply using the
+ under "lysozyme/blend_9/combined_files" or simply using the
  interface:
  </FONT>
 </P>
@@ -1336,8 +1330,8 @@ A small change also occurs for data set 1:
  <FONT SIZE=4>
  The
  lowest R<SUB>meas</SUB> is the one for group 3. Thus, discarding sweep 23 from
- cluster 15 causes Rmeas to improve from 0.154 to 0.111, while
- completeness decrease just of a little from 95.8% to 93.9%. This is essentially
+ cluster 15 causes Rmeas to improve from 0.161 to 0.114, while
+ completeness decrease a little from 96.0% to 93.9%. This is essentially
  cluster 11; our initial guess pointing at data set 23 as the one making things worst
  turned out to be correct.
  Similar combinations can be tried on all other clusters. Results are shown in
@@ -1351,22 +1345,14 @@ A small change also occurs for data set 1:
 </P>
 <P>
  <FONT SIZE=4>
- Values
- shown in red correspond to those cases where filtering out one or
- more sweeps has made it possible to lower R<SUB>meas</SUB>.
- </FONT>
-</P>
-<P>
- <FONT SIZE=4>
- Try
- to reproduce the same results by executing BLEND in
- combination mode. As a hint you can find it useful to know that the
- sweeps discarded are 1, 15, 19, 22 and 23.
- To conclude this tutorial, use BLEND in combination mode with
- just one element at a time to reproduce scaled data and statistics
- for individual sweeps. It is interesting to observe that the 4 data
- sets excluded from the previous filtering job do not always
- correspond to those having worst R<SUB>meas</SUB> values.
+ Crossed values have been updated with values calculated with the new combinations. For example cluster 15 had R<SUB>meas</SUB>=0.161
+ and this becomes 0.114 after filtering. At the same time its completeness drops from 96.0% to 93.9%. In total 5 data sets have been
+ filtered out, 15, 19, 22, 23 from the left branch and 1 from the right branch. Statistics look much better for each branch. Their union
+ into cluster 25 still yields a high value of R<SUB>meas</SUB> because the two groups of crystals, as we know, are non isomorphous
+ in reason of the bromine.
+ Try and
+ reproduce the same results by executing BLEND in
+ combination mode.
  </FONT>
 </P>
 <P>
@@ -1402,7 +1388,7 @@ A small change also occurs for data set 1:
  <br>
  In this tutorial we will use BLEND to first explore resolution and completeness of data and then to obtain complete
  data sets that will be subsequently used to find the heavy atom substructure. The CCP4 GUI will not be used, so that the
- whole tutorial is simplified, but the GUi should be used if you are unfamiliar with command line execution.
+ whole tutorial is simplified, but the GUI should be used if you are unfamiliar with command line execution.
  </FONT>
 </P>
 <P>
@@ -1616,40 +1602,40 @@ A small change also occurs for data set 1:
     <td><FONT COLOR="#0000ff">Max</FONT></td>
    </tr>
    <tr>
-    <td>1</td>    <td>0.072</td>    <td>0.044</td>    <td>69.80</td>       <td>1.80</td>     <td>1.47</td>      <td>1.47</td>     <td>1.47</td>
+    <td>1</td>    <td>0.066</td>    <td>0.043</td>    <td>58.00</td>       <td>1.50</td>     <td>1.47</td>      <td>1.47</td>     <td>1.47</td>
    </tr>
    <tr>
-    <td>2</td>    <td>0.073</td>    <td>0.038</td>    <td>67.30</td>       <td>3.00</td>     <td>1.40</td>      <td>1.40</td>     <td>1.40</td>
+    <td>2</td>    <td>0.071</td>    <td>0.040</td>    <td>55.50</td>       <td>2.50</td>     <td>1.40</td>      <td>1.40</td>     <td>1.40</td>
    </tr>
    <tr>
-    <td>3</td>    <td>0.299</td>    <td>0.114</td>    <td>92.60</td>       <td>5.40</td>     <td>1.64</td>      <td>1.75</td>     <td>1.43</td>
+    <td>3</td>    <td>0.294</td>    <td>0.112</td>    <td>92.60</td>       <td>5.40</td>     <td>1.64</td>      <td>1.75</td>     <td>1.43</td>
    </tr>
    <tr>
-    <td>4</td>    <td>0.090</td>    <td>0.049</td>    <td>74.80</td>       <td>2.50</td>     <td>1.50</td>      <td>1.50</td>     <td>1.50</td>
+    <td>4</td>    <td>0.083</td>    <td>0.047</td>    <td>67.80</td>       <td>2.20</td>     <td>1.50</td>      <td>1.50</td>     <td>1.50</td>
    </tr>
    <tr>
-    <td>5</td>    <td>0.070</td>    <td>0.046</td>    <td>75.70</td>       <td>1.70</td>     <td>1.39</td>      <td>1.39</td>     <td>1.39</td>
+    <td>5</td>    <td>0.067</td>    <td>0.044</td>    <td>71.40</td>       <td>1.50</td>     <td>1.39</td>      <td>1.39</td>     <td>1.39</td>
    </tr>
    <tr>
-    <td>6</td>    <td>0.214</td>    <td>0.133</td>    <td>85.20</td>       <td>2.00</td>     <td>1.64</td>      <td>1.83</td>     <td>1.52</td>
+    <td>6</td>    <td>0.206</td>    <td>0.129</td>    <td>84.40</td>       <td>2.00</td>     <td>1.64</td>      <td>1.83</td>     <td>1.53</td>
    </tr>
    <tr>
-    <td>7</td>    <td>0.193</td>    <td>0.117</td>    <td>70.70</td>       <td>2.10</td>     <td>1.50</td>      <td>1.60</td>     <td>1.50</td>
+    <td>7</td>    <td>0.191</td>    <td>0.116</td>    <td>70.50</td>       <td>2.10</td>     <td>1.50</td>      <td>1.50</td>     <td>1.50</td>
    </tr>
    <tr>
-    <td>8</td>    <td>0.055</td>    <td>0.033</td>    <td>60.90</td>       <td>2.10</td>     <td>1.48</td>      <td>1.48</td>     <td>1.48</td>
+    <td>8</td>    <td>0.050</td>    <td>0.032</td>    <td>52.40</td>       <td>1.80</td>     <td>1.48</td>      <td>1.48</td>     <td>1.48</td>
    </tr>
    <tr>
-    <td>9</td>    <td>0.123</td>    <td>0.083</td>    <td>80.00</td>       <td>1.70</td>     <td>1.49</td>      <td>1.49</td>     <td>1.49</td>
+    <td>9</td>    <td>0.127</td>    <td>0.087</td>    <td>72.30</td>       <td>1.50</td>     <td>1.49</td>      <td>1.49</td>     <td>1.49</td>
    </tr>
    <tr>
-    <td>10</td>   <td>0.558</td>    <td>0.380</td>    <td>75.20</td>       <td>1.60</td>     <td>1.89</td>      <td>2.02</td>     <td>1.49</td>
+    <td>10</td>   <td>0.556</td>    <td>0.385</td>    <td>67.10</td>       <td>1.40</td>     <td>1.92</td>      <td>2.03</td>     <td>1.49</td>
    </tr>
    <tr>
-    <td>11</td>   <td>0.084</td>    <td>0.053</td>    <td>72.00</td>       <td>1.90</td>     <td>1.40</td>      <td>1.40</td>     <td>1.40</td>
+    <td>11</td>   <td>0.082</td>    <td>0.054</td>    <td>60.00</td>       <td>1.70</td>     <td>1.40</td>      <td>1.40</td>     <td>1.40</td>
    </tr>
    <tr>
-    <td>12</td>   <td>0.078</td>    <td>0.044</td>    <td>83.30</td>       <td>2.60</td>     <td>1.39</td>      <td>1.39</td>     <td>1.39</td>
+    <td>12</td>   <td>0.074</td>    <td>0.045</td>    <td>71.30</td>       <td>2.10</td>     <td>1.39</td>      <td>1.39</td>     <td>1.39</td>
    </tr>
   </table>
  </FONT>
@@ -1699,40 +1685,40 @@ A small change also occurs for data set 1:
     <td><FONT COLOR="#0000ff">Max</FONT></td>
    </tr>
    <tr>
-    <td>1</td>    <td>0.067</td>    <td>0.041</td>    <td>70.90</td>       <td>1.90</td>     <td>1.60</td>      <td>1.60</td>     <td>1.60</td>
+    <td>1</td>    <td>0.063</td>    <td>0.041</td>    <td>59.40</td>       <td>1.60</td>     <td>1.60</td>      <td>1.60</td>     <td>1.60</td>
    </tr>
    <tr>
-    <td>2</td>    <td>0.070</td>    <td>0.036</td>    <td>73.30</td>       <td>3.10</td>     <td>1.60</td>      <td>1.60</td>     <td>1.60</td>
+    <td>2</td>    <td>0.068</td>    <td>0.039</td>    <td>60.60</td>       <td>2.60</td>     <td>1.60</td>      <td>1.60</td>     <td>1.60</td>
    </tr>
    <tr>
-    <td>3</td>    <td>0.213</td>    <td>0.078</td>    <td>94.70</td>       <td>5.80</td>     <td>1.60</td>      <td>1.76</td>     <td>1.60</td>
+    <td>3</td>    <td>0.213</td>    <td>0.078</td>    <td>94.70</td>       <td>5.80</td>     <td>1.63</td>      <td>1.76</td>     <td>1.60</td>
    </tr>
    <tr>
-    <td>4</td>    <td>0.082</td>    <td>0.044</td>    <td>75.20</td>       <td>2.50</td>     <td>1.60</td>      <td>1.60</td>     <td>1.60</td>
+    <td>4</td>    <td>0.077</td>    <td>0.043</td>    <td>67.90</td>       <td>2.20</td>     <td>1.60</td>      <td>1.60</td>     <td>1.60</td>
    </tr>
    <tr>
-    <td>5</td>    <td>0.066</td>    <td>0.043</td>    <td>84.30</td>       <td>1.70</td>     <td>1.60</td>      <td>1.60</td>     <td>1.60</td>
+    <td>5</td>    <td>0.063</td>    <td>0.042</td>    <td>79.60</td>       <td>1.60</td>     <td>1.60</td>      <td>1.60</td>     <td>1.60</td>
    </tr>
    <tr>
-    <td>6</td>    <td>0.196</td>    <td>0.122</td>    <td>85.50</td>       <td>2.00</td>     <td>1.60</td>      <td>1.84</td>     <td>1.60</td>
+    <td>6</td>    <td>0.191</td>    <td>0.120</td>    <td>84.80</td>       <td>2.00</td>     <td>1.64</td>      <td>1.83</td>     <td>1.60</td>
    </tr>
    <tr>
-    <td>7</td>    <td>0.176</td>    <td>0.106</td>    <td>71.10</td>       <td>2.20</td>     <td>1.60</td>      <td>1.60</td>     <td>1.60</td>
+    <td>7</td>    <td>0.175</td>    <td>0.106</td>    <td>70.90</td>       <td>2.20</td>     <td>1.60</td>      <td>1.60</td>     <td>1.60</td>
    </tr>
    <tr>
-    <td>8</td>    <td>0.052</td>    <td>0.031</td>    <td>60.90</td>       <td>2.20</td>     <td>1.60</td>      <td>1.60</td>     <td>1.60</td>
+    <td>8</td>    <td>0.048</td>    <td>0.030</td>    <td>52.70</td>       <td>1.90</td>     <td>1.60</td>      <td>1.60</td>     <td>1.60</td>
    </tr>
    <tr>
-    <td>9</td>    <td>0.120</td>    <td>0.081</td>    <td>82.30</td>       <td>1.70</td>     <td>1.60</td>      <td>1.60</td>     <td>1.60</td>
+    <td>9</td>    <td>0.123</td>    <td>0.085</td>    <td>75.40</td>       <td>1.50</td>     <td>1.60</td>      <td>1.60</td>     <td>1.60</td>
    </tr>
    <tr>
-    <td>10</td>   <td>0.367</td>    <td>0.248</td>    <td>79.30</td>       <td>1.60</td>     <td>1.89</td>      <td>2.04</td>     <td>1.60</td>
+    <td>10</td>   <td>0.467</td>    <td>0.320</td>    <td>70.00</td>       <td>1.50</td>     <td>1.88</td>      <td>2.04</td>     <td>1.60</td>
    </tr>
    <tr>
-    <td>11</td>   <td>0.081</td>    <td>0.051</td>    <td>81.30</td>       <td>2.00</td>     <td>1.60</td>      <td>1.60</td>     <td>1.60</td>
+    <td>11</td>   <td>0.079</td>    <td>0.052</td>    <td>68.70</td>       <td>1.80</td>     <td>1.60</td>      <td>1.60</td>     <td>1.60</td>
    </tr>
    <tr>
-    <td>12</td>   <td>0.075</td>    <td>0.042</td>    <td>90.40</td>       <td>2.70</td>     <td>1.60</td>      <td>1.60</td>     <td>1.60</td>
+    <td>12</td>   <td>0.071</td>    <td>0.044</td>    <td>79.30</td>       <td>2.10</td>     <td>1.60</td>      <td>1.60</td>     <td>1.60</td>
    </tr>
   </table>
  </FONT>
@@ -1756,7 +1742,7 @@ A small change also occurs for data set 1:
 </P>
 <P ALIGN=CENTER>
  <FONT SIZE=4 COLOR="#008000">
-  blend -s 10 < bkeys.dat
+  blend -s 10 < bkeys.dat > blend_synthesis.log
  </FONT>
 </P>
 <P>
@@ -1788,13 +1774,13 @@ A small change also occurs for data set 1:
  <FONT SIZE=4>
  Clusters with satisfactory anomalous completeness are 5, 6, 7, 9, 10, 11
  (greater than 90%). These are data sets on
- which we can try the procedure to find heavy atoms substructure. These files can be compared with the two individual
- data sets with the highest anomalous completeness, data set 3 and data set 12. A "grep" line similar to the one previously used can show this:
+ which we can try the procedure to find heavy atoms substructure. These files can be compared with the only individual
+ data set with the highest anomalous completeness, data set 3. A "grep" line similar to the one previously used can show this:
  </FONT>
 </P>
 <P ALIGN=CENTER>
  <FONT SIZE=4 COLOR="#008000">
- grep "Anomalous completeness   " individual_files/aimless*.log
+ grep "Anomalous completeness   " individual_files_1.6/aimless*.log
  </FONT>
 </P>
 <P>
@@ -1808,8 +1794,8 @@ A small change also occurs for data set 1:
 </P>
 <P>
  <FONT SIZE=4>
- Values 80.1% and 76.2% for the anomalous completeness of data sets 3 and 12 are not close to 90%, but the only decent ones
- obtainable with indvidual data sets, and it is with these that all merged ones will have to be compared. The message
+ The value 80.1% for the anomalous completeness of data set 3 is not close to 90%, but the only decent one
+ obtainable as indvidual data set, and it is with this one that all merged ones will have to be compared. The message
  to be taken home is that when only partial data are available it is still possible to combine them and obtain a complete data set,
  rather than wait for new crystals and another data collection. Furthermore, the redundancy implied by merging data together can
  increase the anomalous signal and, thus, strengthen the phasing power.<br>
@@ -1827,42 +1813,42 @@ A small change also occurs for data set 1:
  cd anoproc<br>
  mkdir lysBr_ind_003<br>
  mkdir lysBr_ind_012<br>
- mkdir lysBr_005<br>
- mkdir lysBr_006<br>
- mkdir lysBr_007<br>
- mkdir lysBr_009<br>
- mkdir lysBr_010<br>
- mkdir lysBr_011
+ mkdir lysBr_cl_005<br>
+ mkdir lysBr_cl_006<br>
+ mkdir lysBr_cl_007<br>
+ mkdir lysBr_cl_009<br>
+ mkdir lysBr_cl_010<br>
+ mkdir lysBr_cl_011
  </FONT>
 </P>
 <P>
  <FONT SIZE=4>
  The procedure to produce sca files ready to be used in <I>SHELX</I> will be now shown only for one of the data sets involved, the one corresponding 
- to cluster 6, but it is meant to be repeated in exactly the same way for all other data sets. First we move to directory "lysBr_006". Then we run
+ to cluster 6, but it is meant to be repeated in exactly the same way for all other data sets. First we move to directory "lysBr_cl_006". Then we run
  <I>TRUNCATE</I>, using command lines, in the following way:
  </FONT>
 </P>
 <P ALIGN=CENTER>
  <FONT SIZE=4 COLOR="#008000">
- cd lysBr_006<br>
- truncate HKLIN ../../merged_files/scaled_006.mtz HKLOUT truncate_006.mtz
+ cd lysBr_cl_006<br>
+ truncate HKLIN ../../merged_files/scaled_006.mtz HKLOUT truncate_cl_006.mtz
  </FONT>
 </P>
 <P>
  <FONT SIZE=4>
  After having entered this line execution halts as <I>TRUNCATE</I> expects some keywords. We can use default values and
- just type "END" (and hit the "Enter" key). After execution a file "truncate_006.mtz" should appear in the directory. To translate this
+ just type "END" (and hit the "Enter" key). After execution a file "truncate_cl_006.mtz" should appear in the directory. To translate this
  file into a sca file we use <I>MTZ2SCA</I> in a very simple way:
  </FONT>
 </P>
 <P ALIGN=CENTER>
  <FONT SIZE=4 COLOR="#008000">
- mtz2sca truncate_006.mtz
+ mtz2sca truncate_cl_006.mtz
  </FONT>
 </P>
 <P>
  <FONT SIZE=4>
- Now also "truncate_006.sca" should be present in the directory. As mentioned before, the procedure just applied on data set 6 should be
+ Now also "truncate_cl_006.sca" should be present in the directory. As mentioned before, the procedure just applied on data set 6 should be
  repeated for the other 6 data sets in the "anoproc" directory. Once all sca files have been obtained, programs <I>SHELXC</I> and
  <I>SHELXD</I> can be executed to obtain the heavy atoms substructure. The heavy atom for this specific case is bromine (BR - 8 sites) and we have
  tried 1000 trials in <I>SHELXD</I>. Results are tabulated as follows:
@@ -1879,39 +1865,36 @@ A small change also occurs for data set 1:
    <td><FONT COLOR="#0000ff">Cfom</FONT></td>
   </tr>
   <tr>
-   <td> ind_003 </td> <td> yes (-) </td> <td> yes (-) </td> <td>33.68</td> <td>15.34</td> <td>49.02</td> 
+   <td> ind_003 </td> <td> yes (-) </td> <td> yes (-) </td> <td>31.04</td> <td>16.85</td> <td>47.89</td> 
   </tr>
   <tr>
-   <td> ind_012 </td> <td> yes </td> <td> yes </td> <td>43.52</td> <td>25.45</td> <td>68.97</td> 
+   <td> cl_005 </td> <td> yes </td> <td> yes </td> <td>42.82</td> <td>26.07</td> <td>68.89</td> 
   </tr>
   <tr>
-   <td> 005 </td> <td> yes </td> <td> yes </td> <td>45.07</td> <td>24.94</td> <td>70.01</td> 
+   <td> cl_006 </td> <td> yes </td> <td> yes </td> <td>36.24</td> <td>20.73</td> <td>56.96</td> 
   </tr>
   <tr>
-   <td> 006 </td> <td> yes </td> <td> yes </td> <td>37.17</td> <td>19.07</td> <td>56.25</td> 
+   <td> cl_007 </td> <td> yes </td> <td> yes </td> <td>44.07</td> <td>27.38</td> <td>71.44</td> 
   </tr>
   <tr>
-   <td> 007 </td> <td> yes </td> <td> yes </td> <td>44.72</td> <td>26.03</td> <td>70.75</td> 
+   <td> cl_009 </td> <td> yes </td> <td> yes </td> <td>32.74</td> <td>19.55</td> <td>52.28</td> 
   </tr>
   <tr>
-   <td> 009 </td> <td> yes </td> <td> yes </td> <td>36.78</td> <td>18.05</td> <td>54.83</td> 
+   <td> cl_010 </td> <td> yes </td> <td> yes </td> <td>43.03</td> <td>26.80</td> <td>69.83</td> 
   </tr>
   <tr>
-   <td> 010 </td> <td> yes </td> <td> yes </td> <td>45.68</td> <td>26.01</td> <td>71.69</td> 
-  </tr>
-  <tr>
-   <td> 011 </td> <td> yes </td> <td> yes </td> <td>44.25</td> <td>26.60</td> <td>70.85</td> 
+   <td> cl_011 </td> <td> yes </td> <td> yes </td> <td>41.56</td> <td>26.83</td> <td>68.38</td> 
   </tr>
  </table>
 </P>
 <P>
  <FONT SIZE=4>
  The phasing power of bromine in a stable structure like lysozyme is clear from the relatively high CCall (> 30)
- for the two individual data sets "ind_003" and "ind_012". The last one shows better anomalous signal and reaches
- higher values of the combined figure of merit, compared to the first one. It is also clear, though, that the anomalous 
+ for the individual data set "ind_003".
+ It is also clear, though, that the anomalous 
  signal becomes much more effective when multiple isomorphous crystals are merged together. Complete clusters which includes "ind_003",
- i.e. cluster 006 and 009, improve the anomalous signal of "ind_003" alone; the same can be said of the complete clusters
- which include "ind_012", i.e. cluster 005, 007 and 010. This second group of clusters perform better than the other group.
+ i.e. cluster 006 and 009, improve the anomalous signal of "ind_003" alone.
+ Clusters 005, 007 and 010 perform better than the other clusters.
  </FONT>
 </P>
 <br>

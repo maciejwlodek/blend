@@ -10,6 +10,9 @@
 /********* included in the root directory of this package.                                          *********/
 /************************************************************************************************************/
 /************************************************************************************************************/
+// CHANGES IN VERSION 0.6.18  -  30/11/2015
+// - Eliminated "pruning" word from log sentence "pruning cycles".
+//   (module blend3.R)
 // CHANGES IN VERSION 0.6.17  -  28/11/2015
 // - Fixed a bug responsible for wrong output of the level of certain clusters.
 //   (module blend4.R)
