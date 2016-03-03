@@ -203,8 +203,24 @@ adistRatio <- function(v)
  return(m)
 }
 
-maxRatio <- function(cpar)
+# Get matrix indices
+get_indices <- function(N,n)
 {
+ # N is the serial number and n the size of n X n matrix
+ i <- N%%n
+ if (i == 0) i <- n
+ j <- N%/%n+1
+ if (i == n) j <- j-1
+ if (j > n) j <- n
+
+ return(c(i,j))
+}
+
+maxRatio <- function(macropar,idx)
+{
+ # Cell parameters
+ cpar <- macropar[idx,2:7]
+
  # Number of datasets
  n <- length(cpar[,1])
  
@@ -225,27 +241,34 @@ maxRatio <- function(cpar)
  mab <- max(adistRatio(dab))
  #iab <- which(distRatio(dab) == max(distRatio(dab)))
  iab <- which(adistRatio(dab) == max(adistRatio(dab)))
+ ijab <- get_indices(iab[1],n)
  #sab <- adistRatio(dab)[iab]
  sab <- distRatio(dab)[iab]
  #mac <- max(distRatio(dac))
  mac <- max(adistRatio(dac))
  #iac <- which(distRatio(dac) == max(distRatio(dac)))
  iac <- which(adistRatio(dac) == max(adistRatio(dac)))
+ ijac <- get_indices(iac[1],n)
  #sac <- adistRatio(dac)[iac]
  sac <- distRatio(dac)[iac]
  #mbc <- max(distRatio(dbc))
  mbc <- max(adistRatio(dbc))
  #ibc <- which(distRatio(dbc) == max(distRatio(dbc)))
  ibc <- which(adistRatio(dbc) == max(adistRatio(dbc)))
+ ijbc <- get_indices(ibc[1],n)
  #sbc <- adistRatio(dbc)[ibc]
  sbc <- distRatio(dbc)[ibc]
  vv <- c(sab[1],sac[1],sbc[1])
+ ij <- matrix(c(ijab,ijac,ijbc),ncol=3)
  imall <- which(c(mab,mac,mbc) == max(c(mab,mac,mbc)))[1]
  Mpar <- vv[imall]
+ ijs <- ij[,imall]
+ cns <- macropar[idx[ijs],"cn"]
 
- #return(c(max(mab,mac,mbc),Mpar))
- return(c(Mpar,max(mab,mac,mbc)))
+ #return(c(max(mab,mac,mbc),Mpar,cns[1],cns[2]))
+ return(c(Mpar,max(mab,mac,mbc),cns[1],cns[2]))
 }
+
 
 find_nodes_coords <- function(clst, clns, cn)
 {
@@ -520,12 +543,20 @@ groups <- treeToList2(npar.hc_ward)
 # Calculate LCV values for all nodes of dendrogram
 LCV_values <- c()
 aLCV_values <- c()
+LCV_couples <- matrix(nrow=length(groups),ncol=2)
+icpls <- 0
 for (cn in groups)
 {
+ icpls <- icpls+1
  idx <- match(cn,macropar$cn)
- tmp <- maxRatio(macropar[idx,2:7])
+ #tmp <- maxRatio(macropar[idx,2:7])
+ tmp <- maxRatio(macropar,idx)
  LCV_values <- c(LCV_values,tmp[1])
  aLCV_values <- c(aLCV_values,tmp[2])
+ minV <- min(tmp[3],tmp[4])
+ maxV <- max(tmp[3],tmp[4])
+ LCV_couples[icpls,1] <- as.integer(minV)
+ LCV_couples[icpls,2] <- as.integer(maxV)
 }
 
 # Output merging nodes table to an ascii file
@@ -533,17 +564,18 @@ nTable <- "./CLUSTERS.txt"
 if (file.exists(nTable)) emptyc <- file.remove(nTable)
 linea <- "                               \n"
 cat(linea,file=nTable)
-linea <- " Cluster     Number of         Cluster         LCV      aLCV      Datasets\n"
+linea <- " Cluster     Number of         Cluster         LCV      aLCV   Furthest    Datasets\n"
 cat(linea,file=nTable,append=TRUE)
-linea <- "  Number      Datasets          Height                            ID\n"
+linea <- "  Number      Datasets          Height                         Datasets          ID\n"
 cat(linea,file=nTable,append=TRUE)
 linea <- "                               \n"
 cat(linea,file=nTable,append=TRUE)
 for (i in 1:length(groups))
 {
  sorted_groups <- sort(groups[[i]])
- linea <- paste(sprintf("     %03d           %3d         %7.3f     %7.2f %9.2f    ",
-                i,length(groups[[i]]),npar.hc_ward$height[i],LCV_values[i],aLCV_values[i]),"  ",paste(sorted_groups,collapse=" "),"\n",sep="")
+ linea <- paste(sprintf("     %03d           %3d         %7.3f     %7.2f %9.2f %5d %4d  ",
+                i,length(groups[[i]]),npar.hc_ward$height[i],LCV_values[i],aLCV_values[i],LCV_couples[i,1],LCV_couples[i,2]),"  ",
+                paste(sorted_groups,collapse=" "),"\n",sep="")
  cat(linea,file=nTable,append=TRUE)
 }
 

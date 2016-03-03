@@ -1169,8 +1169,10 @@ for (cn in groups[[1]])
  tmp <- maxRatio(macropar,idx)
  LCV_values <- c(LCV_values,tmp[1])
  aLCV_values <- c(aLCV_values,tmp[2])
- LCV_couples[icpls,1] <- as.integer(tmp[3])
- LCV_couples[icpls,2] <- as.integer(tmp[4])
+ minV <- min(tmp[3],tmp[4])
+ maxV <- max(tmp[3],tmp[4])
+ LCV_couples[icpls,1] <- as.integer(minV)
+ LCV_couples[icpls,2] <- as.integer(maxV)
 }
 
 # Output merging nodes table to an ascii file
@@ -1190,7 +1192,6 @@ for (i in 1:length(groups[[1]]))
  linea <- paste(sprintf("     %03d           %3d         %7.3f     %7.2f %9.2f %5d %4d  ",
                 i,length(groups[[1]][[i]]),npar.hc_ward$height[i],LCV_values[i],aLCV_values[i],LCV_couples[i,1],LCV_couples[i,2]),"  ",
                 paste(sorted_groups,collapse=" "),"\n",sep="")
- #               i,length(groups[[1]][[i]]),npar.hc_ward$height[i],LCV_values[i],aLCV_values[i]),"  ",paste(groups[[1]][[i]],collapse=" "),"\n",sep="")
  cat(linea,file=nTable,append=TRUE)
 }
 

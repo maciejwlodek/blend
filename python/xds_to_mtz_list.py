@@ -50,13 +50,13 @@ for line in filecontents:
 
 # Second word in command line is LAUEGROUP line
 if len(li) == 3:
- lauegroup = li[2].strip()
- if lauegroup == "" or lauegroup == "''": lauegroup = None
+ lauegroup0 = li[2].strip()
+ if lauegroup0 == "" or lauegroup0 == "''": lauegroup0 = None
 else:
- lauegroup = None
-if lauegroup is not None:
- ltmp = lauegroup.split()[1].upper()
- if ltmp == "AUTO": lauegroup = "AUTO"
+ lauegroup0 = None
+if lauegroup0 is not None:
+ ltmp = lauegroup0.split()[1].upper()
+ if ltmp == "AUTO": lauegroup0 = "AUTO"
 
 # List with xds look up table information
 xds_lu=[]
@@ -64,6 +64,7 @@ xds_lu=[]
 # Create file with list of mtz files
 lines=[]
 for iname in range(len(mtz_names)):
+ lauegroup = lauegroup0
  name=mtz_names[iname]
  sfx="%03d.mtz" % (iname+1)
  newname=string.join(["dataset_",sfx],"")
@@ -80,11 +81,12 @@ for iname in range(len(mtz_names)):
   mtzout=os.path.abspath(os.path.join(xds_files_dir,newname))
 
   # Run POINTLESS to turn XDS files into MTZ files (this bit replace the following commented lines)
-  if lauegroup == "AUTO":
+  if lauegroup0 == "AUTO":
    partline = "TOLERANCE  100\n" + "END\n"
-  elif lauegroup is None:
+  elif lauegroup0 is None:
    partline = None
   else:
+   lauegroup = "CHOOSE " + lauegroup0
    partline = "TOLERANCE  100\n" + lauegroup + "\n" + "END\n"
   if partline is None:
    cmdline = 'pointless -c xdsin ' + xdsin.rstrip("\n") + ' hklout ' + mtzout.rstrip("\n")

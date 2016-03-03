@@ -54,13 +54,13 @@ else:
 
 # Second word in command line is LAUEGROUP line
 if len(li) == 3:
- lauegroup = li[2].strip()
- if lauegroup == "" or lauegroup == "''": lauegroup = None
+ lauegroup0 = li[2].strip()
+ if lauegroup0 == "" or lauegroup0 == "''": lauegroup0 = None
 else:
- lauegroup = None
-if lauegroup is not None:
- ltmp = lauegroup.split()[1].upper()
- if ltmp == "AUTO": lauegroup = "AUTO"
+ lauegroup0 = None
+if lauegroup0 is not None:
+ ltmp = lauegroup0.split()[1].upper()
+ if ltmp == "AUTO": lauegroup0 = "AUTO"
 
 # List with xds lookup table information
 xds_lu=[]
@@ -68,6 +68,7 @@ xds_lu=[]
 # Create file with list of mtz files
 lines=[]
 for iname in range(len(mtz_names)):
+ lauegroup = lauegroup0
  name=mtz_names[iname]
  sfx="%03d.mtz" % (iname+1)
  newname=string.join(["dataset_",sfx],"")
@@ -89,6 +90,7 @@ for iname in range(len(mtz_names)):
   elif lauegroup is None:
    partline = None
   else:
+   lauegroup = "CHOOSE " + lauegroup
    partline = "TOLERANCE  100\n" + lauegroup + "\n" + "END\n"
   if partline is None:
    cmdline = 'pointless -c xdsin ' + xdsin.rstrip("\n") + ' hklout ' + mtzout.rstrip("\n")

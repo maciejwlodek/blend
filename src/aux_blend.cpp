@@ -18,7 +18,7 @@ std::vector<scala::hkl_unmerge_list> load_crystals(std::string filename,int runm
 {
  int nwrong_mtz=0,nlines=0;
  std::ifstream file(filename.c_str(),std::ios::in);
- std::vector<std::string> mtz_file;
+ std::vector<std::string> mtz_file,no_unmerged_files;
  std::string tmpstring;
  if (!file.is_open())
  {
@@ -50,12 +50,14 @@ std::vector<scala::hkl_unmerge_list> load_crystals(std::string filename,int runm
     }
     else
     {
+     no_unmerged_files.push_back(tmpstring);
      nwrong_mtz++;
      if (file.eof()) nwrong_mtz--;
     } 
    }
    else
    {
+    no_unmerged_files.push_back(tmpstring);
     nwrong_mtz++;
     if (file.eof()) nwrong_mtz--;
    }
@@ -67,7 +69,12 @@ std::vector<scala::hkl_unmerge_list> load_crystals(std::string filename,int runm
  {
   std::cout << std::endl;
   std::cout << "********* ********* *********" << std::endl;
-  std::cout << "Your input list includes " << nwrong_mtz  << " missing or not properly-formated mtz files" << std::endl;
+  std::cout << "Your input list includes " << nwrong_mtz  << " missing or not properly-formatted unmerged mtz files" << std::endl;
+  std::cout << "They are: " << std::endl;
+  for (unsigned int i=0; i < no_unmerged_files.size(); i++)
+  {
+   std::cout << "          " << no_unmerged_files[i] << std::endl;
+  }
   std::cout << "********* ********* *********" << std::endl;
   std::cout << std::endl;
  }
@@ -103,7 +110,7 @@ std::vector<scala::hkl_unmerge_list> load_crystals(std::string filename,int runm
 
  // Loop over input mtz files.
  std::cout << std::endl;
- std::cout << "Loading datasets .........";
+ std::cout << "Loading unmerged mtz files ........." << std::endl;
  for (unsigned int i=0;i < mtz_file.size();i++)
  {
   // MTZ valid or not

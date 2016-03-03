@@ -970,11 +970,12 @@ if (combination_type == 0)
   contents_aimless <- scan(log_aimless,what="character",sep="\n",quiet=TRUE)
  
   # Rmerge values
-  gRmerge <- grep("Rmerge",contents_aimless,fixed=TRUE)
-  istart <- gRmerge[5]+1
-  iend <- gRmerge[6]-2
+  gRmerge <- grep("N   Batch    Mn(I)   RMSdev  I/rms  Rmerge",contents_aimless,fixed=TRUE)
+  istart <- gRmerge[1]+1
+  iend <- gRmerge[2]-2
   line_Rmerge <- contents_aimless[istart:iend]
-  tbl <- get_vectors_from_table(line_Rmerge,c(2,6,9,13))
+  #tbl <- get_vectors_from_table(line_Rmerge,c(2,6,9,13))
+  tbl <- get_vectors_from_table(line_Rmerge,c(2,6,9))
   lista <- pruning_plan(tbl,100,1,0)
   mean_Rmerge <- lista$mean_Rmerge
   Images <- lista$Images
@@ -1041,11 +1042,12 @@ if (combination_type == 1)
   cat(stmp)
  
   # Rmerge
-  gRmerge <- grep("Rmerge",contents_aimless,fixed=TRUE)
-  istart <- gRmerge[5]+1
-  iend <- gRmerge[6]-2
+  gRmerge <- grep("N   Batch    Mn(I)   RMSdev  I/rms  Rmerge",contents_aimless,fixed=TRUE)
+  istart <- gRmerge[1]+1
+  iend <- gRmerge[2]-2
   line_Rmerge <- contents_aimless[istart:iend]
-  tbl <- get_vectors_from_table(line_Rmerge,c(2,6,9,13))
+  #tbl <- get_vectors_from_table(line_Rmerge,c(2,6,9,13))
+  tbl <- get_vectors_from_table(line_Rmerge,c(2,6,9))
 
   # This bit is just to write out values to be loaded in an interactive R session 
   # for testing 
@@ -1156,11 +1158,12 @@ if (combination_type == 1)
     }
 
     # Rmerge and cumulative completeness
-    gRmerge <- grep("Rmerge",contents_aimless,fixed=TRUE)
-    istart <- gRmerge[5]+1
-    iend <- gRmerge[6]-2
+    gRmerge <- grep("N   Batch    Mn(I)   RMSdev  I/rms  Rmerge",contents_aimless,fixed=TRUE)
+    istart <- gRmerge[1]+1
+    iend <- gRmerge[2]-2
     line_Rmerge <- contents_aimless[istart:iend]
-    tbl <- get_vectors_from_table(line_Rmerge,c(2,6,9,13))
+    #tbl <- get_vectors_from_table(line_Rmerge,c(2,6,9,13))
+    tbl <- get_vectors_from_table(line_Rmerge,c(2,6,9))
   
     # This bit is just to write out values to be loaded in an interactive R session 
     # for testing 
@@ -1358,11 +1361,12 @@ if (combination_type == 2)
   cat(stmp)
 
   # Rmerge
-  gRmerge <- grep("Rmerge",contents_aimless,fixed=TRUE)
-  istart <- gRmerge[5]+1
-  iend <- gRmerge[6]-2
+  gRmerge <- grep("N   Batch    Mn(I)   RMSdev  I/rms  Rmerge",contents_aimless,fixed=TRUE)
+  istart <- gRmerge[1]+1
+  iend <- gRmerge[2]-2
   line_Rmerge <- contents_aimless[istart:iend]
-  tbl <- get_vectors_from_table(line_Rmerge,c(2,6,9,13))
+  #tbl <- get_vectors_from_table(line_Rmerge,c(2,6,9,13))
+  tbl <- get_vectors_from_table(line_Rmerge,c(2,6,9))
 
   # Store average Rmerge and Images per Run
   list_Rmerges <- list()
@@ -1451,11 +1455,12 @@ if (combination_type == 2)
    }
 
    # Rmerge
-   gRmerge <- grep("Rmerge",contents_aimless,fixed=TRUE)
-   istart <- gRmerge[5]+1
-   iend <- gRmerge[6]-2
+   gRmerge <- grep("N   Batch    Mn(I)   RMSdev  I/rms  Rmerge",contents_aimless,fixed=TRUE)
+   istart <- gRmerge[1]+1
+   iend <- gRmerge[2]-2
    line_Rmerge <- contents_aimless[istart:iend]
-   tbl <- get_vectors_from_table(line_Rmerge,c(2,6,9,13))
+   #tbl <- get_vectors_from_table(line_Rmerge,c(2,6,9,13))
+   tbl <- get_vectors_from_table(line_Rmerge,c(2,6,9))
 
    # Exclusion plan for next cycle
    lista <- pruning_plan(tbl,100,1,icyc)

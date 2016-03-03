@@ -74,6 +74,8 @@ Foadi<SUP>(a)</SUP> and Pierre Aller<SUP>(b)</SUP></FONT></FONT></P>
   <br>
   <A HREF="#tutorial3">Tutorial 3</A>
   <br>
+  <A HREF="#tutorial4">Tutorial 4</A>
+  <br>
   <A HREF="#references">References</A>
 <A NAME="dsets"></A>
 <H2>DATA SETS INCLUDED WITH THIS TUTORIALS</H2>
@@ -1895,6 +1897,141 @@ A small change also occurs for data set 1:
  signal becomes much more effective when multiple isomorphous crystals are merged together. Complete clusters which includes "ind_003",
  i.e. cluster 006 and 009, improve the anomalous signal of "ind_003" alone.
  Clusters 005, 007 and 010 perform better than the other clusters.
+ </FONT>
+</P>
+<A NAME="tutorial4"></A>
+<H2><U>TUTORIAL 4.</U></H2>
+<H3>28 SWEEPS OF LYSOZYME CRYSTALS</H3>
+<P>
+ <FONT SIZE=4 COLOR="#c90016">
+ Automated filtering of lysozyme crystals using the "cF" variant of the combination mode
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ Filtering for the 28 sweeps of lysozyme crystals was carried out manually in <A HREF="#tutorial2">Tutorial 2</A>. There BLEND
+ was executed in combination mode and filtering was done trying many combinations and selecting the ones giving improved R<SUB>meas</SUB>
+ values. It is also possible to let the program carry out filtering in automated way, using the "F" variant of combination mode (option
+ "-cF"). A starting cluster is first indicated by the user. This cluster will have to be redundant because filtering means "throwing
+ away" data sets, and this implies potentially decreasing completeness. The user will have to add to the keywords file the final completeness
+ that can be tolerated (default 95%), as well as the maximum number of iteration cycles (default 5). The program will, then, discard, at
+ every cycle, the single data set having largest overall R<SUB>merge</SUB>. 
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ Let's create a new directory for this tutorial, say "lysozyme2", and execute BLEND in analysis mode, pointing to directory "data/lysozyme".
+ Let's also create a keyword file, "bkeys.dat", with the following lines:
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4 COLOR="#0000ff">
+ RESO HIGH 1.9<br>
+ TOLERANCE 100<br>
+ COMPLETENESS 90<br>
+ MAXCYCLE 20
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ where the resolution has been fixed at 1.9 &Aring; to enable comparison with the filtering done at <A HREF="#tutorial2">Tutorial 2</A>.
+ Here we are also asking for completeness not to go below 90% and have increased the number of possible cycles to 20, so to make it
+ possible to filter out several data sets. Thus, for the analysis mode:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+ <FONT SIZE=4 COLOR="#008000">
+ blend -a ../data/lysozyme < bkeys.dat > blend_analysis.log
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ If we look at the dendrogram we notice that data sets 19 and 21 are very different from the other data sets. Thus, like done in 
+ <A HREF="#tutorial2">Tutorial 2</A>, we copy file "mtz_names.dat" into a new file named "original.dat" and delete lines 19 and 21.
+ Next we re-run BLEND in analysis mode as follows:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+ <FONT SIZE=4 COLOR="#008000">
+ blend -a original.dat < bkeys.dat > blend_analysis.log
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ The isomorphism, as measured by aLCV, for all clusters in this group of 28 data sets, can be displayed with a plot produced using
+ BLEND in graphics mode, with the type "DO":
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+ <FONT SIZE=4 COLOR="#008000">
+ blend -g DO 27 10
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ The plot produced can be found in sub-directory "graphics", and it is displayed here:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+<br>
+<img src="imagesBT/lyso2_aLCV.png">
+</P>
+<P>
+ <FONT SIZE=4>
+ Both left (cluster 23) and right (cluster 24) branches of the dendrogram have relatively small aLCV values. This means that all crystals
+ in each branch can be considered isomorphous. We can, then, delete some of the data sets in each branch so to bring R<SUB>meas</SUB>
+ (or, even better, R<SUB>pim</SUB>) down. As mentioned above, this is done using the option "-cF". In order to compare
+ results with the cluster before the filtering we will also run BLEND in simple combination mode. Thus, for the left branch, we use:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+ <FONT SIZE=4 COLOR="#008000">
+ blend -c [23] < bkeys.dat > blend_synthesis_23.log<br>
+ blend -cF [23] < bkeys.dat > blend_synthesisF_23.log
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ Results for both runs can be found in the directory "combined_files". More specifically, file "MERGING_STATISTICS.info" appears as follows:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+<br>
+<img src="imagesBT/lyso2_MERGING1.png">
+</P>
+<P>
+ <FONT SIZE=4>
+ By removing several data sets, R<SUB>pim</SUB> has dropped from 0.131 to 0.037. Completeness has dropped to 95.3%. Only 10 cycles were needed
+ for taking the statistics to this level; cycle 11 would have taken completeness to 82.9%, lower than our target 90%. This is why cycling was
+ interrupted by the program. More information can be found in the log file. We can repeat the same exercise for the right branch (cluster 24):
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+ <FONT SIZE=4 COLOR="#008000">
+ blend -c [24] < bkeys.dat > blend_synthesis_24.log<br>
+ blend -cF [24] < bkeys.dat > blend_synthesisF_24.log
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ This time results are given, in file "MERGING_STATISTICS.info", by the third and fourth group:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+<br>
+<img src="imagesBT/lyso2_MERGING2.png">
+</P>
+<P>
+ <FONT SIZE=4>
+ This time the R<SUB>pim</SUB> dropped from 0.166 to 0.114, completeness went to 93.1% and the job terminated after 3 cycles as the
+ fourth cycle would have taken completeness down to 89%, below the 90% set threshold.
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ It is clear that we could have started from the top cluster and removed automatically data sets down to the desired completeness. But
+ it is also clear that in so doing it i easy to remove also potentially useful information. Thus this variant of the combination mode
+ must be used with a little bit of caution.
  </FONT>
 </P>
 <br>

@@ -10,6 +10,19 @@
 /********* included in the root directory of this package.                                          *********/
 /************************************************************************************************************/
 /************************************************************************************************************/
+// CHANGES IN VERSION 0.6.19  -  29/02/2016
+// - Sorted out problem with recognition of the I2 setting of space group C2.
+// - Now LAUEGROUP with specific symmetry symbol calls CHOOSE LAUEGROUP for POINTLESS.
+// - Fixed a bug that stopped program from runnning in both cF and cP variants because one
+//   of AIMLESS log tables changed from 13 to 11 columns if data have too few images for
+//   proper smoothing.
+// - Selection of the interested line in AIMLESS log with "Rmerge" was failing in some cases.
+//   The selection string is now more robust and does not seem to be failing anymore.
+// - Added the ability to add two columns with furthest datasets in CLUSTERS.txt, when esecution
+//   is with the -aDO variant. Also, now the furthest datasets are in increasing order.
+// - Fixed a few typos and included list of discarded files who are not unmerged mtz.
+//   (modules blend.cpp,aux_blend.cpp,version.hh,xds_to_mtz_list.py,create_file_for_BLEND.py,
+//            blend0.R,blend1.R,blend3.R)
 // CHANGES IN VERSION 0.6.18  -  30/11/2015
 // - Eliminated "pruning" word from log sentence "pruning cycles".
 //   (module blend3.R)
@@ -992,20 +1005,20 @@ int main(int argc, char* argv[])
    // Maps to store types of crystals belonging to different bravais lattices. These maps contain the "sg" bit as initially we were
    // handling space groups, rather than bravais lattices. Bravais lattice numbers are as follows:
    //
-   // Triclinic   :     aP       1
-   // Monoclinic  :     mP       2
-   //                   mS       3
-   // Orthorombic :     oP       4
-   //                   oS       5
-   //                   oF       6
-   //                   oI       7
-   // Tetragonal  :     tP       8
-   //                   tI       9
-   // Hexagonal   :     hP      10
-   // Rhombohedral:     hH      11   (it is also possible hR, but we haven't implemented this way. To be sorted later)
-   // Cubic       :     cP      12
-   //                   cF      13
-   //                   cI      14
+   // Triclinic   :     aP         1
+   // Monoclinic  :     mP         2
+   //                   mS         3
+   // Orthorombic :     oP         4
+   //                   oS         5
+   //                   oF         6
+   //                   oI         7
+   // Tetragonal  :     tP         8
+   //                   tI         9
+   // Hexagonal   :     hP        10
+   // Rhombohedral:     hH        11   (it is also possible hR, but we haven't implemented this way. To be sorted later)
+   // Cubic       :     cP        12
+   //                   cF        13
+   //                   cI        14
    //
    // sg_to_crystal:       bravais lattice number  ->  crystal serial number
    // crystal_to_sg:    crystal serial number  ->  bravais lattice number
@@ -1061,6 +1074,16 @@ int main(int argc, char* argv[])
      {
       blatsymb.erase(lnum,1);
       blatsymb.insert(lnum,"S");
+     }
+     lnum=blatsymb.find("I");
+     if (lnum != -1)
+     {
+      // Replace with S only for I 1 2 1
+      if (symmetry.symbol_xHM() == "I 1 2 1")
+      {
+       blatsymb.erase(lnum,1);
+       blatsymb.insert(lnum,"S");
+      }
      }
      pos_bl=bl_symbol_to_number.find(blatsymb);
      //std::cout << "Lattice type: " << blatsymb << " Number is: " << pos_bl->second << std::endl;
@@ -1335,7 +1358,7 @@ int main(int argc, char* argv[])
   if (nerr == 8)
   {
    std::cerr << "\n BLEND ERROR!\n"
-             << "No valid MTZ files are listed in input file, or included in input directory." << std::endl;
+             << "No valid unmerged MTZ files are listed in input file, or included in input directory." << std::endl;
    return EXIT_FAILURE;
   }
   if (nerr == 9)
