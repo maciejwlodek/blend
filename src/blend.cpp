@@ -10,6 +10,13 @@
 /********* included in the root directory of this package.                                          *********/
 /************************************************************************************************************/
 /************************************************************************************************************/
+// CHANGES IN VERSION 0.6.20  -  04/04/2016
+// - Fixed annoying halting of the program in endless loop when asking for dendrogram-type
+//   graphics (graphics mode). Now the deepest possible level is always selected even when
+//   the user chooses an higher level. Output in "graphics" directory has also level index
+//   limited to deepest level, no matter what user decides.
+// - Increased formatting space for I and sigI in "refs_*_*.dat" files.
+//   (modules blend4.R,aux_blend.cpp)
 // CHANGES IN VERSION 0.6.19  -  29/02/2016
 // - Sorted out problem with recognition of the I2 setting of space group C2.
 // - Now LAUEGROUP with specific symmetry symbol calls CHOOSE LAUEGROUP for POINTLESS.

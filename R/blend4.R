@@ -32,6 +32,7 @@ annotate_tree <- function(clN,N,Tree,mStats,groups1,macropar,file_name,aLCVs)
  lista <- find_Nclusters_down(clN,N,dtmp)
  lidx <- lista[[1]]
  lidx2 <- lista[[2]]
+ newN <- lista[[3]]
 
  # Change list into vector without NA's
  ulidx <- na.omit(unlist(lidx))
@@ -59,7 +60,9 @@ annotate_tree <- function(clN,N,Tree,mStats,groups1,macropar,file_name,aLCVs)
  ndend <- as.dendrogram(dtmp)
 
  # Print cluster as zoomed in specified window (PNG)
- fname <- paste(file_name,"png",sep="")
+ #fname <- paste(file_name,"png",sep="")
+ fname <- sprintf("%03d.png",newN)
+ fname <- paste(file_name,fname,sep="")
  png(file=fname,width=800,height=1000)
  par(mar=c(5,2,3,4))
  plot(ndend,xlim=xlim,ylim=ylim,yaxt='n',leaflab="none",edgePar=list(lwd=3))
@@ -149,7 +152,9 @@ annotate_tree <- function(clN,N,Tree,mStats,groups1,macropar,file_name,aLCVs)
  dev.off()
 
  # Print cluster as zoomed in specified window (PS)
- fname <- paste(file_name,"ps",sep="")
+ #fname <- paste(file_name,"ps",sep="")
+ fname <- sprintf("%03d.ps",newN)
+ fname <- paste(file_name,fname,sep="")
  postscript(file=fname,paper = "a4",horizontal=FALSE)
  par(mar=c(5,2,3,4))
  plot(ndend,xlim=xlim,ylim=ylim,yaxt='n',leaflab="none",edgePar=list(lwd=3))
@@ -238,7 +243,7 @@ annotate_tree <- function(clN,N,Tree,mStats,groups1,macropar,file_name,aLCVs)
  if (length(text) > 0) mtext(text=labels,side=1,at=text,col=2,line=1,cex=1.0)
  dev.off()
 
- return(list(ulidx,Dnodesxy))
+ return(list(ulidx=ulidx,Dnodesxy=Dnodesxy,newN=newN))
 }
 
 #
@@ -264,6 +269,9 @@ simplify_heights <- function(Tree,groups1)
 #
 find_Nclusters_down <- function(clN,N,Tree)
 {
+ # Levels required are N, unless needs changing
+ newN <- N
+
  # Initialise list
  lidx <- list(clN)
 
@@ -283,7 +291,16 @@ find_Nclusters_down <- function(clN,N,Tree)
    }
   }
   tmp[tmp < 0] <- NA
-  lidx[[i]] <- tmp
+  if (sum(tmp,na.rm=TRUE) > 0) lidx[[i]] <- tmp
+
+  # This makes sure to stop filling huge arrays with NA's
+  # which halts the program forever
+  if (sum(tmp,na.rm=TRUE) == 0)
+  {
+   newN <- i-1
+   for (j in i:N) lidx[[j]] <- NA 
+   break
+  }
  }
 
  # A second list without NA's might be useful
@@ -306,7 +323,7 @@ find_Nclusters_down <- function(clN,N,Tree)
   if (sum(lidx[[i]],na.rm=TRUE) > 0) newlidx[[i]] <- lidx[[i]]
  }
 
- return(list(newlidx=newlidx,lidx2=lidx2))
+ return(list(newlidx=newlidx,lidx2=lidx2,newN=newN))
 }
 
 #
@@ -571,11 +588,11 @@ if (args[1] == "D" | args[1] == "DO")
  # Create annotated dendrogram PNG file base name
  if (!is.na(aLCVs[1]))
  {
-  file_name <- sprintf("./graphics/aLCV_annotated_dendrogram_cluster_%03d_level_%03d.",clN,N)
+  file_name <- sprintf("./graphics/aLCV_annotated_dendrogram_cluster_%03d_level_",clN)
  }
  if (is.na(aLCVs[1]))
  {
-  file_name <- sprintf("./graphics/stats_annotated_dendrogram_cluster_%03d_level_%03d.",clN,N)
+  file_name <- sprintf("./graphics/stats_annotated_dendrogram_cluster_%03d_level_",clN)
  }
 
  # Create annotated dendrograms (png and ps)

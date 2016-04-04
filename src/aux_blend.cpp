@@ -481,8 +481,8 @@ void statistics_with_R(std::vector<scala::hkl_unmerge_list>& hkl_list,std::multi
                                                         << std::setw(10) << nBatch
                                                         << "   " << rispo << "   "
                                                         << std::setw(15) << std::setprecision(5) << observation.TotalFraction()
-                                                        << std::setw(20) << std::setprecision(5) << observation.I()
-                                                        << std::setw(15) << std::setprecision(5) << observation.sigI()
+                                                        << std::setw(25) << std::setprecision(5) << observation.I()
+                                                        << std::setw(25) << std::setprecision(5) << observation.sigI()
                                                         << std::setw(20) << std::setprecision(10) << std::sqrt(reflection.invresolsq())
                                                         << std::endl;
       }
