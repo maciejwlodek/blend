@@ -251,10 +251,10 @@ void output_summary_table(std::vector<scala::hkl_unmerge_list>& hkl_list,std::mu
   std::cout << std::endl;
   std::cout << "$TABLE: Summary of type I parameters :" << std::endl;
   //std::cout << "$GRAPHS:        Cell Parameters   : N : 1, 2, 3, 4, 5, 6, 7 :" << std::endl;
-  std::cout << "$GRAPHS:        Cell Parameters (a,     b,    c)     : N : 1, 2, 3, 4 :" << std::endl;
-  std::cout << "       :        Cell Parameters (alpha, beta, gamma) : N : 1, 5, 6, 7 :" << std::endl;
-  std::cout << "       :        Cell Volume                          : N : 1, 8 :" << std::endl; 
-  std::cout << "       :        Mosaicity                            : N : 1, 9 :" << std::endl; 
+  std::cout << "$GRAPHS:        Cell Parameters (a,     b,    c)     :N:1,2,3,4:" << std::endl;
+  std::cout << "       :        Cell Parameters (alpha, beta, gamma) :N:1,5,6,7:" << std::endl;
+  std::cout << "       :        Cell Volume                          :N:1,8:" << std::endl; 
+  std::cout << "       :        Mosaicity                            :N:1,9:" << std::endl; 
   std::cout << "$$" << std::endl;
   std::cout << "Crystal  a  b  c  alpha  beta  gamma  Cell_Volume  Mosaicity  Resolution(low)  Resolution(high)  Wavelength  $$" << std::endl;    
   std::cout << "$$" << std::endl;      // Part of this table carries on further down in code

@@ -87,8 +87,11 @@ merge_mtzs <- function(mtz_list,selection,mtzout,pointless_keys,hklref,rwin=FALS
    cat(linea,file="pointless_keywords.dat",append=TRUE)
   }
  }
- linea <- sprintf("HKLREF %s\n",hklref)
- cat(linea,file="pointless_keywords.dat",append=TRUE)
+ if (!is.na(hklref))
+ {
+  linea <- sprintf("HKLREF %s\n",hklref)
+  cat(linea,file="pointless_keywords.dat",append=TRUE)
+ }
  linea <- sprintf("HKLOUT %s\n",mtzout)
  cat(linea,file="pointless_keywords.dat",append=TRUE)
 
@@ -119,7 +122,7 @@ merge_mtzs <- function(mtz_list,selection,mtzout,pointless_keys,hklref,rwin=FALS
 
 #
 # Run AIMLESS on specified datasets selection and collect statistical information in a data frame.
-merge_datasets <- function(mtz_names,selection,suffix,pointless_keys,aimless_keys,resomin=NULL,resomax=NULL,nref=1,rwin=FALSE)
+merge_datasets <- function(mtz_names,selection,suffix,pointless_keys,aimless_keys,hklref,resomin=NULL,resomax=NULL,rwin=FALSE)
 {
  # Computes merging statistics for all couples of datasets
 
@@ -134,27 +137,24 @@ merge_datasets <- function(mtz_names,selection,suffix,pointless_keys,aimless_key
  ccp4 <- Sys.getenv("CCP4")
  if (nchar(ccp4) == 0) stop("You need to set up environment for running ccp4 programs")
 
-
- # Reference file for indexing
- idxref <- as.integer(nref)
- if (is.na(idxref)) hklref <- nref
- if (!is.na(idxref)) hklref <- indata[idxref,1]
- 
-
  # Run POINTLESS and AIMLESS
  mtz_list <- indata[selection,1]
  sele <- indata[selection,3]
 
  # Use copy of reference data set in case it belongs to group
- if (hklref %in% mtz_list)
+ if (!is.na(hklref)) hklref <- normalizePath(hklref)
+ if (!is.na(hklref) & hklref %in% mtz_list)
  {
-  file.copy(from=hklref,to="copy_of_ref_file.mtz",overwrite=TRUE)
-  hklref <- "copy_of_ref_file.mtz"
+  if (!file.exists("copies_of_reference_files")) dir.create("copies_of_reference_files")
+  tmphklref <- normalizePath("copies_of_reference_files")
+  tmphklref <- file.path(tmphklref,basename(hklref))
+  file.copy(from=hklref,to=tmphklref,overwrite=TRUE)
+  hklref <- tmphklref
+  rm(tmphklref)
  }
  cat("Collating multiple mtz into a single mtz ...\n")
  linea_in <- paste(suffix[1],paste("unscaled_",suffix[2],".mtz",sep=""),sep="/")
  exemerge <- merge_mtzs(mtz_list=mtz_list,selection=sele,mtzout=linea_in,pointless_keys=pointless_keys,hklref=hklref,rwin=rwin)
- if (file.exists("copy_of_ref_file.mtz")) file.remove("copy_of_ref_file.mtz")
  fatal_error <- grep("#-------------",exemerge,fixed=TRUE)
  if (length(fatal_error) == 0 &
      length(grep("FATAL ERROR message:",exemerge,fixed=TRUE)) == 0 &
@@ -165,11 +165,6 @@ merge_datasets <- function(mtz_names,selection,suffix,pointless_keys,aimless_key
   # Rename POINTLESS log
   log_file <- paste(suffix[1],paste("pointless_",suffix[2],".log",sep=""),sep="/")
   cat(exemerge,file=log_file,sep="\n")
-  #for (linea in exemerge)
-  #{
-  # linea <- paste(linea,"\n",sep="")
-  # cat(linea,file=log_file,append=TRUE)
-  #}
 
   # Aimless keywords file
   linea_out <- paste(suffix[1],paste("scaled_",suffix[2],".mtz",sep=""),sep="/")
@@ -329,8 +324,6 @@ merge_datasets <- function(mtz_names,selection,suffix,pointless_keys,aimless_key
   if (length(idx) != 0) for (i in idx) file.remove(dircontents[i])
   idx <- grep("pointless",dircontents,fixed=TRUE)
   if (length(idx) != 0) for (i in idx) file.remove(dircontents[i])
-  #idx <- grep("reference",dircontents,fixed=TRUE)
-  #if (length(idx) != 0) for (i in idx) file.remove(dircontents[i])
  
   # Remove files produced to scale mtz's
   dircontents <- list.files("./")
@@ -359,11 +352,6 @@ merge_datasets <- function(mtz_names,selection,suffix,pointless_keys,aimless_key
   # Rename POINTLESS log
   log_file <- paste(suffix[1],paste("pointless_",suffix[2],".log",sep=""),sep="/")
   cat(exemerge,file=log_file,sep="\n")
-  #for (linea in exemerge)
-  #{
-  # linea <- paste(linea,"\n",sep="")
-  # cat(linea,file=log_file,append=TRUE)
-  #}
   
   return(list(Mstats,exemerge))
  }
@@ -882,33 +870,6 @@ if (file.exists("BLEND_KEYWORDS.dat"))
 {
  contents <- scan("BLEND_KEYWORDS.dat", what="character",sep="\n",quiet=TRUE)
 
- # BLEND KEYWORDS
- # Reference dataset (from BLEND KEYWORDS section)
- tmp <- grep("DATA",contents,fixed=TRUE)
- if (length(tmp) != 0)
- {
-  tmp <- contents[tmp[1]]    # [1] in case somebody add DATAREF line more than once
-  tmp <- strsplit(tmp," ")
-  jdx <- which(nchar(tmp[[1]]) != 0)
-  idxref_char <- tmp[[1]][jdx[length(jdx)]]
-  idxref <- as.integer(idxref_char)
- } else idxref_char <- as.character(idxref)
-
- # Read in "FINAL_list_of_files.dat" to associate reference dataset to file path (just in some cases)
- indata <- read.table(file="FINAL_list_of_files.dat")
- indata[,1] <- as.character(indata[,1])
- tmpref <- as.integer(idxref_char)
- if (!is.na(tmpref)) idxref_char <- indata[idxref,1]
- if (!file.exists(idxref_char))
- {
-  messaggio <- paste("Input reference dataset",idxref_char,"does not exist. Please input an existing file.\n")
-  cat(messaggio)
-  q(save = "no", status = 1, runLast = FALSE)
- }
- messaggio <- paste("Reference dataset used in case alternative indexing is needed: ",idxref_char,"\n",sep="")
- cat(messaggio)
- cat("\n")
-
  # Maximum number of cycles for BLEND -cP mode (from BLEND KEYWORDS section)
  tmp <- grep("MAXC",contents,fixed=TRUE)
  if (length(tmp) != 0)
@@ -947,6 +908,37 @@ if (file.exists("BLEND_KEYWORDS.dat"))
  idxe <- grep("AIMLESS KEYWORDS",contents,fixed=TRUE)
  if ((idxe-idxs) > 1) for (line in contents[(idxs+1):(idxe-1)]) pointless_keys <- c(pointless_keys,line)
 
+ # Reference dataset (from BLEND KEYWORDS section)
+ idxref_char <- NA
+ tmp <- grep("DREF",contents,fixed=TRUE)
+ if (length(tmp) != 0)
+ {
+  tmp <- contents[tmp[1]]    # [1] in case somebody add DREF line more than once
+  tmp <- strsplit(tmp," ")
+  jdx <- which(nchar(tmp[[1]]) != 0)
+  idxref_char <- tmp[[1]][jdx[length(jdx)]]
+ }
+
+ # Read in "FINAL_list_of_files.dat" to associate reference dataset to file path (just in some cases)
+ indata <- read.table(file="FINAL_list_of_files.dat")
+ indata[,1] <- as.character(indata[,1])
+ if (!is.na(idxref_char))
+ {
+  if (!file.exists(idxref_char))
+  {
+   messaggio <- paste("Input reference dataset << ",idxref_char," >> does not exist. Please input an existing file.\n",sep="")
+   cat(messaggio)
+   q(save = "no", status = 1, runLast = FALSE)
+  }
+  if (file.exists(idxref_char))
+  {
+   aidxref_char <- normalizePath(idxref_char)
+   messaggio <- paste("Reference dataset: << ",aidxref_char," >>.\n",sep="")
+   cat(messaggio)
+   cat("\n")
+  }
+ }
+
  # AIMLESS
  idxs <- idxe
  idxe <- length(contents)
@@ -959,8 +951,8 @@ ftail <- sprintf("%03d",(length(gidx)+1))
 suffix <- c(outdir,ftail)
 if (combination_type == 0)
 {
- tmp <- merge_datasets("FINAL_list_of_files.dat",selection=cln,suffix,pointless_keys,aimless_keys,
-                       resomax=resosel,nref=idxref_char,rwin=rwin)
+ tmp <- merge_datasets("FINAL_list_of_files.dat",selection=cln,suffix,pointless_keys,aimless_keys,hklref=idxref_char,
+                       resomax=resosel,rwin=rwin)
 
  # Get table of average Rmerges per run
  if (!is.na(tmp[[1]]$Rmeas[1]))
@@ -974,7 +966,6 @@ if (combination_type == 0)
   istart <- gRmerge[1]+1
   iend <- gRmerge[2]-2
   line_Rmerge <- contents_aimless[istart:iend]
-  #tbl <- get_vectors_from_table(line_Rmerge,c(2,6,9,13))
   tbl <- get_vectors_from_table(line_Rmerge,c(2,6,9))
   lista <- pruning_plan(tbl,100,1,0)
   mean_Rmerge <- lista$mean_Rmerge
@@ -985,8 +976,8 @@ if (combination_type == 0)
   nruns_final <- length(mean_Rmerge)
   cat("\n")
   cat("$TABLE: Image number and average Rmerge for all datasets :\n")
-  cat("$GRAPHS:    Number of images per dataset       : N : 1, 2 :\n")
-  cat("       :    Average Rmerge per dataset         : N : 1, 3 :\n")
+  cat("$GRAPHS:    Number of images per dataset       :N:1,2:\n")
+  cat("       :    Average Rmerge per dataset         :N:1,3:\n")
   cat("$$\n")
   cat("  Datasets   Images    mean(Rmerge)  $$\n")
   cat("$$\n")
@@ -1012,7 +1003,7 @@ if (combination_type == 1)
  # Run default POINTLESS and AIMLESS to load starting information
  cat("### Cycle 0 ###\n")
  tmp <- merge_datasets("FINAL_list_of_files.dat",selection=cln,suffix,pointless_keys,aimless_keys,
-                       resomax=resosel,nref=idxref_char,rwin=rwin)
+                       hklref=idxref_char,resomax=resosel,rwin=rwin)
  if (!is.na(tmp[[1]]$Rmeas[1]))
  {
   stored_results <- c(stored_results,list(tmp[[1]]))
@@ -1046,7 +1037,6 @@ if (combination_type == 1)
   istart <- gRmerge[1]+1
   iend <- gRmerge[2]-2
   line_Rmerge <- contents_aimless[istart:iend]
-  #tbl <- get_vectors_from_table(line_Rmerge,c(2,6,9,13))
   tbl <- get_vectors_from_table(line_Rmerge,c(2,6,9))
 
   # This bit is just to write out values to be loaded in an interactive R session 
@@ -1162,7 +1152,6 @@ if (combination_type == 1)
     istart <- gRmerge[1]+1
     iend <- gRmerge[2]-2
     line_Rmerge <- contents_aimless[istart:iend]
-    #tbl <- get_vectors_from_table(line_Rmerge,c(2,6,9,13))
     tbl <- get_vectors_from_table(line_Rmerge,c(2,6,9))
   
     # This bit is just to write out values to be loaded in an interactive R session 
@@ -1224,7 +1213,7 @@ if (combination_type == 1)
   {
    aimless_keys <- stored_aimkeys[[idx]]
    tmp <- merge_datasets("FINAL_list_of_files.dat",selection=cln,suffix,pointless_keys,aimless_keys,
-                         resomax=resosel,nref=idxref_char,rwin=rwin)
+                         hklref=idxref_char,resomax=resosel,rwin=rwin)
   }
   if (idx > 1)
   {
@@ -1257,12 +1246,12 @@ if (combination_type == 1)
  cat("\n")
  stmp <- "$TABLE: Image number per cycle for all datasets :\n"
  cat(stmp)
- stmp <- "$GRAPHS:    Number of images per cycle         : N : 1"
+ stmp <- "$GRAPHS:    Number of images per cycle         :N:1"
  for (j in 2:(nruns_final+1))
  {
-  stmp <- paste(stmp,sprintf(", %3d",j),sep="")
+  stmp <- paste(stmp,sprintf(",%d",j),sep="")
  }
- stmp <- paste(stmp," :\n",sep="")
+ stmp <- paste(stmp,":\n",sep="")
  cat(stmp)
  cat("$$\n")
  stmp <- "  Cycle"
@@ -1287,12 +1276,12 @@ if (combination_type == 1)
  cat("\n")
  stmp <- "$TABLE: Average Rmerge per cycle for all datasets :\n"
  cat(stmp)
- stmp <- "$GRAPHS:    Average Rmerge per cycle         : N : 1"
+ stmp <- "$GRAPHS:    Average Rmerge per cycle         :N:1"
  for (j in 2:(nruns_final+1))
  {
-  stmp <- paste(stmp,sprintf(", %3d",j),sep="")
+  stmp <- paste(stmp,sprintf(",%d",j),sep="")
  }
- stmp <- paste(stmp," :\n",sep="")
+ stmp <- paste(stmp,":\n",sep="")
  cat(stmp)
  cat("$$\n")
  stmp <- "  Cycle"
@@ -1329,7 +1318,7 @@ if (combination_type == 2)
  cat("### Cycle 0 ###\n")
  cat("No filtering for the initial cycle.\n")
  tmp <- merge_datasets("FINAL_list_of_files.dat",selection=current_cln,suffix,pointless_keys,aimless_keys,
-                       resomax=resosel,nref=idxref_char,rwin=rwin)
+                       hklref=idxref_char,resomax=resosel,rwin=rwin)
 
  # Get table of average Rmerges per run
  if (!is.na(tmp[[1]]$Rmeas[1]))
@@ -1365,7 +1354,6 @@ if (combination_type == 2)
   istart <- gRmerge[1]+1
   iend <- gRmerge[2]-2
   line_Rmerge <- contents_aimless[istart:iend]
-  #tbl <- get_vectors_from_table(line_Rmerge,c(2,6,9,13))
   tbl <- get_vectors_from_table(line_Rmerge,c(2,6,9))
 
   # Store average Rmerge and Images per Run
@@ -1408,7 +1396,7 @@ if (combination_type == 2)
    # Eliminate dataset from combination and re-run POINTLESS+AIMLESS
    current_cln <- current_cln[-idxrun]
    tmp <- merge_datasets("FINAL_list_of_files.dat",selection=current_cln,suffix,pointless_keys,aimless_keys,
-                         resomax=resosel,nref=idxref_char,rwin=rwin)
+                         hklref=idxref_char,resomax=resosel,rwin=rwin)
    stored_results <- c(stored_results,list(tmp[[1]]))
    stored_selections <- c(stored_selections,list(current_cln))
    if (is.na(tmp[[1]]$Rmeas[1]))
@@ -1489,13 +1477,13 @@ if (combination_type == 2)
   cat(paste("Best results have been produced at cycle",(idx-1),". Re-running that cycle ...\n"))
   current_cln <- stored_selections[[idx]]
   tmp <- merge_datasets("FINAL_list_of_files.dat",selection=current_cln,suffix,pointless_keys,aimless_keys,
-                        resomax=resosel,nref=idxref_char,rwin=rwin)
+                        hklref=idxref_char,resomax=resosel,rwin=rwin)
 
   # Output table with Rpim and Rmeas for each cycle
   ncycs <- length(stored_results)
   cat("\n")
   cat("$TABLE: Rmeas and Rpim for all cycles :\n")
-  cat("$GRAPHS:    Overall Rmeas and Rpim        : N : 1, 2, 3 :\n")
+  cat("$GRAPHS:    Overall Rmeas and Rpim        :N:1,2,3:\n")
   cat("$$\n")
   cat("     Cycle           Rmeas            Rpim  $$\n")
   cat("$$\n")
@@ -1655,11 +1643,11 @@ if (length(logdframe[,1]) > 1) logdframe <- tmpdframe[order(-tmpdframe[,4],tmpdf
 if (length(logdframe[,1]) == 1) rownames(logdframe) <- "1"                                                                   # Fix logdframe temporarily
 linea <- sprintf("$TABLE: Overall merging statistics and completeness :\n")                                                  # For logview
 cat(linea)                                                                                                                   # For logview
-linea <- sprintf("$GRAPHS:        Overall merging statistics   : N : 1, 3, 4 :\n")                                           # For logview
+linea <- sprintf("$GRAPHS:        Overall merging statistics   :N:1,3,4:\n")                                           # For logview
 cat(linea)                                                                                                                   # For logview
-linea <- sprintf("       :        Overall completeness         : N : 1, 5 :\n")                                              # For logview
+linea <- sprintf("       :        Overall completeness         :N:1,5:\n")                                              # For logview
 cat(linea)                                                                                                                   # For logview
-linea <- sprintf("       :        Resolutions (CC1/2, Mn2, Max): N : 1, 7, 8, 9 :\n")                                              # For logview
+linea <- sprintf("       :        Resolutions (CC1/2, Mn2, Max):N:1,7,8,9:\n")                                              # For logview
 cat(linea)                                                                                                                   # For logview
 linea <- sprintf("$$\n")                                                                                                     # For logview
 cat(linea)                                                                                                                   # For logview

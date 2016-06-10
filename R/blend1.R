@@ -1027,6 +1027,7 @@ rm(listData)
 # Choose reference dataset
 tmp <- c()
 for (wplots in listBplots) tmp <- c(tmp,sum(wplots[[1]],na.rm=TRUE))
+idxref_list <- tmp
 idxref <- which(tmp == max(tmp))
 idxref <- idxref[1]
 

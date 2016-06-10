@@ -10,6 +10,17 @@
 /********* included in the root directory of this package.                                          *********/
 /************************************************************************************************************/
 /************************************************************************************************************/
+// CHANGES IN VERSION 0.6.21  -  18/04/2016
+// - Keyword DATAREF has been chenged into DREF.
+// - DREF is now only used if the user wants to assign same space group as the one of
+//   the reference file. Alternative indexing, when a reference file is not present, is
+//   done with respect to the sweep-longest file within a cluster.
+// - Fixed a difference in writing AIMLESS keyword RESO LOW HIGH that made synthesis output
+//   slightly different from combination output. Now, when RESO keyword is not assigned by
+//   user, only RESO HIGH is written out.
+// - Eliminated the spacing between characters N:1,2,3 for plotting tables. Now BLEND log
+//   can also be viewed with loggraph.
+//   (modules blend.cpp,aux_blend.cpp,version.hh,blend1.R,blend2.R,blend3.R)
 // CHANGES IN VERSION 0.6.20  -  04/04/2016
 // - Fixed annoying halting of the program in endless loop when asking for dendrogram-type
 //   graphics (graphics mode). Now the deepest possible level is always selected even when
@@ -386,7 +397,8 @@ int main(int argc, char* argv[])
    dvkeywdline.push_back("ISIGI     1.500");
    akeys.push_back("CPAR");
    dvkeywdline.push_back("CPARWT    1.000");
-   akeys.push_back("DATA");
+   //akeys.push_back("DATA");
+   akeys.push_back("DREF");
    akeys.push_back("LAUE");
    akeys.push_back("MAXC");
    akeys.push_back("COMP");
@@ -415,7 +427,8 @@ int main(int argc, char* argv[])
    split(split_vec,keywdline,is_any_of(" "));
    keywdline2 = split_vec[0];
    to_upper(keywdline2);
-   if (keywdline2.substr(0,4) == "DATA")
+   //if (keywdline2.substr(0,4) == "DATA")
+   if (keywdline2.substr(0,4) == "DREF")
    {
     keywdline = keywdline2 + " ";
     for (unsigned int i = 1; i < split_vec.size(); ++i)
@@ -453,7 +466,8 @@ int main(int argc, char* argv[])
     split(split_vec,keywdline,is_any_of(" "));
     keywdline2 = split_vec[0];
     to_upper(keywdline2);
-    if (keywdline2.substr(0,4) == "DATA")
+    //if (keywdline2.substr(0,4) == "DATA")
+    if (keywdline2.substr(0,4) == "DREF")
     {
      keywdline = keywdline2 + " ";
      for (unsigned int i = 1; i < split_vec.size(); ++i)
@@ -601,7 +615,8 @@ int main(int argc, char* argv[])
    dvkeywdline.push_back("ISIGI     1.500");
    akeys.push_back("CPAR");
    dvkeywdline.push_back("CPARWT    1.000");
-   akeys.push_back("DATA");
+   //akeys.push_back("DATA");
+   akeys.push_back("DREF");
    akeys.push_back("LAUE");
    akeys.push_back("MAXC");
    akeys.push_back("COMP");
@@ -630,7 +645,8 @@ int main(int argc, char* argv[])
    split(split_vec,keywdline,is_any_of(" "));
    keywdline2 = split_vec[0];
    to_upper(keywdline2);
-   if (keywdline2.substr(0,4) == "DATA")
+   //if (keywdline2.substr(0,4) == "DATA")
+   if (keywdline2.substr(0,4) == "DREF")
    {
     keywdline = keywdline2 + " ";
     for (unsigned int i = 1; i < split_vec.size(); ++i)
@@ -668,7 +684,8 @@ int main(int argc, char* argv[])
     split(split_vec,keywdline,is_any_of(" "));
     keywdline2 = split_vec[0];
     to_upper(keywdline2);
-    if (keywdline2.substr(0,4) == "DATA")
+    //if (keywdline2.substr(0,4) == "DATA")
+    if (keywdline2.substr(0,4) == "DREF")
     {
      keywdline = keywdline2 + " ";
      for (unsigned int i = 1; i < split_vec.size(); ++i)
@@ -787,7 +804,8 @@ int main(int argc, char* argv[])
    dvkeywdline.push_back("ISIGI     1.500");
    akeys.push_back("CPAR");
    dvkeywdline.push_back("CPARWT    1.000");
-   akeys.push_back("DATA");
+   //akeys.push_back("DATA");
+   akeys.push_back("DREF");
    akeys.push_back("LAUE");
    akeys.push_back("MAXC");
    akeys.push_back("COMP");
@@ -816,7 +834,8 @@ int main(int argc, char* argv[])
    split(split_vec,keywdline,is_any_of(" "));
    keywdline2 = split_vec[0];
    to_upper(keywdline2);
-   if (keywdline2.substr(0,4) == "DATA")
+   //if (keywdline2.substr(0,4) == "DATA")
+   if (keywdline2.substr(0,4) == "DREF")
    {
     keywdline = keywdline2 + " ";
     for (unsigned int i = 1; i < split_vec.size(); ++i)
@@ -854,7 +873,8 @@ int main(int argc, char* argv[])
     split(split_vec,keywdline,is_any_of(" "));
     keywdline2 = split_vec[0];
     to_upper(keywdline2);
-    if (keywdline2.substr(0,4) == "DATA")
+    //if (keywdline2.substr(0,4) == "DATA")
+    if (keywdline2.substr(0,4) == "DREF")
     {
      keywdline = keywdline2 + " ";
      for (unsigned int i = 1; i < split_vec.size(); ++i)
@@ -1213,6 +1233,8 @@ int main(int argc, char* argv[])
    R_status=std::system((R_command_line.str()).c_str());
    if (R_status != 0)
    {
+    // Delete BLEND_KEYWORDS.dat before termination
+    if (remove("BLEND_KEYWORDS.dat") != 0) std::cout << "Warning! Unable to remove file 'BLEND_KEYWORDS.dat'." << std::endl;
     int nerr=13;
     throw nerr;
    }
@@ -1266,6 +1288,8 @@ int main(int argc, char* argv[])
    R_status=std::system((R_command_line.str()).c_str());
    if (R_status != 0)
    {
+    // Delete BLEND_KEYWORDS.dat before termination
+    if (remove("BLEND_KEYWORDS.dat") != 0) std::cout << "Warning! Unable to remove file 'BLEND_KEYWORDS.dat'." << std::endl;
     int nerr=13;
     throw nerr;
    }
@@ -1273,7 +1297,7 @@ int main(int argc, char* argv[])
    // Delete BLEND_KEYWORDS.dat before termination
    if (remove("BLEND_KEYWORDS.dat") != 0) std::cout << "Warning! Unable to remove file 'BLEND_KEYWORDS.dat'." << std::endl;
 
-   // End of BLEND - Synthesis mode
+   // End of BLEND - Combination mode
    std::cout << std::endl;
    std::cout << "##################################################################" << std::endl;
    std::cout << "##################################################################" << std::endl;
@@ -1321,6 +1345,15 @@ int main(int argc, char* argv[])
     int nerr=13;
     throw nerr;
    }
+
+   // End of BLEND - Graphics mode
+   std::cout << std::endl;
+   std::cout << "##################################################################" << std::endl;
+   std::cout << "##################################################################" << std::endl;
+   std::cout << "##################################################################" << std::endl;
+   std::cout << "## BLEND - Normal Termination                                   ##" << std::endl;
+   std::cout << "##################################################################" << std::endl;
+   std::cout << std::endl;
   }
  }
  catch (int nerr)

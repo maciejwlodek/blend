@@ -87,8 +87,11 @@ merge_mtzs <- function(mtz_list,selection,mtzout,pointless_keys,hklref,rwin=FALS
    cat(linea,file="pointless_keywords.dat",append=TRUE)
   }
  }
- linea <- sprintf("HKLREF %s\n",hklref)
- cat(linea,file="pointless_keywords.dat",append=TRUE)
+ if (!is.na(hklref))
+ {
+  linea <- sprintf("HKLREF %s\n",hklref)
+  cat(linea,file="pointless_keywords.dat",append=TRUE)
+ }
  linea <- sprintf("HKLOUT %s\n",mtzout)
  cat(linea,file="pointless_keywords.dat",append=TRUE)
 
@@ -119,7 +122,7 @@ merge_mtzs <- function(mtz_list,selection,mtzout,pointless_keys,hklref,rwin=FALS
 
 #
 # Run AIMLESS on specified datasets selection and collect statistical information in a data frame.
-merge_datasets <- function(mtz_names,selection,suffix,pointless_keys,aimless_keys,resomin=NULL,resomax=NULL,nref=1,rwin=FALSE)
+merge_datasets <- function(mtz_names,selection,suffix,pointless_keys,aimless_keys,hklref,resomin=NULL,resomax=NULL,rwin=FALSE)
 {
  # Computes merging statistics for all couples of datasets
 
@@ -134,27 +137,24 @@ merge_datasets <- function(mtz_names,selection,suffix,pointless_keys,aimless_key
  ccp4 <- Sys.getenv("CCP4")
  if (nchar(ccp4) == 0) stop("You need to set up environment for running ccp4 programs")
 
-
- # Reference file for indexing
- idxref <- as.integer(nref)
- if (is.na(idxref)) hklref <- nref
- if (!is.na(idxref)) hklref <- indata[idxref,1]
- 
-
  # Run POINTLESS and AIMLESS
  mtz_list <- indata[selection,1]
  sele <- indata[selection,3]
 
  # Use copy of reference data set in case it belongs to group
- if (hklref %in% mtz_list)
+ if (!is.na(hklref)) hklref <- normalizePath(hklref)
+ if (!is.na(hklref) & hklref %in% mtz_list)
  {
-  file.copy(from=hklref,to="copy_of_ref_file.mtz",overwrite=TRUE)
-  hklref <- "copy_of_ref_file.mtz"
+  if (!file.exists("copies_of_reference_files")) dir.create("copies_of_reference_files")
+  tmphklref <- normalizePath("copies_of_reference_files")
+  tmphklref <- file.path(tmphklref,basename(hklref))
+  file.copy(from=hklref,to=tmphklref,overwrite=TRUE)
+  hklref <- tmphklref
+  rm(tmphklref)
  }
  cat("Collating multiple mtz into a single mtz ...\n")
  linea_in <- paste(suffix[1],paste("unscaled_",suffix[2],".mtz",sep=""),sep="/")
  exemerge <- merge_mtzs(mtz_list=mtz_list,selection=sele,mtzout=linea_in,pointless_keys=pointless_keys,hklref=hklref,rwin=rwin)
- if (file.exists("copy_of_ref_file.mtz")) file.remove("copy_of_ref_file.mtz")
  fatal_error <- grep("#-------------",exemerge,fixed=TRUE)
  if (length(fatal_error) == 0 &
      length(grep("FATAL ERROR message:",exemerge,fixed=TRUE)) == 0 &
@@ -164,11 +164,7 @@ merge_datasets <- function(mtz_names,selection,suffix,pointless_keys,aimless_key
 
   # Rename POINTLESS log
   log_file <- paste(suffix[1],paste("pointless_",suffix[2],".log",sep=""),sep="/")
-  for (linea in exemerge)
-  {
-   linea <- paste(linea,"\n",sep="")
-   cat(linea,file=log_file,append=TRUE)
-  }
+  cat(exemerge,file=log_file,sep="\n")
 
   # Aimless keywords file
   linea_out <- paste(suffix[1],paste("scaled_",suffix[2],".mtz",sep=""),sep="/")
@@ -198,6 +194,7 @@ merge_datasets <- function(mtz_names,selection,suffix,pointless_keys,aimless_key
   if (length(aimless_keys) == 0) ncnd <- 0
   if (ncnd == 0)
   {
+   print(paste(resomin,resomax))
    if (!is.null(resomin) & !is.null(resomax))
    {
     linea <- sprintf("RESOLUTION LOW %f HIGH %f \n",resomin,resomax)
@@ -315,11 +312,12 @@ merge_datasets <- function(mtz_names,selection,suffix,pointless_keys,aimless_key
 
   # Write AIMLESS log file
   log_file <- paste(suffix[1],paste("aimless_",suffix[2],".log",sep=""),sep="/")
-  for (linea in exeaimless)
-  {
-   linea <- paste(linea,"\n",sep="")
-   cat(linea,file=log_file,append=TRUE)
-  }
+  cat(exeaimless,file=log_file,sep="\n")
+  #for (linea in exeaimless)
+  #{
+  # linea <- paste(linea,"\n",sep="")
+  # cat(linea,file=log_file,append=TRUE)
+  #}
 
   # Remove files produced to merge mtz's
   dircontents <- list.files("./")
@@ -364,6 +362,27 @@ merge_datasets <- function(mtz_names,selection,suffix,pointless_keys,aimless_key
   
   return(list(Mstats,exemerge))
  }
+}
+
+
+#
+# Select reference file for alternative indexing in specific group
+select_ref_for_altidx <- function(selection,idx_list)
+{
+ # List of file names
+ if (file.exists("FINAL_list_of_files.dat")) indata <- read.table(file="FINAL_list_of_files.dat")
+ if (!file.exists("FINAL_list_of_files.dat"))
+ {
+  messaggio <- paste("File FINAL_list_of_files.dat does not seem to be present. A serious error has occurred.\n")
+  cat(messaggio)
+  q(save = "no", status = 1, runLast = FALSE) 
+ }
+
+ # Which dataset in group/cluster has most images
+ idx <- which(idx_list[selection] == max(idx_list[selection]))
+ idx <- selection[idx]
+
+ return(indata[idx,1])
 }
 
 
@@ -437,30 +456,35 @@ if (length(idx) > 0)
   if ((idxe-idxs) > 1) for (line in contents[(idxs+1):(idxe-1)]) pointless_keys <- c(pointless_keys,line)
 
   # Reference dataset (from BLEND KEYWORDS section)
-  #tmp <- grep("DATAREF",contents,fixed=TRUE)
-  tmp <- grep("DATA",contents,fixed=TRUE)
+  idxref_char <- NA
+  tmp <- grep("DREF",contents,fixed=TRUE)
   if (length(tmp) != 0)
   {
-   tmp <- contents[tmp[1]]    # [1] in case somebody add DATAREF line more than once
+   tmp <- contents[tmp[1]]    # [1] in case somebody add DREF line more than once
    tmp <- strsplit(tmp," ")
    jdx <- which(nchar(tmp[[1]]) != 0)
    idxref_char <- tmp[[1]][jdx[length(jdx)]]
-   idxref <- as.integer(idxref_char)
-  } else idxref_char <- as.character(idxref)
+  }
+
   # Read in "FINAL_list_of_files.dat" to associate reference dataset to file path (just in some cases)
   indata <- read.table(file="FINAL_list_of_files.dat")
   indata[,1] <- as.character(indata[,1])
-  tmpref <- as.integer(idxref_char)
-  if (!is.na(tmpref)) idxref_char <- indata[idxref,1]
-  if (!file.exists(idxref_char))
+  if (!is.na(idxref_char))
   {
-   messaggio <- paste("Input reference dataset",idxref_char,"does not exist. Please input an existing file.\n")
-   cat(messaggio)
-   q(save = "no", status = 1, runLast = FALSE) 
+   if (!file.exists(idxref_char))
+   {
+    messaggio <- paste("Input reference dataset << ",idxref_char," >> does not exist. Please input an existing file.\n",sep="")
+    cat(messaggio)
+    q(save = "no", status = 1, runLast = FALSE) 
+   }
+   if (file.exists(idxref_char))
+   {
+    aidxref_char <- normalizePath(idxref_char)
+    messaggio <- paste("Reference dataset: << ",aidxref_char," >>.\n",sep="")
+    cat(messaggio)
+    cat("\n")
+   }
   }
-  messaggio <- paste("Reference dataset used in case alternative indexing is needed: ",idxref_char,"\n",sep="")
-  cat(messaggio)
-  cat("\n")
 
   # AIMLESS
   idxs <- idxe
@@ -473,7 +497,6 @@ if (length(idx) > 0)
  if (!file.exists(outdir)) dir.create(outdir)
  if (file.exists(outdir))
  {
-  #dircontents <- system(paste("ls ",outdir,sep=""),intern=TRUE)
   dircontents <- list.files(outdir)
   for (a in dircontents)
   {
@@ -513,8 +536,15 @@ if (length(idx) > 0)
   
    # Scale and merge datasets in this specific cluster
    suffix <- c(outdir,sprintf("%03d",j))
-   tmp <- merge_datasets("FINAL_list_of_files.dat",selection=cln,suffix,pointless_keys,aimless_keys,
-                         resomin=groups[[2]][[j]][1],resomax=groups[[2]][[j]][2],nref=idxref_char,rwin=rwin)
+
+   # Select sweep-longest dataset in cluster or group for alternative indexing
+   #if (is.na(idxref_char)) new_idxref_char <- select_ref_for_altidx(selection=cln,idx_list=idxref_list)
+   #if (!is.na(idxref_char)) new_idxref_char <- idxref_char
+
+   # Actual merging and scaling
+   tmp <- merge_datasets("FINAL_list_of_files.dat",selection=cln,suffix,pointless_keys,aimless_keys,hklref=idxref_char,
+                         resomax=groups[[2]][[j]][2],rwin=rwin)
+   #                      resomin=groups[[2]][[j]][1],resomax=groups[[2]][[j]][2],rwin=rwin)
    cat(" Statistics for this group:\n")
 
    # Change row names for display purpose
@@ -600,11 +630,11 @@ if (length(idx) > 0)
  cat(linea)                                                                                                                   # For logview
  linea <- sprintf("$TABLE: Overall merging statistics and completeness :\n")                                                  # For logview
  cat(linea)                                                                                                                   # For logview
- linea <- sprintf("$GRAPHS:        Overall merging statistics   : N : 1, 3, 4 :\n")                                           # For logview
+ linea <- sprintf("$GRAPHS:        Overall merging statistics   :N:1,3,4:\n")                                           # For logview
  cat(linea)                                                                                                                   # For logview
- linea <- sprintf("       :        Overall completeness         : N : 1, 5 :\n")                                              # For logview
+ linea <- sprintf("       :        Overall completeness         :N:1,5:\n")                                              # For logview
  cat(linea)                                                                                                                   # For logview
- linea <- sprintf("       :        Resolutions (CC1/2, Mn2, Max): N : 1, 7, 8, 9 :\n")                                              # For logview
+ linea <- sprintf("       :        Resolutions (CC1/2, Mn2, Max):N:1,7,8,9:\n")                                              # For logview
  cat(linea)                                                                                                                   # For logview
  linea <- sprintf("$$\n")                                                                                                     # For logview
  cat(linea)                                                                                                                   # For logview
