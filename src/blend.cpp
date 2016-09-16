@@ -10,6 +10,9 @@
 /********* included in the root directory of this package.                                          *********/
 /************************************************************************************************************/
 /************************************************************************************************************/
+// CHANGES IN VERSION 0.6.22  -  16/09/2016
+// - Corrected a bug in function "pruning_plan", affecting runs in combination mode.
+//   (modules blend.cpp,version.hh,blend3.R)
 // CHANGES IN VERSION 0.6.21  -  18/04/2016
 // - Keyword DATAREF has been chenged into DREF.
 // - DREF is now only used if the user wants to assign same space group as the one of

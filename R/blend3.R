@@ -535,9 +535,9 @@ pruning_plan <- function(tbl,completeness,cutf,icyc)
  # Select run with highest mean Rmerge
  mean_Rmerge <- c()
  Images <- c()
- for (i in rns)
+ for (i in 1:length(rns))
  {
-  j <- i+1
+  j <- i
   mean_Rmerge <- c(mean_Rmerge,mean(tbl[Mruns[j,1]:Mruns[j,2],2],na.rm=TRUE))
   Images <- c(Images,length(Mruns[j,1]:Mruns[j,2]))
  }

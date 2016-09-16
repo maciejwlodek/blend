@@ -1,4 +1,4 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+e!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
 <html><head><title>CCP4 Program Suite: blend</title></head><body>
 <!-- ::INDEX_INFO::BLEND::Supported::Data Processing and Reduction::multi-dataset combination and cluster analysis:::::::: -->
 <h1>BLEND (CCP4: Supported Program)</h1>
@@ -40,15 +40,18 @@ signal, when this is needed.<br>
 <br>
 BLEND is a program for the management of multiple datasets. It simplifies the analysis and greatly
 reduces the combinatorial explosion involved in the formation of multiple groups from the original
-set of data. The program can run in three different modes. In the <a href=#running_analysis><em>analysis mode</em></a> (option -a) it reads
-in multiple unmerged reflection files produced by an integration program(either MOSFLM <a href=#references>[2]</a> or
-XDS <a href=#references>[3]</a>), and carries out cluster analysis on one or two types of statistical descriptors, extracted or
-calculated from each dataset. Results produced by the program in analysis mode can, then, be used
-running the program in <a href=#running_synthesis><em>synthesis mode</em></a> (option -s), or in combination mode (option -c). In synthesis
+set of data. The program essentially runs in three different modes, each one including variants. In the <a href=#running_analysis><em>analysis mode</em></a> (option -a) it reads
+in multiple unmerged reflection files produced by an integration program (either MOSFLM <a href=#references>[2]</a>,
+XDS <a href=#references>[3]</a> or DIALS <a href=#references>[5]</a>), and carries out cluster analysis on one or two types of statistical descriptors, extracted or
+calculated from each dataset. There is a <a href=#variantsana><em>variant</em></a> for the analysis mode (option -aDO) which is 
+a lighter version of the analysis 
+mode. It should be used when there is no interest in creating multiple-datasets files, but only in observing clustering based on cell
+parameters. Results produced by the program in analysis mode can be used during runs in
+<a href=#running_synthesis><em>synthesis mode</em></a> (option -s), or in combination mode (option -c). In synthesis
 mode datasets belonging to clusters previously determined are scaled together and output into
 individual merged reflection files in MTZ format, ready to be used in all subsequent stages of
-phasing, model building and refinement. <a href=#variantsLCV>Variants</a> of the synthesis mode are synthesis mode using LCV values and
-synthesis mode using absolute LCV values (see <a href=#LCV>later</a> for meaning of LCV and absolute LCV). 
+phasing, model building and refinement. <a href=#variantsLCV>Variants</a> of the synthesis mode are the synthesis mode using LCV values and
+the synthesis mode using absolute LCV values (see <a href=#LCV>later</a> for meaning of LCV and absolute LCV). 
 The <a href=#running_combination><em>combination mode</em></a> (option -c) allows users to carry out the same
 tasks enabled by the synthesis mode, this time for any combination of datasets, not necessarily those
 grouped in clusters. <a href=#variants_c>Variants</a> exist also for the combination mode, when automated datasets deletion or individual dataset
@@ -58,20 +61,20 @@ An additional mode, the <a href=#running_graphics><em>graphics mode</em></a> (op
 has been added to the three main modes previously listed so to have some visual tools 
 to facilitate data analysis.
 <h2><a name="input_preparation"></a>Input preparation</h2>
-Input for the program is a group of unmerged reflection files produced by integration programs. At present only files from the MOSFLM 
-and XDS integration software can be handled. Reflection files can be either included in a single directory, or spread across several 
+Input for the program is a group of unmerged reflection files produced by integration programs. At present only files from the MOSFLM, 
+XDS and DIALS integration software can be handled. Reflection files can be either included in a single directory, or spread across several 
 directories. In the first scenario, only the path to the directory needs to be fed into the program. In the second scenario, paths to 
 all individual files will have to be listed in a single ASCII file and this is fed into BLEND. 
-Program execution is controlled by keywords. From version 0.5.0, keywords are passed as standard input, as it is in general the case 
+Program execution is controlled by keywords passed as standard input, as it is in general the case 
 for the majority of CCP4 programs. If no keywords are passed to the program, default values and / or procedures for the parameters 
 connected to the keywords will be used. More on BLEND keywords <a href=#keywords>later</a>.<br>
 <br>
 Some problems arising in connection with input preparation can be found in the section <a href=#miscellaneous>Miscellaneous and problems</a>.
 <h2><a name="running_analysis"></a>Running the program in analysis mode</h2>
-Once input is ready, BLEND can be run in analysis mode. All multiple datasets will be analysed individually 
+Once the input is ready, BLEND can be executed in analysis mode. All multiple datasets will be analysed individually 
 and tested for overall radiation damage. 
 If any dataset is thought to be significantly affected, parts of it will be removed. The amount of data to 
-be removed can be controlled by keyword RADFRAC. Values ranges between 0 and 1; 0 means keeping everything 
+be removed can be controlled by the keyword RADFRAC. Values range between 0 and 1; 0 means keeping everything 
 while 1 means removing all affected parts of data. The default value is 0.75, which essentially tells the 
 program to remove all reflections whose intensity, on average, has been dampened by radiation damage of more 
 than 25% of its true value.<br>
@@ -146,7 +149,7 @@ and absolute LCV values, rather than cluster heights (many thanks to Alkistis Mi
 </p>
 <h2><a name="running_combination"></a>Running the program in combination mode</h2>
 <p>
-Cluster analysis produces a grouping of all datasets in several clusters. This makes it possible to carry out a limited number 
+Cluster analysis produces a grouping of all datasets in several clusters. This makes it feasible to carry out a limited number 
 of merging and scalings among the huge number of possible datasets combinations, thus making it possible to save on processing time. 
 Clustering, though, introduces limitations because the user is forced to calculate datasets only corresponding to nodes in the 
 dendrogram. For example, referring to the dendrogram described previously, there is no way we could obtain scaled data out of the 
@@ -245,7 +248,7 @@ case it is suggested to re-run BLEND (still with the pruning variant if wished) 
 <h2><a name="InputOutput"></a>INPUT AND OUTPUT FILES</h2>
 <h3>Input</h3>
 BLEND can read unscaled reflection files in mtz format, or ASCII files in XDS format. <br>
-MTZ files contain, typically, integrated intensities as processed by MOSFLM <a href="#references">[2]</a>.
+MTZ files contain, typically, integrated intensities as processed by MOSFLM <a href="#references">[2]</a> or DIALS <a href="#references">[5]</a>.
 XDS files are the unscaled integrated data ("INTEGRATE.HKL") produced by XDS <a href="#references">[3]</a>. <br>
 Input can be either a file (no fixed name, but here it is indicated as "foo_in.dat"), or a directory
 <dl compact="compact">
@@ -259,7 +262,7 @@ Input can be either a file (no fixed name, but here it is indicated as "foo_in.d
 <!-- <span style="font-weight: normal;"></span><span style="font-weight: normal;">
 </span> -->
 <h3>Output</h3>
-Execution of BLEND in different modes (analysis "-a", synthesis "-s" or "-sLCV" or "-saLCV", combination "-c" implies different output files. <br>
+Execution of BLEND in different modes implies different output files. <br>
 <!-- <span style="font-family: monospace;"><br> -->
  <br>
  (a) From analysis mode:<br>
@@ -309,7 +312,7 @@ Execution of BLEND in different modes (analysis "-a", synthesis "-s" or "-sLCV" 
        measures the maximum linear increase or decrease of the diagonals on the 3 independent
        cell faces. Values below 1% in general indicate a good degree of isomorphism among
        different crystals. Structural differences start to be noticeable with LCV greater than 1.5%.
-       A value in angstroms associated to LCV is provided by the <em>absolute Linear Cell Variation</em> (aLCV),
+       A value in angstroms associated to LCV is provided by the <em><b> absolute Linear Cell Variation (aLCV) </b></em>,
        presented jointly to LCV in both "CLUSTERS.txt" and dendrogram.
        The isomorphism issue will, obviously, have to be considered jointly with the available data
        resolution <br>
@@ -340,6 +343,14 @@ Execution of BLEND in different modes (analysis "-a", synthesis "-s" or "-sLCV" 
        present. Thus, it is important to rename this directory if more than one run of BLEND in synthesis
        mode is executed. This is taken care of when BLEND is executed with the CCP4 GUI <br>
        <br>
+  <dt> copies_of_reference_files [optional]
+       <dd> if a reference file is used (keyword DREF) and if such reference file is a dataset
+       of one of the clusters processed in BLEND, then a directory with this name is created and the
+       reference file copied in it. The reason why this is necessary is connected with how POINTLESS works
+       with its keyword HKLREF and with reference files. Essentially the file pointed at by HKLREF cannot
+       be the same file pointed at by any HKLIN entry. By using a copy of the reference file the HKLREF
+       is never going to point at the same file as any of those corresponding to HKLIN.<br>
+       <br>
   <dt> MERGING_STATISTICS.info (inside directory "merged_files")
        <dd> is an ASCII file, essentially a table listing overall merging
        statistics for all merged datasets produced by the specific run of BLEND. It includes Cluster
@@ -369,10 +380,9 @@ Execution of BLEND in different modes (analysis "-a", synthesis "-s" or "-sLCV" 
        <name>, where <name> is the space group name (e.g. P 21 21 21, C 2, etc). Another
        keyword used in BLEND which relates to POINTLESS is TOLERANCE; this keyword
        controls how much cell sizes are allowed to change if they are to be considered in
-       connection with a same structure. If the user wants to use a specific dataset as reference, the
-       serial number of the desired dataset can be included after keyword DATAREF, if such reference is
-       part of the input data. Alternatively the name of a reference mtz file can be given (as in
-       POINTLESS). 
+       connection with a same structure. If the user wants to use a specific dataset as reference,
+       so that space group and indexing convention of the reference are passed on to the processed
+       datasets, the name of the reference file (an mtz file)  can be included with the keyword DREF.
 The reason
        why merged but unscaled files are kept for the user is connected with the way subsequent
        scaling is carried out. At present scaling in default mode is performed by BLEND using
@@ -404,6 +414,14 @@ The reason
   <dt> combined_files
        <dd> all files produced by BLEND when executed in combination mode are stored within this directory,
        which is created if not already present <br>
+       <br>
+  <dt> copies_of_reference_files [optional]
+       <dd> if a reference file is used (keyword DREF) and if such reference file is a dataset
+       of one of the groups processed in BLEND, then a directory with this name is created and the
+       reference file copied in it. The reason why this is necessary is connected with how POINTLESS works
+       with its keyword HKLREF and with reference files. Essentially the file pointed at by HKLREF cannot
+       be the same file pointed at by any HKLIN entry. By using a copy of the reference file the HKLREF
+       is never going to point at the same file as any of those corresponding to HKLIN.<br>
        <br>
   <dt> MERGING_STATISTICS.info (inside directory "combined_files")
        <dd> same file as the one produced inside "merged_files" when BLEND is executed in synthesis mode.
@@ -450,7 +468,7 @@ CUTFRACTION         0.5
 MAXCYCLE            5</pre></li>
    <li> Group 2
         <pre>CHOOSE SPACEGROUP   (space group, as used in POINTLESS)
-DATAREF             ()
+DREF                ()
 TOLERANCE           5 (same default value as the one used in POINTLESS)</pre></li>
    <li> Group 3
         <pre>ANOMALOUS           OFF
@@ -474,7 +492,7 @@ case-insensitive, but are listed below in upper-case.
 <a href="#anomalous">ANOMALOUS</a>, 
 <a href="#choose_spacegroup">CHOOSE SPACEGROUP</a>, 
 <a href="#cparwt">CPARWT</a>, 
-<a href="#dataref">DATAREF</a>, 
+<a href="#dref">DREF</a>, 
 <a href="#exclude">EXCLUDE</a>, 
 <a href="#isigi">ISIGI</a>,
 <a href="#lauegroup">LAUEGROUP</a>,
@@ -509,14 +527,13 @@ they essentially mean a weighted use of both descriptors. At the present stage o
 though, it is not clear the advantage in mixing the two descriptors. Primary descriptors seem to
 behave systematically better than secondary descriptors. Secondary descriptors can be tried, as a valid
 alternative, in those cases where cell parameters are known to be changing very little.
-<h3><a name="dataref"></a>DATAREF</h3>
-Default value is the serial number of the longest-sweep individual data set, as selected by BLEND in analysis mode.
-DATAREF can, alternatively, be fixed to the serial number of a different data set.
-For example the default reference file could either belong to a space group
-different from that of the datasets in the selected cluster, or having a different indexing
-convention. In this case DATAREF can be assigned the serial number of one of the datasets
-belonging to the cluster. An mtz file not included among the files processed by BLEND can also
-be associated with DATAREF, similarly to what happens in POINTLESS when using keyword HKLREF.
+<h3><a name="dref"></a>DREF</h3>
+DREF, followed by a path pointing to an MTZ file, provides a reference file for indexing and space
+group assignment. This is normally not needed. Indexing for all datasets in a cluster or a group
+follows the indexing of the first dataset in the cluster or group (the one with smallest serial number).
+Space group is, then, assigned by POINTLESS after the systematic absences analysis. But there might be reasons
+for users to be wanting to use always a fixed dataset (with correct space group) as reference. It is
+in such instances that the reference file is considered by BLEND via the DREF keyword.
 <h3><a name="exclude"></a>EXCLUDE [&ltbatch range&gt | &ltbatch list&gt]</h3>
 Default is no exclusion of any image.
 This keyword, equivalent to the one used in AIMLESS, controls exclusion from the scaling process of specific images.
@@ -733,6 +750,7 @@ any time soon.<br>
 <h2>SEE ALSO</h2>
 <blockquote>
 <a href="http://www.ccp4.ac.uk/html/mosflm.html"><b>MOSFLM</b></a>
+<a href="http://dials.lbl.gov/"><b>DIALS</b></a>
 <a href="http://xds.mpimf-heidelberg.mpg.de/"><b>XDS</b></a>
 <a href="http://www.ccp4.ac.uk/html/pointless.html"><b>POINTLESS</b></a>
 <a href="http://www.ccp4.ac.uk/html/aimless.html"><b>AIMLESS</b></a>
