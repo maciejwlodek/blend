@@ -1,0 +1,5 @@
+.bzr/
+.sass-cache/
+bzr-repo/
+*.pyc
+
