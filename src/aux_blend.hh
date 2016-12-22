@@ -36,13 +36,16 @@ std::vector<scala::hkl_unmerge_list> load_crystals(std::string,int);
 std::vector<int> label_crystals(const std::vector<scala::hkl_unmerge_list>&,std::vector<int>);
 
 // Create and output summary table
-void output_summary_table(std::vector<scala::hkl_unmerge_list>&,std::multimap<int,int>,std::vector<int>,std::vector<int>);
+void output_summary_table(std::vector<scala::hkl_unmerge_list>&,std::multimap<int,int>,std::map<int,std::string>,
+                          std::vector<int>,std::vector<int>, std::string);
 
 // Create ascii data files for R
-void statistics_with_R(std::vector<scala::hkl_unmerge_list>&,std::multimap<int,int>,std::vector<int>,std::vector<int>,std::string,int);
+void statistics_with_R(std::vector<scala::hkl_unmerge_list>&,std::multimap<int,int>,std::map<int,std::string>,
+                          std::vector<int>,std::vector<int>,std::string,int,std::string);
 
 // Create ascii data files for R (dendrogram-only version)
-void statistics_with_R2(std::vector<scala::hkl_unmerge_list>&,std::multimap<int,int>,std::vector<int>,std::vector<int>,std::string,int);
+void statistics_with_R2(std::vector<scala::hkl_unmerge_list>&,std::multimap<int,int>,std::map<int,std::string>,
+                          std::vector<int>,std::vector<int>,std::string,int,std::string);
 
 // Create matrix of reciprocal space overlaps between couples of crystal datasets
 //std::vector< std::vector<float> > build_overlaps_matrix(std::vector<scala::hkl_unmerge_list>&,std::vector<int>);

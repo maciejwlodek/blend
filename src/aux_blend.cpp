@@ -180,7 +180,8 @@ std::vector<int> label_crystals(const std::vector<scala::hkl_unmerge_list>& hkl_
 
 // Function to output summary table for all crystals (produced in Mode 1)
 void output_summary_table(std::vector<scala::hkl_unmerge_list>& hkl_list,std::multimap<int,int> sg_to_crystal,
-                          std::vector<int> spacegroup_class,std::vector<int> crystal_flag)
+                          std::map<int,std::string> crystal_to_centering,
+                          std::vector<int> spacegroup_class,std::vector<int> crystal_flag, std::string mode_string)
 {
  // Build map container for bravais lattice number to symbol correspondence
  std::map<int,std::string> bl_number_to_symbol;
@@ -236,7 +237,7 @@ void output_summary_table(std::vector<scala::hkl_unmerge_list>& hkl_list,std::mu
   // Header for each space group
   pos_bl=bl_number_to_symbol.find(spacegroup_class[i]);
   summary_file << "         BRAVAIS LATTICE NUMBER " << spacegroup_class[i] << ": (" << pos_bl->second << ")\n" << std::endl;
-  summary_file << "==============|=============================================================|=============|=++==========|================|=====================|=============|"
+  summary_file << "==============|================================================================|=============|=++==========|================|=====================|=============|"
                << std::endl;
   summary_file << "              |                              CELL                           |             |             |   RESOLUTION   | CRYSTAL TO DETECTOR |             |"
                << std::endl;
@@ -244,7 +245,7 @@ void output_summary_table(std::vector<scala::hkl_unmerge_list>& hkl_list,std::mu
                << std::endl;
   summary_file << "              |       a         b         c      alpha    beta     gamma    |             |             | Low       High |      DISTANCE       |             |"
                << std::endl;
-  summary_file << "==============|=============================================================|=============|=============|================|=====================|=============|"
+  summary_file << "==============|================================================================|=============|=============|================|=====================|=============|"
                << std::endl;
 
   // Suff for loggraph, etc
@@ -267,6 +268,7 @@ void output_summary_table(std::vector<scala::hkl_unmerge_list>& hkl_list,std::mu
    //std::cout << "pos_cs->first " << pos_cs->first << " pos_cs->second " << pos_cs->second << "  crystal_flag " << crystal_flag[pos_cs->second] << std::endl;
    if (crystal_flag[pos_cs->second] == 0)
    {
+    centering = crystal_to_centering[pos_cs->second];
     resorange=hkl_list[pos_cs->second].ResRange();
     dataset=hkl_list[pos_cs->second].xdataset(0);   // At present we only consider crystals with 1 dataset
     unitcell=dataset.cell();
@@ -322,7 +324,8 @@ void output_summary_table(std::vector<scala::hkl_unmerge_list>& hkl_list,std::mu
     //float completeness=100*float(genint2)/float(genint1);
 
     // Output to summary file
-    summary_file << "  " << std::setw(10) << pos_cs->second+1 << "  |" << std::setw(10) << std::setprecision(3) << unitcell.UnitCell()[0]
+    summary_file << "  " << std::setw(10) << pos_cs->second+1 << "  | " << centering << " "
+                                                              << std::setw(10) << std::setprecision(3) << unitcell.UnitCell()[0]
                                                               << std::setw(10) << std::setprecision(3) << unitcell.UnitCell()[1]
                                                               << std::setw(10) << std::setprecision(3) << unitcell.UnitCell()[2]
                                                               << std::setw(9) << std::setprecision(2) << unitcell.UnitCell()[3]
@@ -371,7 +374,8 @@ void output_summary_table(std::vector<scala::hkl_unmerge_list>& hkl_list,std::mu
 
 // Function to output ascii files to be read by R (produced in Mode 1)
 void statistics_with_R(std::vector<scala::hkl_unmerge_list>& hkl_list,std::multimap<int,int> sg_to_crystal,
-                          std::vector<int> spacegroup_class,std::vector<int> crystal_flag,std::string R_program,int Rscp)
+                          std::map<int,std::string> crystal_to_centering,
+                          std::vector<int> spacegroup_class,std::vector<int> crystal_flag,std::string R_program,int Rscp, std::string mode_string)
 {
  // Build map container for bravais lattice number to symbol correspondence
  std::map<int,std::string> bl_number_to_symbol;
@@ -400,6 +404,8 @@ void statistics_with_R(std::vector<scala::hkl_unmerge_list>& hkl_list,std::multi
  scala::observation observation;
  clipper::Cell_descr ccell_descr;
  clipper::Cell ccell;
+
+ std::string centering;
 
  // File "forR_raddam.dat" containing names of all refs_ files
  std::ofstream forR_file("forR_raddam.dat",std::ios::out);
@@ -434,6 +440,7 @@ void statistics_with_R(std::vector<scala::hkl_unmerge_list>& hkl_list,std::multi
      ccell=clipper::Cell(ccell_descr);
      scala::Batch batch=hkl_list[pos_cs->second].batch(0);  // I'm using any batch (for instance number 0) just to recover crystal-to-detector distance
      CMtz::MTZBAT batchmtz=batch.batchdata();
+     centering = crystal_to_centering[pos_cs->second];
      float ctoddist=batchmtz.dx[0];
      float wlength=dataset.wavelength();
      //std::cout << "WAVELENGTH " << wlength << std::endl;
@@ -448,6 +455,7 @@ void statistics_with_R(std::vector<scala::hkl_unmerge_list>& hkl_list,std::multi
                                                              << std::setw(11) << std::setprecision(5) << dataset.Mosaicity()
                                                              << std::setw(12) << std::setprecision(2) << ctoddist
                                                              << std::setw(10) << std::setprecision(5) << wlength
+                                                             << std::setw(10) << centering
                                                              << std::endl;
 
      // Organise data (Phil's code. Needed to count unique reflections, etc)
@@ -520,7 +528,8 @@ void statistics_with_R(std::vector<scala::hkl_unmerge_list>& hkl_list,std::multi
 
 // Function to output ascii files to be read by R (produced in Mode 1, dendrogram-only version)
 void statistics_with_R2(std::vector<scala::hkl_unmerge_list>& hkl_list,std::multimap<int,int> sg_to_crystal,
-                          std::vector<int> spacegroup_class,std::vector<int> crystal_flag,std::string R_program,int Rscp)
+                          std::map<int,std::string> crystal_to_centering,
+                          std::vector<int> spacegroup_class,std::vector<int> crystal_flag,std::string R_program,int Rscp, std::string mode_string)
 {
  // Build map container for bravais lattice number to symbol correspondence
  std::map<int,std::string> bl_number_to_symbol;
@@ -550,6 +559,8 @@ void statistics_with_R2(std::vector<scala::hkl_unmerge_list>& hkl_list,std::mult
  clipper::Cell_descr ccell_descr;
  clipper::Cell ccell;
 
+ std::string centering;
+
  // File "forR_macropar.dat" containing cell parameters and mosaicity for all crystals
  std::ofstream forR_file2("forR_macropar.dat",std::ios::out);
  forR_file2.setf(std::ios::fixed);   // Permanent until reset
@@ -573,6 +584,7 @@ void statistics_with_R2(std::vector<scala::hkl_unmerge_list>& hkl_list,std::mult
    {
     if (crystal_flag[pos_cs->second] == 0)
     {
+     centering = crystal_to_centering[pos_cs->second];
      resorange=hkl_list[pos_cs->second].ResRange();
      dataset=hkl_list[pos_cs->second].xdataset(0);   // At present we only consider crystals with 1 dataset
      unitcell=dataset.cell();
@@ -594,6 +606,7 @@ void statistics_with_R2(std::vector<scala::hkl_unmerge_list>& hkl_list,std::mult
                                                              << std::setw(11) << std::setprecision(5) << dataset.Mosaicity()
                                                              << std::setw(12) << std::setprecision(2) << ctoddist
                                                              << std::setw(10) << std::setprecision(5) << wlength
+                                                             << std::setw(10) << centering
                                                              << std::endl;
     }
    }

@@ -351,7 +351,9 @@ int main(int argc, char* argv[])
   else
     home = std::string(std::getenv("CCP4")) + "/share/blend";
   std::string R_program0 = home+"/R/blend0.R";
+  std::string R_program0NC = home+"/R/blend0NC.R";
   std::string R_program1 = home+"/R/blend1.R";
+  std::string R_program1NC = home+"/R/blend1NC.R";
   std::string R_program2 = home+"/R/blend2.R";
   std::string R_program3 = home+"/R/blend3.R";
   std::string R_program4 = home+"/R/blend4.R";
@@ -379,14 +381,18 @@ int main(int argc, char* argv[])
    throw nerr;
   }
   if (mode_string != "-a" && mode_string != "-aDO" &&                              // First argument after program name "blend" needs to be either "-a" or "-aDO"
+      mode_string != "-aNC" && mode_string != "-aDONC" &&                          // possibly with NC appended
       mode_string != "-s" && mode_string != "-sLCV" && mode_string != "-saLCV" &&  // or "-s" or "-sLCV" or "-saLCV"
+      mode_string != "-sNC" && mode_string != "-sLCVNC" && mode_string != "-saLCVNC" &&  // or "-sNC" or "-sLCVNC" or "-saLCVNC"
       mode_string != "-c" && mode_string != "-cP" && mode_string != "-cF" &&       // or "-c" or "-cP" or "-cF"
+      mode_string != "-cNC" && mode_string != "-cPNC" && mode_string != "-cFNC" && // or "-cNC" or "-cPNC" or "-cFNC"
+      mode_string != "-gNC" &&                                                     // or "-gN
       mode_string != "-g")                                                         // or "-g"
   {
    int nerr=1;
    throw nerr;
   }
-  if (mode_string == "-a" || mode_string == "-aDO")     // Analysis pass
+  if (mode_string == "-a" || mode_string == "-aDO" || mode_string == "-aNC" || mode_string == "-aDONC")     // Analysis pass
   {
    // In order to line up BLEND with the way ccp4i works (with stdin passed keywords) this is what has been added
 
@@ -1000,6 +1006,15 @@ int main(int argc, char* argv[])
    {
     std::cout << "You are now running BLEND in dendrogram-only mode." << std::endl; 
    }
+   if (mode_string == "-aNC")
+   {
+    std::cout << "You are now running BLEND in analysis mode using NCDist." << std::endl; 
+   }
+   if (mode_string == "-aDONC")
+   {
+    std::cout << "You are now running BLEND in dendrogram-only mode using NCDist." << std::endl; 
+   }
+
    std::cout << std::endl;
    std::cout << "<!--SUMMARY_END--></FONT></B>" << std::endl;
    std::cout << std::endl;
@@ -1052,6 +1067,8 @@ int main(int argc, char* argv[])
    //
    // sg_to_crystal:       bravais lattice number  ->  crystal serial number
    // crystal_to_sg:    crystal serial number  ->  bravais lattice number
+   // For NCDist we need the actual centering symbol: P, A, B, C, ..., rather than replacing A , B or C with S
+
    std::cout << "Partitioning datasets into groups with same bravais lattice ........." << std::endl;
    std::map<std::string,int> bl_symbol_to_number;
    std::map<std::string,int>::iterator pos_bl;
@@ -1071,6 +1088,7 @@ int main(int argc, char* argv[])
    bl_symbol_to_number.insert(std::make_pair<std::string,int>("cF",13));
    bl_symbol_to_number.insert(std::make_pair<std::string,int>("cI",14));
    std::map<int,int> crystal_to_sg;
+   std::map<int,std::string> crystal_to_centering;
    std::multimap<int,int> sg_to_crystal;
    std::multimap<int,int>::iterator pos_cs;
    scala::hkl_symmetry symmetry;
@@ -1080,6 +1098,7 @@ int main(int argc, char* argv[])
    //size_t lnum;
    int lnum;
    std::string blatsymb;
+   std::string centsymb;
    for (unsigned int i=0;i < hkl_list.size();i++)
    {
     if (crystal_flag[i] == 0)
@@ -1087,6 +1106,7 @@ int main(int argc, char* argv[])
      symmetry=hkl_list[i].symmetry();
      crystal_type=CrystalType(symmetry);
      blatsymb=crystal_type.format();
+     centsymb = blatsymb.substr(1,1);
      lnum=blatsymb.find("A");
      if (lnum != -1)
      {
@@ -1123,11 +1143,13 @@ int main(int argc, char* argv[])
      //crystal_to_sg.insert(std::make_pair<int,int>(i,cspacegroup.spacegroup_number()));
      sg_to_crystal.insert(std::make_pair<int,int>(pos_bl->second,i));
      crystal_to_sg.insert(std::make_pair<int,int>(i,pos_bl->second));
+     crystal_to_centering[i] = centsymb;
     }
     else
     {
      sg_to_crystal.insert(std::make_pair<int,int>(0,i));
      crystal_to_sg.insert(std::make_pair<int,int>(i,0));
+     crystal_to_centering[i] = std::string("?");
     }
    }
 
@@ -1180,14 +1202,19 @@ int main(int argc, char* argv[])
 
    // Output summary table
    std::cout << "Building summary table listing all crystals ........." << std::endl;
-   output_summary_table(hkl_list,sg_to_crystal,spacegroup_class,crystal_flag);
+   output_summary_table(hkl_list,sg_to_crystal,crystal_to_centering,spacegroup_class,crystal_flag,mode_string);
 
    // Output ascii files for R (only if there are at least 2 crystals)
    if (hkl_list.size() > 1)
    {
-    std::cout << "Building R files ........." << std::endl;
-    if (mode_string == "-a") statistics_with_R(hkl_list,sg_to_crystal,spacegroup_class,crystal_flag,R_program1,Rscp);
-    if (mode_string == "-aDO") statistics_with_R2(hkl_list,sg_to_crystal,spacegroup_class,crystal_flag,R_program0,Rscp);
+    if (mode_string == "-a") statistics_with_R(hkl_list,sg_to_crystal,crystal_to_centering,
+                                                                        spacegroup_class,crystal_flag,R_program1,Rscp,mode_string);
+    if (mode_string == "-aDO") statistics_with_R2(hkl_list,sg_to_crystal,crystal_to_centering,
+                                                                        spacegroup_class,crystal_flag,R_program0,Rscp,mode_string);
+    if (mode_string == "-aNC") statistics_with_R(hkl_list,sg_to_crystal,crystal_to_centering,
+                                                                        spacegroup_class,crystal_flag,R_program1NC,Rscp,mode_string);
+    if (mode_string == "-aDONC") statistics_with_R2(hkl_list,sg_to_crystal,crystal_to_centering,
+                                                                        spacegroup_class,crystal_flag,R_program0NC,Rscp,mode_string);
    }
 
    // Delete BLEND_KEYWORDS.dat before termination
