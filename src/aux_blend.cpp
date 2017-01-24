@@ -268,6 +268,7 @@ void output_summary_table(std::vector<scala::hkl_unmerge_list>& hkl_list,std::mu
    //std::cout << "pos_cs->first " << pos_cs->first << " pos_cs->second " << pos_cs->second << "  crystal_flag " << crystal_flag[pos_cs->second] << std::endl;
    if (crystal_flag[pos_cs->second] == 0)
    {
+    std::string centering;
     centering = crystal_to_centering[pos_cs->second];
     resorange=hkl_list[pos_cs->second].ResRange();
     dataset=hkl_list[pos_cs->second].xdataset(0);   // At present we only consider crystals with 1 dataset

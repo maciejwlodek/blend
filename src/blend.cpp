@@ -352,8 +352,10 @@ int main(int argc, char* argv[])
     home = std::string(std::getenv("CCP4")) + "/share/blend";
   std::string R_program0 = home+"/R/blend0.R";
   std::string R_program0NC = home+"/R/blend0NC.R";
+  std::string R_program0SF = home+"/R/blend0SF.R";
   std::string R_program1 = home+"/R/blend1.R";
   std::string R_program1NC = home+"/R/blend1NC.R";
+  std::string R_program1SF = home+"/R/blend1NC.R";
   std::string R_program2 = home+"/R/blend2.R";
   std::string R_program3 = home+"/R/blend3.R";
   std::string R_program4 = home+"/R/blend4.R";
@@ -382,17 +384,21 @@ int main(int argc, char* argv[])
   }
   if (mode_string != "-a" && mode_string != "-aDO" &&                              // First argument after program name "blend" needs to be either "-a" or "-aDO"
       mode_string != "-aNC" && mode_string != "-aDONC" &&                          // possibly with NC appended
+      mode_string != "-aSF" && mode_string != "-aDOSF" &&                          // possibly with SF appended
       mode_string != "-s" && mode_string != "-sLCV" && mode_string != "-saLCV" &&  // or "-s" or "-sLCV" or "-saLCV"
       mode_string != "-sNC" && mode_string != "-sLCVNC" && mode_string != "-saLCVNC" &&  // or "-sNC" or "-sLCVNC" or "-saLCVNC"
+      mode_string != "-sSF" && mode_string != "-sLCVSF" && mode_string != "-saLCVSF" &&  // or "-sSF" or "-sLCVSF" or "-saLCVSF"
       mode_string != "-c" && mode_string != "-cP" && mode_string != "-cF" &&       // or "-c" or "-cP" or "-cF"
       mode_string != "-cNC" && mode_string != "-cPNC" && mode_string != "-cFNC" && // or "-cNC" or "-cPNC" or "-cFNC"
-      mode_string != "-gNC" &&                                                     // or "-gN
+      mode_string != "-cSF" && mode_string != "-cPSF" && mode_string != "-cFSF" && // or "-cSF" or "-cPSF" or "-cFSF"
+      mode_string != "-gNC" &&                                                     // or "-gNC
+      mode_string != "-gSF" &&                                                     // or "-gSF
       mode_string != "-g")                                                         // or "-g"
   {
    int nerr=1;
    throw nerr;
   }
-  if (mode_string == "-a" || mode_string == "-aDO" || mode_string == "-aNC" || mode_string == "-aDONC")     // Analysis pass
+  if (mode_string == "-a" || mode_string == "-aDO" || mode_string == "-aNC" || mode_string == "-aDONC" || mode_string == "-aSF" || mode_string == "-aDOSF")     // Analysis pass
   {
    // In order to line up BLEND with the way ccp4i works (with stdin passed keywords) this is what has been added
 
@@ -1014,6 +1020,14 @@ int main(int argc, char* argv[])
    {
     std::cout << "You are now running BLEND in dendrogram-only mode using NCDist." << std::endl; 
    }
+   if (mode_string == "-aSF")
+   {
+     std::cout << "You are now running BLEND in analysis mode using SFDist." << std::endl;
+   }
+   if (mode_string == "-aDOSF")
+   {
+     std::cout << "You are now running BLEND in dendrogram-only mode using SFDist." << std::endl;
+   }
 
    std::cout << std::endl;
    std::cout << "<!--SUMMARY_END--></FONT></B>" << std::endl;
@@ -1215,6 +1229,10 @@ int main(int argc, char* argv[])
                                                                         spacegroup_class,crystal_flag,R_program1NC,Rscp,mode_string);
     if (mode_string == "-aDONC") statistics_with_R2(hkl_list,sg_to_crystal,crystal_to_centering,
                                                                         spacegroup_class,crystal_flag,R_program0NC,Rscp,mode_string);
+    if (mode_string == "-aSF") statistics_with_R(hkl_list,sg_to_crystal,crystal_to_centering,
+                                                    spacegroup_class,crystal_flag,R_program1SF,Rscp,mode_string);
+    if (mode_string == "-aDOSF") statistics_with_R2(hkl_list,sg_to_crystal,crystal_to_centering,
+                                                       spacegroup_class,crystal_flag,R_program0SF,Rscp,mode_string);
    }
 
    // Delete BLEND_KEYWORDS.dat before termination
