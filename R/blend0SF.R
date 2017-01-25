@@ -21,6 +21,7 @@ require(MASS, quietly = TRUE, warn.conflicts = FALSE)  ## For rlm (robust regres
 
 library("Rcpp")
 
+
 # Has CCP4 been set up?
 ccp4 <- Sys.getenv("CCP4")
 if (nchar(ccp4) == 0) stop("You need to set up environment for running ccp4 programs")
@@ -192,13 +193,13 @@ evaluateSFChange <- function(maindf)
     dMat <- matrix(nrow=n,ncol=n)
     for (i in 1:n)
     {
-        for (j in i:n)
+        for (j in i:n) 
         {
             dMat[i,j] <- .dist_sfblend(filenames$V1[i],filenames$V1[j])
             if (j > i) dMat[j,i] <- dMat[i,j]
         }
     }
-    
+
     return(dMat)
 }
 

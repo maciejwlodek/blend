@@ -557,7 +557,7 @@ reArrangeFilenames <- function(filenames)
 
 .dist_nblend <- function(cent1,a1,b1,c1,alpha1,beta1,gamma1,cent2,a2,b2,c2,alpha2,beta2,gamma2)
 {
-    dd <- as.double(.Call("rcpp_ncdist", "P", a1,b1,c1,alpha1,beta1,gamma1,"P",a2,b2,c2,alpha2,beta2,gamma2))
+    dd <- as.double(.Call("rcpp_ncdist", toString(cent1), a1,b1,c1,alpha1,beta1,gamma1,toString(cent2),a2,b2,c2,alpha2,beta2,gamma2))
     return(dd)
 }
 
@@ -568,9 +568,10 @@ evaluateMaxChange <- function(maindf)
  dMat <- matrix(nrow=n,ncol=n)
  for (i in 1:n)
  {
-  for (j in 1:n)
+  for (j in i:n)
   {
     dMat[i,j] <- .dist_nblend(maindf[i,8],maindf[i,2],maindf[i,3],maindf[i,4],maindf[i,5],maindf[i,6],maindf[i,7],maindf[j,8],maindf[j,2],maindf[j,3],maindf[j,4],maindf[j,5],maindf[j,6],maindf[j,7])
+    if (j > i) dMat[j,i] <- dMat[i,j]
   }
  }
 
