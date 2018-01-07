@@ -1,0 +1,45 @@
+#!/bin/sh
+
+wrk=$CCP4_SCR/test-blend
+
+rm -fr $wrk
+mkdir $wrk
+
+cd $wrk
+curl ftp://ftp.ccp4.ac.uk/blend/blend_tutorial/data/insulin.tgz | tar xzf -
+
+# Analysis
+blend -a ./insulin << EOF
+END
+EOF
+
+# Synthesis on 2 levels
+blend -s 6 2 << EOF
+RESO HIGH 2.0
+SDCORR SAME
+END
+EOF
+
+# 4 combinations
+blend -c 1 5 12 << EOF
+SDCORR SAME
+ANOMALOUS ON
+END
+EOF
+blend -c 2 6 7 << EOF
+SDCORR SAME
+ANOMALOUS ON
+END
+EOF
+blend -c 4 8 9 << EOF
+SDCORR SAME
+ANOMALOUS ON
+END
+EOF
+blend -c 3 10 13 << EOF
+SDCORR SAME
+ANOMALOUS ON
+END
+EOF
+rm -fr insulin
+

@@ -1,0 +1,166 @@
+			C++ code explained for source code "blend.cpp"
+
+This program runs like:
+			blend name_of_file_containing_all_mtz_file_names [other CCP4 commonly used keywords and files]
+
+	std::ifstream mtz_file_filenames(argv[1],std::ios::in);
+To read from a file we can use the iostreams object library. Essentially the file is an object of the type std::ifstream.
+The related header file is "<fstream>; it is included in this program through the "Output.hh" header file.
+To initialize the object we give the file name (argv[1], i.e. taken from command line) and the std::ios::in initialization
+mode, which in this specific case means: "If the file does not exist, a new empty file is created. If the file exists, it 
+is opened and made available for processing as input".
+
+	std::string stringa;
+"stringa" is a string object.
+
+	std::vector<std::string> mtz_files;
+"mtz_files" is a vector container whose elements are of string type. I store all involved MTZ file names in this vector.
+
+	mtz_file_filenames.is_open()
+The fstream object has a method, "is_open()", which returns true if the file is opened succesfully.
+
+	mtz_file_filenames.eof()
+The method "eof()" of the fstream object is true if the end of file has been reached.
+
+	mtz_file_filenames >> stringa;
+	mtz_files.push_back(stringa);
+The fstream file is read line by line. Each line, as a stream, is assigned to a string object. Also the string object is
+subsequently stored as an element of the previously created vector array, using the method "push_back()". 
+
+	mtz_files.size()
+The method "size()" tells me the number of element in the vector array.
+
+	argc-=2;
+	for (int i=0;i < argc;i++) argv[i]=argv[i+1]; 
+If, at this point, I carry on using the command line (which includes only two arguments, the name of the file containing all
+other MTZ file names, and the name of the ASCII file I use to dump things out), 
+CCP4, which is here initialized, incurs in an error and stops. So the trick is to decrease the command line
+arguments by two, making sure to actually shift all argv vector strings, in order to reestablish CCP4 input-output file rules.
+
+	CCP4::ccp4fyp(argc, argv);
+CCP4 initialisation. Defined in "ccp4_general.h". Namespace is CCP4.
+
+	phaser_io::Output output;
+	output.setPackageCCP4();
+Create an object of class phaser_io; this class has been implemented by Phaser people. Method "setPackage" makes things ready for a
+CCP4 style output.
+
+	const int Nlists=mtz_files.size();
+	std::vector<hkl_unmerge_list> hkl_lists(Nlists);
+"hkl_lists" is a vector whose elements are objects of class "hkl_unmerge_list"; they are the key objects to handle unmerged data.
+This vector can be given a size from the beginning (probably for speed issues, I'm not sure), so it is defined with Nlists. As this
+needs to be a constant number, I have defined it as "const". This classes are under the namespace "scala".
+These are the methods or attributes of "hkl_unmerge_list": (from Phil Evans source code)
+  // This the top-level unmerged reflection object
+  //
+  // It contains :-
+  //   1) obs_part_list  a list of raw observations
+  //     (almost a mirror of the file) created by a series of
+  //     calls to store_part followed by close_part_list
+  //   2) refl_list  a list of unique reflections, created by
+  //     a call to "organise"
+  //   3) within each reflection, a list of observations which
+  //     may have multiple parts (spots), assembled by a call to "partials"
+  // ie the hierarchy is
+  //   part < observation < reflection
+  //
+  //  To fill this object:
+  //   1) Construct as dummy
+  //   2) call "init" to set up
+  //       init may be called with or without dataset & batch
+  //       information: if without, then this must be added later
+  //       with a call to either (a) StoreDatasetBatch, or
+  //       (b) a series of calls to AddDatasetBatch
+  //   3) call "store_part" to add each observation part
+  //   4) call "close_part_list" to finish list
+  //   5) call "StoreDataFlags" to marked which data items are actually present
+  //   6) call "prepare" to classify into observations &
+  //      reflections etc
+  //
+  // No reading of external files (eg MTZ file) is done within this class
+
+	file_select file_sel;
+An object, "file_sel", of class "file_select" is created. This class is under namespace "scala". It deals with stuff to control
+dataset selction, batch selection, resolution limits (s=1/d^2), detector coordinate rejection range, etc. It is defined in file
+"hkl_controls.hh".
+
+	col_controls column_selection;
+	column_selection.SetIcolFlag(0);
+An object, "column_selection", of class "col_controls" is created. This will control which data column we are dealing with, through
+methods. Method "SetIcolFlag" has to do with a class called "observation_class", which I don't understand. Phil set it up to 0 for me.
+It is defined in file "controls.hh".
+
+	MtzIO::column_labels column_list=MtzIO::setup_columns();
+"column_list" is a special kind of object called a map. This is determined by a key/value pair. In this case the map container is
+under namespace "MtzIO" and is defined in file "mtz_unmerge_io.hh". All elements of this map container are created (added) using
+method "setup_columns" (defined in "openinputfile.hh"), which sets 21 elements for this map container. They have the following key/values:
+"H",           COMPULSORY
+"K",           COMPULSORY
+"L",           COMPULSORY
+"M_ISYM",      COMPULSORY // cmtzlib translates "/" to "_"
+"BATCH",       COMPULSORY
+"I",           COMPULSORY
+"SIGI",        COMPULSORY
+"IPR",         OPTIONAL
+"SIGIPR",      OPTIONAL
+"SCALE",       OPTIONAL
+"SIGSCALE",    OPTIONAL
+"TIME",        OPTIONAL
+"XDET",        OPTIONAL
+"YDET",        OPTIONAL
+"ROT",         OPTIONAL
+"WIDTH",       OPTIONAL
+"MPART",       OPTIONAL
+"FRACTIONCALC",OPTIONAL
+"LP",          OPTIONAL
+"FLAG",        OPTIONAL
+"BGPKRATIOS",  OPTIONAL
+
+	all_controls controls;
+Object of class "all_controls". This class includes controls to store hkl list (run and partial controls).
+Namescale is "scala"; file is "controls.hh".
+
+	hkl_symmetry Symmetry;
+Object "Symmetry", of class "hkl_symmetry", handles all reciprocal-space symmetry stuff. Namespace is "scala" and class is
+defined in "hkl_symmetry.hh".
+
+	for (int i=0;i < mtz_files.size();i++)
+        {
+          .   .   .   .   .   .
+          .   .   .   .   .   .
+          .   .   .   .   .   .
+        }
+This is the main loop. We loop over all crystals (individual mtz files) and do something with each one of them.
+
+	MtzIO::MtzUnmrgFile mtzin;
+Object "mtzin" is an object of class "MtzUnmrgFile", namespace MtzIO. This is defined in file "mtz_unmerge_io.hh". This is
+the main class to handle input output of unmerged data into and from files.
+
+	const int verbose=+1;
+	mtzin.AddHklList(i,mtz_files[i],file_sel,column_selection,column_list,controls,PxdName(),Scell(),double(2.0),output,verbose,hkl_lists[i]);
+"AddHklList" is a method of the "MtzUnmrgFile" class (namespace "MtzIO"). Its type is "FileRead" (we will see about this later).
+The method needs the following parameters to be passed (taken from Phil Evans commented code):
+1) fileSeries         index number for file or file-series (from 1)
+                      for batch exclusion in file_sel (MTZ files only)
+2) mtzname            name of MTZ file (or logical name)
+3) file_sel           flags for general selection
+                      - dataset selection
+                      - batch selection
+                      - resolution limits
+                      - detector coordinate rejection ranges
+4) column_selection   flags for column selection
+                      - PROFILE or INTEGRATED
+5) column_list        list of column names wanted by the program
+6) controls           run controls, partial controls
+7) InputPxdName       PXD name to override dataset information from
+                      MTZ file (forces one dataset)
+8) Scell              unit cell class
+9) double             cell tolerance
+8) output             output object for printing
+9) verbose            set verbosity level
+                      = 0 silent, = +1 usual summary
+                      >= +2 debug
+On exit:
+10) hkl_list          has been filled or appended to, but not closed
+                      Subsequent calls are needed to "CloseDatasetBatch" &
+                      "close_part_list". This is an object of class "hkl_unmerge_list".

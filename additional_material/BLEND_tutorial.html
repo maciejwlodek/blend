@@ -1,0 +1,2077 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- ::INDEX_INFO::BLEND::Supported::Data Processing and Reduction::multi-dataset combination and cluster analysis:::::::: -->
+<HTML>
+<HEAD>
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=utf-8">
+	<TITLE></TITLE>
+	<META NAME="GENERATOR" CONTENT="LibreOffice 3.5  (Linux)">
+	<META NAME="AUTHOR" CONTENT="James Foadi">
+	<META NAME="CREATED" CONTENT="20110525;14154500">
+	<META NAME="CHANGEDBY" CONTENT="James Foadi">
+	<META NAME="CHANGED" CONTENT="20140428;14455800">
+	<STYLE TYPE="text/css">
+	<!--
+		@page { size: 8.27in 11.69in; margin: 0.79in }
+		P { margin-bottom: 0.08in }
+		A:link { so-language: zxx }
+	-->
+	</STYLE>
+</HEAD>
+<BODY LANG="en-GB" DIR="LTR">
+<h1 align=center>BLEND: managing, scaling and merging multiple datasets</h1>
+<P ALIGN=CENTER STYLE="margin-bottom: 0in; font-weight: normal"><FONT COLOR="#000000"><FONT SIZE=3>James
+Foadi<SUP>(a)</SUP> and Pierre Aller<SUP>(b)</SUP></FONT></FONT></P>
+<P ALIGN=CENTER>
+ <FONT SIZE=2>
+  (a) Imperial College London (<A HREF="mailto:j.foadi@imperial.ac.uk">j.foadi@imperial.ac.uk</A>)&nbsp,&nbsp
+      Diamond Light Source Ltd (<A HREF="mailto:james.foadi@diamond.ac.uk">james.foadi@diamond.ac.uk</A>)
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+ <FONT SIZE=2>
+  (b) Diamond Light Source Ltd (<A HREF="mailto:pierre.aller@diamond.ac.uk">pierre.aller@diamond.ac.uk</A>
+ </FONT>
+</P>
+<br>
+<br>
+<P>
+ <FONT SIZE=4>
+  Main
+  aim of this tutorials is to get users acquainted with the program
+  BLEND (<A HREF="#references">Foadi et al, 2013</A>) and to show how it can be used effectively
+  to obtain complete and redundant data sets out of several partial or complete ones.
+  The reader interested in exploring pros and cons of using data from
+  multiple crystals can refer, for instance, to <A HREF="#references">Liu et al. (2011)</A>,
+  <A HREF="#references">Giordano et al. (2012)</A>, <A HREF="#references">Axford et al. (2012)</A>, 
+  <A HREF="#references">Hanson et al. (2012)</A>.
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4 COLOR="#c90016">
+ WARNING!!! All merging statistics included in this tutorial have been calculated using POINTLESS and AIMLESS. These CCP4 programs are
+ periodically subject to small changes. It is therefore possible that some of the merging statistics contained in this tutorial
+ appear slightly different from what the user obtains with his/her version of CCP4. These differences are very minimal and should be considered
+ as primarily due to different numerical or algorithmical approximations.
+ </FONT>
+</P>
+<H2>CONTENTS</H2>
+  <A HREF="#dsets">Data sets included with this tutorial</A>
+  <br>
+<!--   &nbsp &nbsp &nbsp <A HREF="ftp://ftp.ccp4.ac.uk/tutorials/blend/blend_data.tgz"> Download data</A> -->
+   &nbsp &nbsp &nbsp <A HREF="data01.tgz"> Download data set 01</A> 
+  <br>
+   &nbsp &nbsp &nbsp <A HREF="data02.tgz"> Download data set 02</A> 
+  <br>
+   &nbsp &nbsp &nbsp <A HREF="data03.tgz"> Download data set 03</A> 
+  <br>
+  <A HREF="#tutorial1">Tutorial 1</A>
+  <br>
+   &nbsp &nbsp &nbsp <A HREF="#withccp4i">a) Using ccp4i</A>
+   <br>
+   &nbsp &nbsp &nbsp <A HREF="#withoutccp4i">b) Without ccp4i</A>
+   <br>
+  <A HREF="#tutorial2">Tutorial 2</A>
+  <br>
+  <A HREF="#tutorial3">Tutorial 3</A>
+  <br>
+  <A HREF="#tutorial4">Tutorial 4</A>
+  <br>
+  <A HREF="#references">References</A>
+<A NAME="dsets"></A>
+<H2>DATA SETS INCLUDED WITH THIS TUTORIALS</H2>
+<!-- <A HREF="ftp://ftp.ccp4.ac.uk/tutorials/blend/blend_data.tgz"> Download data</A> -->
+<P>
+ <FONT SIZE=4>
+ For convenience all tutorials can be carried out inside a same directory and specific results
+ can be collected in separate sub-directories. We will assume that "blend_tutorial" is the name of
+ the overall directory and that it has been created in the $HOME area ("/home/james" in our case). Different directory
+ names and locations can be used, but appropriate modifications will have to be applied to the paths 
+ displayed in this document. 
+ Data downloaded using the above links, when unpacked, yield a directory named "data". For the rest of
+ the tutorials this directory can be moved inside "blend_tutorial".
+ There are three groups of data in the sub-directory “data”.
+ One group is formed by crystals of insulin, the second by crystals of
+ lysozyme and the third by lysozyme soaked with bromine.
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ The first tutorial will be illustrated with and without use of the CCP4
+ interface. Other tutorials will be illustrated either with or without
+interface, but the user 
+ should have no problem re-running them as it suits her / him best.
+ </FONT>
+</P>
+<A NAME="tutorial1"></A>
+<H2><U>TUTORIAL 1.</U></H2>
+<H3>14 DATA SETS OF CRYO-COOLED INSULIN CRYSTALS</H3>
+<P>
+ <FONT SIZE=4>
+ <A HREF="data01.tgz"> Download data set 01</A> 
+ </FONT>
+</P>
+<FONT SIZE=3>(data collected by Liz Carpenter)</FONT>
+<P> 
+ <FONT SIZE=4 COLOR="#c90016">
+ Easy tutorial to get you started with BLEND
+ </FONT>
+</P>
+<A NAME="withccp4i"></A>
+<P>
+ <FONT SIZE=4>
+ a) <U>Using CCP4I</U>
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ The CCP4 interface associates a project directory to an
+ already-existing physical directory in your computer file system. Thus we
+ need to create a directory before anything else. Let's call this directory “insulin”
+ (it is assumed you are in the blend_tutorials directory):
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+ <FONT SIZE=4 COLOR="#008000">
+ mkdir insulin
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ Next we need to associate a
+ project directory called “BLEND_TUTORIAL_INSULIN” to the insulin
+ directory just created. You can do this using “Directories &amp;
+ ProjectDir” in ccp4i. Now that the project directory has been
+ created let us change to the “BLEND_TUTORIAL_INSULIN” one using
+ “Change Project” in ccp4i. We are ready to start
+ practising with BLEND.
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ Insulin data have been collected at the Diamond Light Source
+ synchrotron and integrated using <I>MOSFLM</I>. Angular rotation
+ range varies from data set to data set, as these have been collected
+ from different crystals. Please, explore some of these integrated
+ data clicking “View Any File” in  ccp4i and selecting the “mtz
+ MTZ” field in “File type”.
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ In the CCP4 GUI, BLEND can be found either in the “Data Reduction and
+ Analysis” or the “Program List” section on the left. Once initiated,
+ the BLEND section looks like the following:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+<br>
+<br>
+ <img src="imagesBT/BLEND_0.5.1_tutorial_html_b49c9b2.png">
+<br>
+<br>
+</P>
+<P>
+ <FONT SIZE=4>
+ To
+ begin with we run BLEND in analysis mode, with the main goal of
+ creating clusters of data that can, potentially, merge well together.
+ After having filled the blank fields with the appropriate paths and
+ keywords, the above interface should resemble this:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+ <img src="imagesBT/BLEND_0.5.1_tutorial_html_6fdca78b.png">
+</P>
+<P>
+ <FONT SIZE=4>
+ All keywords with their meaning are explained in BLEND documentation.
+ After the run in analysis mode, we can look at the output using ccp4i
+ “View Files from Job → View Job Results (new style)”:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+<br>
+<br>
+ <img src="imagesBT/BLEND_0.5.1_tutorial_html_m19477f13.png">
+<br>
+<br>
+</P>
+<P>
+ <FONT SIZE=4>
+ Cell
+ sides, cell angles, cell volume and mosaicity can be viewed for all
+ the 14 data sets included in this insulin tutorial. Numerical values
+ can be explored within the same view. More files have been produced
+ by this run of BLEND in analysis mode. These are listed by selecting
+ “View Files from Job” → “blend_1”:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+ <br>
+ <br>
+ <img src="imagesBT/BLEND_0.5.1_tutorial_html_6d604ff8.png">
+ <br>
+ <br>
+</P>
+<P>
+ <FONT SIZE=4>
+ “blend_1” is a directory under the “insulin” directory,
+ containing all files produced by this run of BLEND. The most
+ important among these files is possibly the dendrogram (files
+ “tree.ps” and “tree.png”). Both PNG and PS files
+ display the same dendrogram. They can be viewed using any graphical
+ tool, but, at present, only the PS file can be visualised using the
+ CCP4 GUI:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+<br>
+<br>
+<img src="imagesBT/BLEND_0.5.1_tutorial_html_m680da16b.png" WIDTH=700>
+<br>
+<br>
+</P>
+<P>
+ <FONT SIZE=4>
+ The
+ numbers in red are the Linear Cell Variation (LCV) values (and the
+ associated absolute LCV in &Aring;) for
+ the top five clusters. They give an indication of cell similarity
+ among all crystals included in the specific cluster; thus,
+ ultimately, they can be associated with isomorphism between different
+ data sets. In the above dendrogram we can see two clusters with
+ similar cell variability (0.44% and 0.48%, corresponding to 0.36 &Aring; and
+ 0.39 &Aring; respectively).The variability is
+ more than doubled when these clusters merge into the overall cluster
+ containing all 14 data sets; this is probably an indication of some
+ minor form of non-isomorphism. Tests done so far with BLEND show that
+ some structural dissimilarities can be noticed for values of LCV
+ higher than 1 – 1.5%. It is probably more appropriate to use absolute
+ values in order to make judgments on crystals isomorphism. The reason is
+ that the absolute Linear Cell Variation (aLCV) is expressed in angstroms and,
+ thus, it can immediately give sensible numbers in relation to cell parameters
+ differences. 
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ LCV and aLCV
+ values for all clusters are reported in the file “CLUSTERS.txt”:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+<br>
+<br>
+<img src="imagesBT/BLEND_0.5.1_tutorial_html_m4c812b9a.png">
+<br>
+<br>
+</P>
+<P>
+ <FONT SIZE=4>
+ This
+ is, essentially, a numerical version of the dendrogram and, as we
+ will see, is often useful for executions of BLEND in synthesis mode.
+ Another
+ convenient file in directory “blend_1” is “BLEND_SUMMARY.txt”,
+ which is essentially a table reporting cell parameters and other
+ quantities for each data set.
+ The unique serial number assigned by BLEND to each data set can be found
+ in the “FINAL_list_of_files.dat” file. For us this file looks
+ like the following:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+<br>
+<br>
+<img src="imagesBT/BLEND_0.5.1_tutorial_html_57f4ebdf.png" WIDTH=1500>
+<br>
+<br>
+</P>
+<P>
+ <FONT SIZE=4>
+ The
+ first column contains full path to all input data files; the second
+ contains the serial number assigned to input files; the fourth and
+ fifth column list initial and final image numbers, while the third
+ lists the last image BLEND will include for all subsequent scaling
+ and merging jobs. Numbers in these column have been calculated
+ through procedures to get rid of radiation damaged images. In the
+ specific case the only data set where images will be discarded is
+ data set 9, for which BLEND suggests to remove from image 108 to
+ image 122. The last column include resolution cuts suggested by BLEND
+ for all subsequent scaling and merging jobs. These are worked out
+ using intensity averages decay with resolution, and are controlled by
+ keyword ISIGI.
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ All
+ input data files were assigned a serial number; this is not always
+ the case, because sometimes individual data sets are excluded as they
+ contain multiple wedges or other irregular features, and BLEND does
+ not accept them in the group to be further analysed. There might also
+ be reasons for which the user does not want to consider some of the
+ files included in the data directory (for example if they belong to
+ an unwanted experiment). In this case the user could consider
+ file “mtz_names.dat”, also included in directory “blend_1”,
+ to re-run BLEND using less input data. File “mtz_names.dat” looks
+ like the following:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+<br>
+<br>
+<img src="imagesBT/BLEND_0.5.1_tutorial_html_m56f415ec.png">
+<br>
+<br>
+</P>
+<P>
+ <FONT SIZE=4>
+ In order to show how to make use of this file
+ suppose we are not any longer interested in the last
+ 4 data sets. We first copy “mtz_names.dat” into a file called
+ “original.dat”, in a newly-created directory called
+ “amended_insulin”:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+ <FONT SIZE=4  COLOR="#008000">	
+ mkdir amended_insulin
+ <br>
+ cp insulin/blend_1/mtz_names.dat amended_insulin/original.dat
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ At
+ this point the last 4 files can be deleted from “original.dat”
+ file which, now, looks like the following:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+<br>
+<br>
+<img src="imagesBT/BLEND_0.5.1_tutorial_html_m3f540f39.png">
+<br>
+<br>
+</P>
+<P>
+ <FONT SIZE=4>
+ Next,
+ we associate this directory to a new project directory in ccp4i,
+ called “BLEND_TUTORIAL_AMENDED_INSULIN”, and select this project
+ directory. BLEND can now be executed again in analysis mode, this
+ time selecting  the “original.dat” file as starting point, rather
+ than the whole directory containing all 14 insulin data sets:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+<br>
+<br>
+<img src="imagesBT/BLEND_0.5.1_tutorial_html_336df097.png">
+<br>
+<br>
+</P>
+<P>
+ <FONT SIZE=4>
+ The
+ usual files will be produced (still in directory “blend_1”, but
+ inside directory “amended_insulin”), although this time BLEND
+ will have dealt with 10, rather than 14 data sets, and the dendrogram
+ will look different from the one previously obtained:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+<br>
+<br>
+<img src="imagesBT/BLEND_0.5.1_tutorial_html_5c3453b7.png" WIDTH=700>
+<br>
+<br>
+</P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0in; font-weight: normal"><BR>
+</P>
+<P>
+ <FONT SIZE=4>
+ As
+ numbering of the 10 data sets has not been modified, one can see that
+ clusters for these data include the same elements of corresponding
+ clusters in the previous example, considering that data sets
+ numbered 11 to 14 have been excluded from the analysis.
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ Having
+ shown how BLEND in analysis mode can be re-executed using a
+ subset of data, let us go back to the previous working directory
+ selecting “BLEND_TUTORIAL_INSULIN” project directory in ccp4i.
+ Let's try and increase or decrease image cutting due to radiation
+ damage, by using the RADFRAC keyword. An input value of 0.85 means
+ that we would like to keep only images for which intensities have, on
+ average, been dampened by less than 15% of their initial value. Input
+ for RADFRAC can be included via ccp4i as shown here:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+<br>
+<br>
+<img src="imagesBT/BLEND_0.5.1_tutorial_html_4e780451.png">
+<br>
+<br>
+</P>
+<P>
+ <FONT SIZE=4>
+ This
+ time “FINAL_list_of_files.dat” shows some difference in the
+ number of images discarded. For data set 9 discarded images range 102
+ to 122, while before it ranged 108 to 122, and images 93 to 100 are
+ now discarded from data set 7, while no images were previously discarded.
+A small change also occurs for data set 1:
+ </FONT>
+</P>
+<P ALIGN=CENTER
+<br>
+<br>
+<img src="imagesBT/BLEND_0.5.1_tutorial_html_25cd9d05.png" WIDTH=1500>
+<br>
+<br>
+</P>
+<P>
+ <FONT SIZE=4>
+ Let's
+ modify RADFRAC once more and use 0.65, rather than 0.85. As a result:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+<br>
+<br>
+<img src="imagesBT/BLEND_0.5.1_tutorial_html_ma0e2c66.png" WIDTH=1500>
+<br>
+<br>
+</P>
+<P>
+ <FONT SIZE=4>
+ Images
+ discarded are now less because we have allowed for intensities to be
+ dampened, on average, by up to 35% of their starting value.
+ A similar data exclusion can be applied in resolution terms, by
+ changing value to the keyword ISIGI. For instance, let's re-run BLEND
+ in analysis mode (with RADFRAC 0.75 - default value as the box
+ "Tolerated fraction of damaged average intensity" is not selected), 
+ fixing ISIGI to
+ 3:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+<br>
+<br>
+<img src="imagesBT/BLEND_0.5.1_tutorial_html_51814de0.png">
+<br>
+<br>
+</P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0in; font-weight: normal"><BR>
+</P>
+<P>
+ <FONT SIZE=4>
+ Results
+ should be produced in directory “blend_4”. The
+ “FINAL_list_of_files.dat” looks like the following:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+<br>
+<br>
+<img src="imagesBT/BLEND_0.5.1_tutorial_html_m201ae2d3.png" WIDTH=1500>
+<br>
+<br>
+</P>
+<P>
+ <FONT SIZE=4>
+ Resolution
+ cutoffs have now changed. For the first data set the highest is
+ 2.304, while previously it was 1.920. We expect an increase if the
+ value of ISIGI is lowered. This is normally the case. But in the
+ specific insulin example data are exceptionally good, and their
+ signal-to-noise ratio is quite high to the very highest resolution.
+ Thus, results will not change here if values lower than 1.5 are used
+ for ISIGI.
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ Let's
+ pay a closer look at the results of cluster analysis, as described in
+ file “CLUSTERS.txt”:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+<img src="imagesBT/BLEND_0.5.1_tutorial_html_m4c812b9a.png">
+</P>
+<P>
+ <FONT SIZE=4>
+ Cluster
+ numbers and corresponding data sets are listed in column 1 and column
+ 6 respectively. The second column reports how many data sets form the
+ specific cluster, while in column 3 it is found the exact height at
+ which data sets merge to form the cluster. Columns 4 and 5 lists all LCV and aLCV
+ values. The dendrogram encourages people to look for grouping of
+ individual data sets. Larger groups attract one's attention more than
+ smaller groups. In this sense the presence of two clusters, cluster
+ (1 2 3 4 14) and cluster (5 6 7 8 9 10 11 12 13), is immediately
+ perceived. Very soon, though, we realise that the second cluster is
+ made up of two smaller clusters, cluster (5 6 8 10) and cluster
+ (7 9 11 12 13). Finer details and even smaller clusters can be singled
+ out by proceeding to the lower part of the dendrogram. This way of
+ proceeding through the dendrogram interpretation can have some
+ validity, but is highly subjective. In BLEND it is found that
+ a more logical, straightforward and objective way of interpreting the
+ dendrogram is to assume that each node can represent a valid data
+ set. Subsequent operations of space group assignment (POINTLESS)
+ and scaling (AIMLESS) determine the degree of validity. This
+ interpretation is accomplished with BLEND synthesis
+ execution mode. From “CLUSTERS.txt” we read that everything
+ merges at height 13.670. If the user wishes to produce results for
+ all nodes under a certain height, it will suffice to specify this in
+ the GUI. For instance, to produce results for all nodes in the
+ insulin example, the BLEND section of the GUI will look like this:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+<img src="imagesBT/BLEND_0.5.1_tutorial_html_1522a9ab.png">
+</P>
+<P>
+ <FONT SIZE=4>
+ Cluster selection can also be based on LCV or aLCV values. This might make sense when one's only interest is in finding the most 
+ compact groups of crystals. The selection of all clusters just reported can be also achieved by selecting "aLCV values" instead
+ of "Dendrogram heights" and inputting for example "0.85" (so to cover all clusters), rather than "14".
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ After
+ execution, several files will be produced in directory “blend_5”
+ (this is the fifth job for the GUI under project directory
+ “BLEND_TUTORIAL_INSULIN”), including another directory packed
+ with files, called “merged_files”:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+<br>
+<br>
+<img src="imagesBT/BLEND_0.5.1_tutorial_html_m166accf2.png">
+<br>
+<br>
+</P>
+<P>
+ <FONT SIZE=4>
+ In
+ this directory one can find unscaled (produced by POINTLESS) and
+ scaled (produced by AIMLESS) files corresponding to all nodes
+ selected in the dendrogram. Final overall merging statistics can be
+ found in the “MERGING_STATISTICS.info” file:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+<br>
+<br>
+<img src="imagesBT/BLEND_0.5.1_tutorial_html_33077e73.png">
+<br>
+<br>
+</P>
+<P>
+ <FONT SIZE=4>
+ Values
+ are sorted on increasing completeness, followed by lower Rmeas.
+ Higher completeness is often associated with high redundancy
+ (multiplicity), but also with poor isomorphism, because many more
+ data sets are needed for both completeness and multiplicity to
+ increase. For example, cluster 12 is 100% complete, as it is cluster
+ 4, but this last cluster has lower Rmeas, quite certainly because it
+ is the union of just two data sets, while cluster 12 includes nine
+ data sets. A good result is represented by cluster 2, which has Rmeas
+ = 0.088 and it is 99.7% complete. Cluster 5 is an even better choice;
+ it has same Rmeas than cluster 2, but a much lower Rpim. It is a
+ nearly complete set and has high multiplicity. This is what should
+ probably be used. A visual version of the above table is provided by
+ the “Rmeas_vs_Cmpl.png” or “Rmeas_vs_Cmpl.ps” plot:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+<br>
+<br>
+<img src="imagesBT/BLEND_0.5.1_tutorial_html_1eba1275.png">
+<br>
+<br>
+</P>
+<P>
+ <FONT SIZE=4>
+ From
+ the overall view provided by this plot we can see that 2 and 5 are
+ the best data sets in terms of statistics and completeness (they are
+ barely visible because they overlap on top of each other). Unscaled
+ and scaled files related to all results, in the “merged_files”
+ directory, can be inspected with the usual CCP4 tools (try, for
+ instance, to view “scaled_005.mtz”). POINTLESS and AIMLESS logs
+ for all unscaled and scaled files are also included in this
+ directory. For instance, the final part of the AIMLESS log
+ file for cluster 5 shows:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+<br>
+<br>
+<img src="imagesBT/BLEND_0.5.1_tutorial_html_m37b9471a.png">
+<br>
+<br>
+</P>
+<P>
+ <FONT SIZE=4>
+ Overall
+ merging statistics can also be explored selecting "View Files from
+ Job" &#8594 "View Job Results (new style)":
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+<br>
+<br>
+<img src="imagesBT/BLEND_0.5.1_tutorial_html_m37c1ef19.png">
+<br>
+<br>
+</P>
+<P>
+ <FONT SIZE=4>
+ There might be reasons for
+ which the user wishes to calculate results for certain nodes only,
+ rather than for all nodes of the dendrogram. This can be done using
+ two numerical values, rather than one, in BLEND synthesis.
+ Suppose we only want to calculate data for cluster (5 6 8 10). This
+ cluster merges at a height of 0.744 (check “CLUSTERS.txt”). Two
+ numerical values in between which 0.744 and no other nodes is
+ included are 0.745 and 0.743. Thus, to produce a synthesis just for
+ this cluster, one can run BLEND as follows:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+<br>
+<br>
+<img src="imagesBT/BLEND_0.5.1_tutorial_html_m66b810a1.png">
+<br>
+<br>
+</P>
+<P>
+ <FONT SIZE=4>
+ Statistics and related files
+ for only one data set are contained within the “merged_files”
+ directory. This job could have been executed more easily in combination
+ mode, simply selecting the specific cluster in the graphical interface
+ (see later).
+ Suppose we want to extend
+ resolution of the previous result from 1.93 to 1.80. BLEND can
+ be again executed in synthesis mode using the appropriate
+ "RESOLUTION" keyword:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+<br>
+<img src="imagesBT/BLEND_0.5.1_tutorial_html_17cc0ccd.png">
+<br>
+<br>
+</P>
+<P>
+ <FONT SIZE=4>
+ Check statistics under the
+ new “merged_files” directory, they should have changed to include
+ the desired resolution cutoff.
+ "MERGING_STATISTICS.info" allows people to gain a better
+ understanding of the ability individual data sets have to form
+ larger, more complete and isomorphous groups. For example, in job
+ number 5, it clearly emerges that cluster 5, composed of data sets 7,
+ 9, 13, has good merging statistics and it is very complete. The two
+ additional data sets joining 7, 9, 13 and forming cluster 10, i.e.
+ data sets 11 and 12, make the situation worse, in terms of merging
+ statistics.
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ It is possible to find out which data sets make the statistics worse by
+ running BLEND in combination mode.
+ For example, we might want to investigate whether data set 11 or data set
+ 12 make statistics for cluster 5 worse. First we try with 11.
+ The group formed by data sets 7, 9, 11 and 13 is equivalent to cluster 10
+ without data set 12. This can be specified in the graphical interface, to
+ save typing time (this option becomes very useful when handling several
+ data sets). As we would like to compare results with what has been computed
+ for cluster 10 in BLEND job 5, we also fix the highest resolution to the same value
+ used in that run, 1.92 &Aring:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+<br>
+<br>
+<img src="imagesBT/BLEND_0.5.1_tutorial_html_m75dba95f.png">
+<br>
+<br>
+</P>
+<P>
+ <FONT SIZE=4>
+ Merging statistics for this specific combination can be found in the sub-directory 
+ "combined_files" of directory "blend_8" (as Job 8 was the BLEND job just executed).
+ Next we try with 12. If the "earlier directory" from which the new BLEND job will
+ be executed coincides with the output directory of Job 8, all results will be collated
+ in a same directory. This becomes very useful when many different groups are to be
+ investigated. The interface for the new job is, thus:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+<br>
+<br>
+<img src="imagesBT/BLEND_0.5.1_tutorial_html_m6a165b4e.png">
+<br>
+<br>
+</P>
+<P>
+ <FONT SIZE=4>
+ Checking
+ file "MERGING_STATISTICS.info" in sub-directory "combined_files" of directory "blend_9"
+ leads to the conclusion that
+ statistics are better when using data set 11 (group 1 because we ran combination job
+ for group 7, 9, 11, 13 first): 
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+<br>
+<br>
+<img src="imagesBT/BLEND_0.5.1_tutorial_html_43e5209d.png">
+<br>
+<br>
+</P>
+<P>
+ <FONT SIZE=4>
+ Thus we can decide to
+ "filter out" data set 12 from cluster 10, in order to achieve a
+ better composite data set.
+ </FONT>
+</P>
+<A NAME="withoutccp4i"></A>
+<P>
+ <FONT SIZE=4>
+ b) <U>Without CCP4I</U>
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ Like any other CCP4 program, BLEND
+ can be executed without using ccp4i, simply typing commands at the
+ keyboard in an interactive command shell. This, quite often, makes
+ the program more flexible.
+ Here we will briefly repeat all
+ steps previously carried out with ccp4i. First a new directory, named
+ for example "insulin_no_ccp4i" will be created in order to keep
+ this part of the tutorial separate from the rest:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+ <FONT SIZE=4 COLOR="#008000">
+ mkdir insulin_no_ccp4
+ <br>
+ cd insulin_no_ccp4
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ Next we run BLEND in analysis mode
+ using all 14 files in the "data/insulin" directory:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+ <FONT SIZE=4 COLOR="#008000">
+ blend -a ../data/insulin
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ After start the program
+ immediately halts, waiting for keywords input; in this specific
+ instance we simply push the "Enter" key once, thus forcing BLEND
+ to use default values. At completion the program produces the
+ following files:
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4 COLOR="#0000ff">
+ BLEND.RData
+ <br>
+ BLEND_SUMMARY.txt
+ <br>
+ CLUSTERS.txt
+ <br>
+ FINAL_list_of_files.dat
+ <br>
+ mtz_names.dat
+ <br>
+ tree.png
+ <br>
+ tree.ps
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ whose meaning and content has been previously explained.
+ To show how "mtz_names.dat"
+ can be re-used for a different run of BLEND in analysis mode, and
+ similarly to what done previously in this tutorial, let's create a
+ directory called "amended_insulin" and copy "mtz_names.dat" in it:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+ <FONT SIZE=4 COLOR="#008000">
+ mkdir amended_insulin
+ <br>
+ cd amended_insulin
+ <br>
+ cp ../mtz_names.dat original.dat
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ Then "original.dat" is edited
+ to remove the last four lines, thus creating a different input,
+ consisting only of 10 out of 14 data sets. Next, the program is
+ executed using "original.dat" as input:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+ <FONT SIZE=4 COLOR="#008000">
+ blend -a original.dat
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ Results of this run are similar to
+ what described before. To carry on let's move back one level to
+ "insulin_no_ccp4i":
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+ <FONT SIZE=4 COLOR="#008000">
+ cd ../
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ If a log file is needed, then a
+ keyword file has to be prepared before execution. Let's call this
+ file "bkeys.dat", and play both with RADFRAC and ISIGI
+ keywords, changing from their default values 0.75 and 1.5 to the new
+ values 0.65 and 3.0.
+ The file looks like this:
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4 COLOR="#0000ff">
+ RADFRAC &nbsp 0.65
+ <br>
+ ISIGI   &nbsp 3.0
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ Then BLEND is executed again using
+ "mtz_names.dat" as input:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+ <FONT SIZE=4 COLOR="#008000">
+ blend -a mtz_names.dat &lt; bkeys.dat &gt; blend_analysis.log
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ After completion,
+ "blend_analysis.log" can be either read using any editor, or
+ viewed graphically with the CCP4 program "logview":
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+ <FONT SIZE=4 COLOR="#008000">
+ logview blend_analysis.log
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ To run BLEND in synthesis mode and
+ produce scaled data for all nodes of the dendrogram, we could type:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+ <FONT SIZE=4 COLOR="#008000">
+ blend -s 14 &lt; bkeys.dat &gt; blend_synthesis.log
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ But, just to show that the same results are obtained using aLCV, rather than the dendrogram's height, we 
+ executed BLEND in the following way:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+ <FONT SIZE=4 COLOR="#008000">
+ blend -saLCV 0.85 &lt; bkeys.dat &gt; blend_synthesis.log
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ At completion the result can,
+ again, be viewed using "logview":
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+ <FONT SIZE=4 COLOR="#008000">
+ logview blend_synthesis.log
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+<br>
+<br>
+<img src="imagesBT/BLEND_0.5.1_tutorial_html_m753a1e25.png">
+<br>
+<br>
+</P>
+<P>
+ <FONT SIZE=4>
+ All unscaled and scaled mtz files,
+ and all POINTLESS and AIMLESS logs, are contained in the
+ "merged_files" directory. Logs can be viewed using "logview"
+ or "loggraph". For example:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+ <FONT SIZE=4 COLOR="#008000">
+ loggraph merged_files/aimless_005.log
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+<br>
+<br>
+<img src="imagesBT/BLEND_0.5.1_tutorial_html_6b6459b8.png">
+<br>
+<br>
+</P>
+<P>
+ <FONT SIZE=4>
+ In order to execute BLEND in
+ combination mode, so to scale groups of data sets not corresponding
+ to any cluster, it is handy to copy and paste numeric strings from
+ the sixth column in file "CLUSTERS.txt". Another, perhaps quicker, possibility is
+ to use the special syntax created to summarize groups of data sets (see
+ <a href="http://www.ccp4.ac.uk/dist/html/blend.html">documentation</a>).
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ For instance, the group of data sets (7, 8, 9, 10, 13) is simply the union of
+ clusters 4 and 5. This can be represented with the two cluster numbers within
+ square brackets, "[4,5]". The command line to run BLEND in combination mode over
+ this group would be, in this case (using same keywords file as before):
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+ <FONT SIZE=4 COLOR="#008000">
+ blend -c [4,5] &lt; bkeys.dat
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ Or, group (7, 9, 11, 13) is essentially cluster 10 with the exclusion of
+ data set 12. This can be summarized with the following string, "[10] [[12]]",
+ where the double-squared brackets include all data sets to be excluded during
+ execution:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+ <FONT SIZE=4 COLOR="#008000">
+ blend -c [10] [[12]] &lt; bkeys.dat
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ Many more runs in combination mode can be executed within the same directory.
+ All files produced can be found in directory "combined_files".
+ </FONT>
+</P>
+<A NAME="tutorial2"></A>
+<H2><U>TUTORIAL 2.</U></H2>
+<H3>28 SWEEPS OF LYSOZYME CRYSTALS</H3>
+<P>
+ <FONT SIZE=4>
+ <A HREF="data02.tgz"> Download data set 02</A> 
+ </FONT>
+</P>
+<FONT SIZE=3>(data collected by Pierre Aller)</FONT>
+<P>
+ <FONT SIZE=4 COLOR="#c90016">
+ How to obtain complete data sets, while preserving isomorphism with BLEND
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ These
+ data come from hen egg lysozyme with two different procedures. The
+ first group of 12 10-degree sweeps has been collected with pure
+ lysozyme crystals at room temperature from crystallisation plates.
+ The second group of 16 10-degree sweeps has been obtained from
+ crystals soaked in a solution of sodium bromide; data have been
+ collected at the Diamond Light Source synchrotron with a wavelength
+ close to the bromide peak. Data collection went further than 10
+ degrees for each data set, but we have limited sweeps in order to
+ replicate similar situations met when radiation damage acts fast. For
+ this tutorial in situ data have been stacked with data collected at
+ low temperature and from a slightly different structure (additional
+ bromide content) in order to demonstrate the interplay between
+ completeness and non-isomorphism.
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ Let's
+ create a new directory, called "lysozyme", in the
+ "blend_tutorial" directory, and associate the new project
+ directory "BLEND_TUTORIAL_LYSOZYME" to "lysozyme":
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+ <FONT SIZE=4 COLOR="#008000">
+ mkdir lysozyme
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ Next,
+ we run BLEND in analysis mode using all mtz files in
+ "data/lysozyme":
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+<br>
+<br>
+<img src="imagesBT/BLEND_0.5.1_tutorial_html_a60e0cc.png">
+<br>
+<br>
+</P>
+<P>
+ <FONT SIZE=4>
+ In
+ the group of files produced by this run the following dendrogram
+ (file "tree.ps" or "tree.png") is found:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+<br>
+<br>
+<img src="imagesBT/BLEND_0.5.1_tutorial_html_7b5a8d35.png" WIDTH=700>
+<br>
+<br>
+</P>
+<P>
+ <FONT SIZE=4>
+ The
+ overall Linear Cell Variation (LCV) has a high value. This is
+ certainly caused by the two of crystals in the isolated branch on
+ the left of the dendrogram, as it can be confirmed by looking at cell
+ parameters plots in BLEND log file (new style):
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+<br>
+<br>
+<img src="imagesBT/BLEND_0.5.1_tutorial_html_2dfbeaf6.png">
+<br>
+<br>
+</P>
+<P>
+ <FONT SIZE=4>
+ Data
+ consist of many short sweeps (not useful to form a complete data
+ set), therefore we can get rid of sweeps 19 and 21 without loosing
+ much data and re-run BLEND in analysis mode. One way of
+ executing BLEND using the same data without sweeps 19 and 21
+ is by copying file "mtz_names.dat" into "original.dat" and
+ deleting the lines pointing to these sweeps:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+ <FONT SIZE=4 COLOR="#008000">
+ cp lysozyme/blend_1/mtz_names.dat lysozyme/original.dat
+ <br>
+ [edit "lysozyme/original.dat" and delete lines containing "dataset_019.mtz" and "dataset_021.mtz"]
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ BLEND
+ is now executed using "original.dat" as input:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+<br>
+<br>
+<img src="imagesBT/BLEND_0.5.1_tutorial_html_16d2b880.png">
+<br>
+<br>
+</P>
+<P>
+ <FONT SIZE=4>
+ The
+ ensuing dendrogram is:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+<br>
+<br>
+<img src="imagesBT/BLEND_0.5.1_tutorial_html_m246082e5.png" WIDTH=700>
+<br>
+<br>
+</P>
+<P>
+ <FONT SIZE=4>
+ As
+ we can see, the new LCV is much smaller, although the value 1.40% (and the absolute LCV value 1.54 &Aring;)
+ still indicates some non-isomorphism among all crystals. We know this
+ is the case because crystals have been assembled from
+ differently-prepared structures. Indeed, LCV values computed
+ separately for the left branch and for the right branch of the
+ dendrogram return  0.69% and 0.72%, respectively. Incidentally, data
+ sets group 1 – 12 has different features from group 13 – 26
+ (remember, two sweeps missing from the initial group!) because it
+ corresponds to a different collection from a different group of
+ crystals. This coarse division, observed in the two separate
+ dendrogram's branches, can also be detected by looking at the different
+ mosaicity trends in BLEND log file:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+<br>
+<br>
+<img src="imagesBT/BLEND_0.5.1_tutorial_html_b5b073e.png">
+<br>
+<br>
+</P>
+<P>
+ <FONT SIZE=4>
+ Scaled
+ data for all nodes of the new dendrogram can be computed running
+ BLEND in synthesis mode. We know that all data should belong
+ to space group P 4<SUB>3</SUB> 2<SUB>1</SUB> 2. We also would like to
+ use the same resolution for all data, say 1.9 &Aring;.
+ Accordingly, the program is executed using the following keywords:
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4 COLOR="#0000ff">
+ CHOOSE SPACEGROUP P 43 21 2
+ <br>
+ TOLERANCE 100
+ <br>
+ RESO HIGH 1.9
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ Keyword
+ TOLERANCE is set to a high value to bypass the default tendency of
+ POINTLESS to stop execution when cell parameters differ too
+ much. Considering now the dendrogram, using only one value for the
+ height means that the program would process all nodes below this
+ value. In the "CLUSTERS.txt" file it can be seen that these have
+ values smaller or equal to 28.861; thus any value larger than this
+ produces the desired scaled data:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+<br>
+<br>
+<img src="imagesBT/BLEND_0.5.1_tutorial_html_m1aefcb4f.png">
+<br>
+<br>
+</P>
+<P>
+ <FONT SIZE=4>
+ This
+ run will take a while to complete (many clusters!). At the end of
+ execution a new "merged_files" directory is created with scaled
+ files and merging statistics tabulated. Here is a view of the final
+ statistics in BLEND log:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+<br>
+<br>
+<img src="imagesBT/BLEND_0.5.1_tutorial_html_m4d9dde7a.png">
+<br>
+<br>
+</P>
+<P>
+ <FONT SIZE=4>
+ Scaled
+ files corresponding to these results are included in the
+ "merged_files" directory, and they are ready for further
+ investigations. Some of the statistics can be improved by filtering
+ out certain sweeps from specific clusters. A visualization of the
+ above table can be conveniently created running BLEND in graphics
+ mode. The program needs to be pointed at the directory in which the
+ run in synthesis mode has been executed. Three types of results from
+ the statistics produced by AIMLESS will be annotated in the dendrogram
+ around a user-specified cluster. Furthermore details of the dendrogram
+ are determined by the user-selected number of levels down the chosen
+ cluster. For the specific case treated here we would like to view merging
+ statistics in an annotated dendrogram starting from the top cluster (cluster 25)
+ and going down 10 levels (this is normally enough for a first view of
+ the tree). For executing this mode the gui is arranged as in the following
+ picture:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+<img src="imagesBT/BLEND_0.5.1_tutorial_html_7e484900.png">
+<br>
+<br>
+</P>
+<P>
+ <FONT SIZE=4>
+ And this is the annotated dendrogram created:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+<img src="imagesBT/annotated_dendrogram01.png">
+<br>
+<br>
+</P>
+<P>
+ <FONT SIZE=4>
+ In the above annotated dendrogram clusters at a same level are formed by the same number of data sets. If the dendrogram is
+ densely populated it might be difficult to see which data set belong to which cluster. For example clusters 13 and 14 are both
+ formed by 4 data sets; clusters 18 and 19 both formed by 5 data sets. Clusters
+ 21, 22, 23 and 25 have high R<SUB>meas</SUB> values,
+ while values for clusters 15 and 24 can, perhaps, be improved. The
+ main way to improve statistics at this point is by running BLEND
+ in combination mode. Let's try, for instance, to improve the
+ statistics for cluster 15. As the R<SUB>meas</SUB> value jumps from
+ 0.114 for cluster 11 to 0.161 for cluster 15 and as cluster 15 is
+ simply cluster 11 with the addition of sweep 23, it is
+ straightforward to impute the reason for the increase to the bad
+ quality of sweep 23. But there might also be other possibilities. For
+ example sweep 23 does not match well some of the sweeps composing
+ cluster 11; by excluding these sweeps, then, statistics might
+ improve. In conclusion we can try all combinations of data sets forming
+ cluster 15, excluding one data set at a time. For all
+ combinations after the first we will have to make sure that the path
+ to an earlier BLEND directory points to the results directory of the
+ previous combination. So for the first combination:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+<br>
+<br>
+<img src="imagesBT/BLEND_0.5.1_tutorial_html_6ba4f416.png">
+<br>
+<br>
+</P>
+<P>
+ <FONT SIZE=4>
+ we have excluded data set 18. For
+ the second combination:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+<br>
+<br>
+<img src="imagesBT/BLEND_0.5.1_tutorial_html_591f822b.png">
+<br>
+<br>
+</P>
+<P>
+ <FONT SIZE=4>
+ To
+ summarize, for all combinations tried to improve statistics for
+ cluster 15, we have:
+ </FONT>
+</P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0in; font-weight: normal"><BR>
+</P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0in; font-weight: normal"><FONT COLOR="#000000"><FONT SIZE=3>combination
+21 23 24 25 26 (equivalent to cluster 15 without data set 18) points to directory “lysozyme/blend_2”</FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0in; font-weight: normal"><FONT COLOR="#000000"><FONT SIZE=3>combination
+18 23 24 25 26 (equivalent to cluster 15 without data set 21) points to directory “lysozyme/blend_5”</FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0in; font-weight: normal"><FONT COLOR="#000000"><FONT SIZE=3>combination
+18 21 24 25 26 (equivalent to cluster 15 without data set 23) points to directory “lysozyme/blend_6”</FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0in; font-weight: normal"><FONT COLOR="#000000"><FONT SIZE=3>combination
+18 21 23 25 26 (equivalent to cluster 15 without data set 24) points to directory “lysozyme/blend_7”</FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0in; font-weight: normal"><FONT COLOR="#000000"><FONT SIZE=3>combination
+18 21 23 24 26 (equivalent to cluster 15 without data set 25) points to directory “lysozyme/blend_8”</FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0in; font-weight: normal"><FONT COLOR="#000000"><FONT SIZE=3>combination
+18 21 23 24 25 (equivalent to cluster 15 without data set 26) points to directory “lysozyme/blend_9”</FONT></FONT></P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0in; font-weight: normal"><BR>
+</P>
+<P>
+ <FONT SIZE=4>
+ Final
+ statistics can be viewed in the "MERGED_STATISTICS.info" file
+ under "lysozyme/blend_9/combined_files" or simply using the
+ interface:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+<br>
+<br>
+<img src="imagesBT/BLEND_0.5.1_tutorial_html_9cabd24.png">
+<br>
+<br>
+</P>
+<P>
+ <FONT SIZE=4>
+ The
+ lowest R<SUB>meas</SUB> is the one for group 3. Thus, discarding sweep 23 from
+ cluster 15 causes Rmeas to improve from 0.161 to 0.114, while
+ completeness decrease a little from 96.0% to 93.9%. This is essentially
+ cluster 11; our initial guess pointing at data set 23 as the one making things worst
+ turned out to be correct.
+ Similar combinations can be tried on all other clusters. Results are shown in
+ the following picture:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+<img src="imagesBT/BLEND_0.5.1_tutorial_html_5c1e38c0.png">
+<br>
+<br>
+</P>
+<P>
+ <FONT SIZE=4>
+ Crossed values have been updated with values calculated with the new combinations. For example cluster 15 had R<SUB>meas</SUB>=0.161
+ and this becomes 0.114 after filtering. At the same time its completeness drops from 96.0% to 93.9%. In total 5 data sets have been
+ filtered out, 15, 19, 22, 23 from the left branch and 1 from the right branch. Statistics look much better for each branch. Their union
+ into cluster 25 still yields a high value of R<SUB>meas</SUB> because the two groups of crystals, as we know, are non isomorphous
+ in reason of the bromine.
+ Try and
+ reproduce the same results by executing BLEND in
+ combination mode.
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ A
+ final remark: all scaled mtz files do not contain structure factors,
+ but only scaled intensities. To create structure factors and proceed
+ with phasing, model building and refinement, you need to run the CCP4
+ program TRUNCATE or any other software that does an equivalent
+ job.
+ </FONT>
+</P>
+<A NAME="tutorial3"></A>
+<H2><U>TUTORIAL 3.</U></H2>
+<H3>12 CRYSTALS OF LYSOZYME SOAKED WITH BROMINE</H3>
+<P>
+ <FONT SIZE=4>
+ <A HREF="data03.tgz"> Download data set 03</A> 
+ </FONT>
+</P>
+<FONT SIZE=3>(data collected by Pierre Aller)</FONT>
+<P>
+ <FONT SIZE=4 COLOR="#c90016">
+ Easy SAD phasing with multiple crystals
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ Each one of these data sets is not complete. The anomalous signal produced by the heavy bromine atoms can be detected
+ even with partial data sets, but effective phasing can only happen reliably with good anomalous completeness. For this
+ reason it is necessary to merge data from these multiple crystals to obtain full anomalous completeness. The resulting
+ high redundancy makes the anomalous signal even stronger, provided isomorphism is conserved.
+ <br>
+ In this tutorial we will use BLEND to first explore resolution and completeness of data and then to obtain complete
+ data sets that will be subsequently used to find the heavy atom substructure. The CCP4 GUI will not be used, so that the
+ whole tutorial is simplified, but the GUI should be used if you are unfamiliar with command line execution.
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ First let us create a new directory, called "lysBr" inside the "blend_tutorial" directory:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+ <FONT SIZE=4 COLOR="#008000">
+ mkdir lysBr
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ Data in this case are stored in directory "lysBr" under "blend_tutorial/data". But they are spread over 12 different directories.
+ In order to prepare data for BLEND we have two options; either copy all data into a single directory, or edit a file with paths
+ for all 12 input files. In this case the second option is better because all individual input files have been produced by <I>XDS</I>
+ and have identical name, "INTEGRATE.HKL". A quick way to prepare the input file for BLEND is to use the unix command "find". First
+ let us move inside the "lysBr" directory (our working directory, in this case):
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+ <FONT SIZE=4 COLOR="#008000">
+ cd lysBr
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ Next, use "find" starting from "data/lysBr" directory and re-direct the results into a new file called "original.dat". This file
+ is the initial input for BLEND (the "sort" command after the pipe symbol "|" is to sort directory names; it's not needed in general,
+ as input file order really does not matter in BLEND, but here it helps the tutorial description):
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+ <FONT SIZE=4 COLOR="#008000">
+ find ../data/lysBr -name "INTEGRATE.HKL" | sort > original.dat
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ The contents of "original.dat" should look like the following:
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4 COLOR="#0000ff">
+ ../data/lysBr/xtl001/INTEGRATE.HKL<br>
+ ../data/lysBr/xtl002/INTEGRATE.HKL<br>
+ ../data/lysBr/xtl003/INTEGRATE.HKL<br>
+ ../data/lysBr/xtl004/INTEGRATE.HKL<br>
+ ../data/lysBr/xtl005/INTEGRATE.HKL<br>
+ ../data/lysBr/xtl006/INTEGRATE.HKL<br>
+ ../data/lysBr/xtl009/INTEGRATE.HKL<br>
+ ../data/lysBr/xtl011/INTEGRATE.HKL<br>
+ ../data/lysBr/xtl012/INTEGRATE.HKL<br>
+ ../data/lysBr/xtl015/INTEGRATE.HKL<br>
+ ../data/lysBr/xtl016/INTEGRATE.HKL<br>
+ ../data/lysBr/xtl017/INTEGRATE.HKL
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ BLEND can now be executed in analysis mode using "original.dat" as input (remember to hit the "enter" key twice, as we hav not prepared
+ any keywords file):
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+ <FONT SIZE=4 COLOR="#008000">
+ blend -a original.dat
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ The tree produced should look like the following:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+<br>
+<img src="imagesBT/treelysBr.png">
+</P>
+<P>
+ <FONT SIZE=4>
+ The linear cell variation for all crystals has a small 0.69% value, which means all crystals are fairly isomorphous. Among all files produced
+ by BLEND in the present working directory the new "xds_files" directory and "xds_lookup_table.txt" file have been produced. This happens every
+ time input data come from <I>XDS</I> integration files. BLEND makes use of <I>POINTLESS</I> to turn them into mtz files. All new files,
+ including <I>POINTLESS</I> log files, are included in the "xds_files" directory. The "xds_lookup_table.txt" helps users to keep track of
+ file origin, because all <I>XDS</I> files are re-named in the process. In this specific case, for example, directory "xds_files" includes
+ the following files:
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4 COLOR="#0000ff">
+ dataset_001.mtz<br>
+ dataset_002.mtz<br>
+ dataset_003.mtz<br>
+ dataset_004.mtz<br>
+ dataset_005.mtz<br>
+ dataset_006.mtz<br>
+ dataset_007.mtz<br>
+ dataset_008.mtz<br>
+ dataset_009.mtz<br>
+ dataset_010.mtz<br>
+ dataset_011.mtz<br>
+ dataset_012.mtz<br>
+ pointless_001.log<br>
+ pointless_002.log<br>
+ pointless_003.log<br>
+ pointless_004.log<br>
+ pointless_005.log<br>
+ pointless_006.log<br>
+ pointless_007.log<br>
+ pointless_008.log<br>
+ pointless_009.log<br>
+ pointless_010.log<br>
+ pointless_011.log<br>
+ pointless_012.log
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ The associated "xds_lookup_table.txt" looks like the following:
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4 COLOR="#0000ff">
+ dataset_001.mtz &nbsp &nbsp    /home/james/safe-test/workBLEND/blend_tutorial/data/lysBr/xtl001/INTEGRATE.HKL<br>
+ dataset_002.mtz &nbsp &nbsp    /home/james/safe-test/workBLEND/blend_tutorial/data/lysBr/xtl002/INTEGRATE.HKL<br>
+ dataset_003.mtz &nbsp &nbsp    /home/james/safe-test/workBLEND/blend_tutorial/data/lysBr/xtl003/INTEGRATE.HKL<br>
+ dataset_004.mtz &nbsp &nbsp    /home/james/safe-test/workBLEND/blend_tutorial/data/lysBr/xtl004/INTEGRATE.HKL<br>
+ dataset_005.mtz &nbsp &nbsp    /home/james/safe-test/workBLEND/blend_tutorial/data/lysBr/xtl005/INTEGRATE.HKL<br>
+ dataset_006.mtz &nbsp &nbsp   /home/james/safe-test/workBLEND/blend_tutorial/data/lysBr/xtl006/INTEGRATE.HKL<br>
+ dataset_007.mtz &nbsp &nbsp    /home/james/safe-test/workBLEND/blend_tutorial/data/lysBr/xtl009/INTEGRATE.HKL<br>
+ dataset_008.mtz &nbsp &nbsp    /home/james/safe-test/workBLEND/blend_tutorial/data/lysBr/xtl011/INTEGRATE.HKL<br>
+ dataset_009.mtz &nbsp &nbsp    /home/james/safe-test/workBLEND/blend_tutorial/data/lysBr/xtl012/INTEGRATE.HKL<br>
+ dataset_010.mtz &nbsp &nbsp    /home/james/safe-test/workBLEND/blend_tutorial/data/lysBr/xtl015/INTEGRATE.HKL<br>
+ dataset_011.mtz &nbsp &nbsp    /home/james/safe-test/workBLEND/blend_tutorial/data/lysBr/xtl016/INTEGRATE.HKL<br>
+ dataset_012.mtz &nbsp &nbsp    /home/james/safe-test/workBLEND/blend_tutorial/data/lysBr/xtl017/INTEGRATE.HKL
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ In order to estimate data resolutions we can run BLEND in combination mode on each individual data set. Strictly speaking
+ this is not needed, and merged data corresponding to all clusters can be calculated straight away, but exploring individual
+ data sets (in those instances where data wedges and symmetry allow scaling) can help to figure out data quality. We know that
+ the space group for these samples of lysozyme is  P 4<SUB>3</SUB> 2<SUB>1</SUB> 2 and can fix this in the keywords file. Thus,
+ a new file, named "bkeys.dat" can be edited to include the following line: 
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4 COLOR="#0000ff">
+ CHOOSE SPACEGROUP P43212
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ Next, BLEND is executed in combination mode on all 12 data sets:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+ <FONT SIZE=4 COLOR="#008000">
+ blend -c 1 < bkeys.dat <br> 
+ blend -c 2 < bkeys.dat <br> 
+ blend -c 3 < bkeys.dat <br> 
+ blend -c 4 < bkeys.dat <br>
+ blend -c 5 < bkeys.dat <br>
+ blend -c 6 < bkeys.dat <br>
+ blend -c 7 < bkeys.dat <br>
+ blend -c 8 < bkeys.dat <br>
+ blend -c 9 < bkeys.dat <br>
+ blend -c 10 < bkeys.dat <br>
+ blend -c 11 < bkeys.dat <br>
+ blend -c 12 < bkeys.dat <br>
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ All files produced by these 12 runs of BLEND are contained in a directory called "combined_files". Let us rename this directory as
+ "individual_files" because it includes process data from individual data sets:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+ <FONT SIZE=4 COLOR="#008000">
+ mv combined_files individual_files
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ File "MERGING_STATISTICS.info" inside "individual_files" is a summary of overall statistics:
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+  <table style="width:800px">
+   <tr>
+    <td><FONT COLOR="#0000ff">Group</FONT></td>
+    <td></td>
+    <td></td>
+    <td><FONT COLOR="0000ff">Comple-</FONT></td>
+    <td><FONT COLOR="0000ff">Multi-</FONT></td>
+    <td><FONT COLOR="0000ff">Reso</FONT></td>
+    <td><FONT COLOR="0000ff">Reso</FONT></td>
+    <td><FONT COLOR="0000ff">Reso</FONT></td>
+   </tr>
+   <tr>
+    <td><FONT COLOR="#0000ff">Number</FONT></td>
+    <td><FONT COLOR="#0000ff">Rmeas</FONT></td>
+    <td><FONT COLOR="#0000ff">Rpim</FONT></td>
+    <td><FONT COLOR="#0000ff">teness</FONT></td>
+    <td><FONT COLOR="#0000ff">plicity</FONT></td>
+    <td><FONT COLOR="#0000ff">CC1/2</FONT></td>
+    <td><FONT COLOR="#0000ff">Mn(I/sd)</FONT></td>
+    <td><FONT COLOR="#0000ff">Max</FONT></td>
+   </tr>
+   <tr>
+    <td>1</td>    <td>0.066</td>    <td>0.043</td>    <td>58.00</td>       <td>1.50</td>     <td>1.47</td>      <td>1.47</td>     <td>1.47</td>
+   </tr>
+   <tr>
+    <td>2</td>    <td>0.071</td>    <td>0.040</td>    <td>55.50</td>       <td>2.50</td>     <td>1.40</td>      <td>1.40</td>     <td>1.40</td>
+   </tr>
+   <tr>
+    <td>3</td>    <td>0.294</td>    <td>0.112</td>    <td>92.60</td>       <td>5.40</td>     <td>1.64</td>      <td>1.75</td>     <td>1.43</td>
+   </tr>
+   <tr>
+    <td>4</td>    <td>0.083</td>    <td>0.047</td>    <td>67.80</td>       <td>2.20</td>     <td>1.50</td>      <td>1.50</td>     <td>1.50</td>
+   </tr>
+   <tr>
+    <td>5</td>    <td>0.067</td>    <td>0.044</td>    <td>71.40</td>       <td>1.50</td>     <td>1.39</td>      <td>1.39</td>     <td>1.39</td>
+   </tr>
+   <tr>
+    <td>6</td>    <td>0.206</td>    <td>0.129</td>    <td>84.40</td>       <td>2.00</td>     <td>1.64</td>      <td>1.83</td>     <td>1.53</td>
+   </tr>
+   <tr>
+    <td>7</td>    <td>0.191</td>    <td>0.116</td>    <td>70.50</td>       <td>2.10</td>     <td>1.50</td>      <td>1.50</td>     <td>1.50</td>
+   </tr>
+   <tr>
+    <td>8</td>    <td>0.050</td>    <td>0.032</td>    <td>52.40</td>       <td>1.80</td>     <td>1.48</td>      <td>1.48</td>     <td>1.48</td>
+   </tr>
+   <tr>
+    <td>9</td>    <td>0.127</td>    <td>0.087</td>    <td>72.30</td>       <td>1.50</td>     <td>1.49</td>      <td>1.49</td>     <td>1.49</td>
+   </tr>
+   <tr>
+    <td>10</td>   <td>0.556</td>    <td>0.385</td>    <td>67.10</td>       <td>1.40</td>     <td>1.92</td>      <td>2.03</td>     <td>1.49</td>
+   </tr>
+   <tr>
+    <td>11</td>   <td>0.082</td>    <td>0.054</td>    <td>60.00</td>       <td>1.70</td>     <td>1.40</td>      <td>1.40</td>     <td>1.40</td>
+   </tr>
+   <tr>
+    <td>12</td>   <td>0.074</td>    <td>0.045</td>    <td>71.30</td>       <td>2.10</td>     <td>1.39</td>      <td>1.39</td>     <td>1.39</td>
+   </tr>
+  </table>
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ From the "Completeness" column we can see that the only complete data set is data set 3. Its resolution, as suggested by the
+ "Reso CC1/2" and "Reso Mn(I/sd)" columns falls between 1.64 &#197 and 1.75 &#197. Resolutions are higher for the other partial data sets and it
+ seems reasonable to adopt 1.6 &#197 as a common resolution for all data. The previous table can be reproduced using this resolution if the 
+ keywords file includes the following lines ("ANOMALOUS ON" has been added to make sure AIMLESS treats Friedel's opposites separately and that it returns
+ the corresponding anomalous statistics):
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4 COLOR="#0000ff">
+ CHOOSE SPACEGROUP P43212<br>
+ RESO HIGH 1.6<br>
+ ANOMALOUS ON
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ The corresponding table is:
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+  <table style="width:800px">
+   <tr>
+    <td><FONT COLOR="#0000ff">Group</FONT></td>
+    <td></td>
+    <td></td>
+    <td><FONT COLOR="0000ff">Comple-</FONT></td>
+    <td><FONT COLOR="0000ff">Multi-</FONT></td>
+    <td><FONT COLOR="0000ff">Reso</FONT></td>
+    <td><FONT COLOR="0000ff">Reso</FONT></td>
+    <td><FONT COLOR="0000ff">Reso</FONT></td>
+   </tr>
+   <tr>
+    <td><FONT COLOR="#0000ff">Number</FONT></td>
+    <td><FONT COLOR="#0000ff">Rmeas</FONT></td>
+    <td><FONT COLOR="#0000ff">Rpim</FONT></td>
+    <td><FONT COLOR="#0000ff">teness</FONT></td>
+    <td><FONT COLOR="#0000ff">plicity</FONT></td>
+    <td><FONT COLOR="#0000ff">CC1/2</FONT></td>
+    <td><FONT COLOR="#0000ff">Mn(I/sd)</FONT></td>
+    <td><FONT COLOR="#0000ff">Max</FONT></td>
+   </tr>
+   <tr>
+    <td>1</td>    <td>0.063</td>    <td>0.041</td>    <td>59.40</td>       <td>1.60</td>     <td>1.60</td>      <td>1.60</td>     <td>1.60</td>
+   </tr>
+   <tr>
+    <td>2</td>    <td>0.068</td>    <td>0.039</td>    <td>60.60</td>       <td>2.60</td>     <td>1.60</td>      <td>1.60</td>     <td>1.60</td>
+   </tr>
+   <tr>
+    <td>3</td>    <td>0.213</td>    <td>0.078</td>    <td>94.70</td>       <td>5.80</td>     <td>1.63</td>      <td>1.76</td>     <td>1.60</td>
+   </tr>
+   <tr>
+    <td>4</td>    <td>0.077</td>    <td>0.043</td>    <td>67.90</td>       <td>2.20</td>     <td>1.60</td>      <td>1.60</td>     <td>1.60</td>
+   </tr>
+   <tr>
+    <td>5</td>    <td>0.063</td>    <td>0.042</td>    <td>79.60</td>       <td>1.60</td>     <td>1.60</td>      <td>1.60</td>     <td>1.60</td>
+   </tr>
+   <tr>
+    <td>6</td>    <td>0.191</td>    <td>0.120</td>    <td>84.80</td>       <td>2.00</td>     <td>1.64</td>      <td>1.83</td>     <td>1.60</td>
+   </tr>
+   <tr>
+    <td>7</td>    <td>0.175</td>    <td>0.106</td>    <td>70.90</td>       <td>2.20</td>     <td>1.60</td>      <td>1.60</td>     <td>1.60</td>
+   </tr>
+   <tr>
+    <td>8</td>    <td>0.048</td>    <td>0.030</td>    <td>52.70</td>       <td>1.90</td>     <td>1.60</td>      <td>1.60</td>     <td>1.60</td>
+   </tr>
+   <tr>
+    <td>9</td>    <td>0.123</td>    <td>0.085</td>    <td>75.40</td>       <td>1.50</td>     <td>1.60</td>      <td>1.60</td>     <td>1.60</td>
+   </tr>
+   <tr>
+    <td>10</td>   <td>0.467</td>    <td>0.320</td>    <td>70.00</td>       <td>1.50</td>     <td>1.88</td>      <td>2.04</td>     <td>1.60</td>
+   </tr>
+   <tr>
+    <td>11</td>   <td>0.079</td>    <td>0.052</td>    <td>68.70</td>       <td>1.80</td>     <td>1.60</td>      <td>1.60</td>     <td>1.60</td>
+   </tr>
+   <tr>
+    <td>12</td>   <td>0.071</td>    <td>0.044</td>    <td>79.30</td>       <td>2.10</td>     <td>1.60</td>      <td>1.60</td>     <td>1.60</td>
+   </tr>
+  </table>
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ The newly created "combined_files" directory can be renamed "individual_files_1.6", to differentiate it from "individual_files":
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+ <FONT SIZE=4 COLOR="#008000">
+  mv combined_files individual_files_1.6
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ Next, BLEND is executed in synthesis mode using the same keywords file, to produce
+ merged data for all nodes of the dendrogram at this resolution. As a value of 10 is high enough to
+ include all nodes of the dendrogram, the resulting command line will result as follows:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+ <FONT SIZE=4 COLOR="#008000">
+  blend -s 10 < bkeys.dat > blend_synthesis.log
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+  All results are, this time, dumped in directory "merged_files". We can appreciate overall statistics by viewing the
+  "MERGING_STATISTICS.info" file inside this directory. These statistics, though, give no information we can use to
+  judge the quality of data for phasing. This information is still not extracted and organised by BLEND because the
+  whole issue is currently under investigation. Future addition in "MERGING_STATISTICS.info" will include such information.
+  For now we can extract specific lines from all <I>AIMLESS</I> logs using the unix "grep" command. For instance, anomalous
+  completeness is important to judge the quality of anomalous data. We can extract it
+  with the following unix line:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+ <FONT SIZE=4 COLOR="#008000">
+ grep "Anomalous completeness   " merged_files/aimless*.log
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ The output produced is the following:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+<br>
+<img src="imagesBT/lysBr_grep1.png">
+</P>
+<P>
+ <FONT SIZE=4>
+ Clusters with satisfactory anomalous completeness are 5, 6, 7, 9, 10, 11
+ (greater than 90%). These are data sets on
+ which we can try the procedure to find heavy atoms substructure. These files can be compared with the only individual
+ data set with the highest anomalous completeness, data set 3. A "grep" line similar to the one previously used can show this:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+ <FONT SIZE=4 COLOR="#008000">
+ grep "Anomalous completeness   " individual_files_1.6/aimless*.log
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ Resulting output:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+<br>
+<img src="imagesBT/lysBr_grep2.png">
+</P>
+<P>
+ <FONT SIZE=4>
+ The value 80.1% for the anomalous completeness of data set 3 is not close to 90%, but the only decent one
+ obtainable as indvidual data set, and it is with this one that all merged ones will have to be compared. The message
+ to be taken home is that when only partial data are available it is still possible to combine them and obtain a complete data set,
+ rather than wait for new crystals and another data collection. Furthermore, the redundancy implied by merging data together can
+ increase the anomalous signal and, thus, strengthen the phasing power.<br>
+ In what follows we have used the <I>SHELX</I> family of programs to prepare data, measure anomalous signal and find the heavy
+ atoms substructure (<A HREF="#references">Sheldrick (2010)</A>). These programs work with input files of a specific format ("sca" files).
+ In order to prepare these files we need, first, to turn scaled intensities into structure factors using the CCP4 program <I>TRUNCATE</I>.
+ Then we use "MTZ2SCA" to turn mtz files into sca files. Everything will be executed inside a new directory called
+ "anoproc". In this directory we need to create seven more directories, one for each data set to be processed. The whole series of
+ unix commands to be typed is:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+ <FONT SIZE=4 COLOR="#008000">
+ mkdir anoproc<br>
+ cd anoproc<br>
+ mkdir lysBr_ind_003<br>
+ mkdir lysBr_ind_012<br>
+ mkdir lysBr_cl_005<br>
+ mkdir lysBr_cl_006<br>
+ mkdir lysBr_cl_007<br>
+ mkdir lysBr_cl_009<br>
+ mkdir lysBr_cl_010<br>
+ mkdir lysBr_cl_011
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ The procedure to produce sca files ready to be used in <I>SHELX</I> will be now shown only for one of the data sets involved, the one corresponding 
+ to cluster 6, but it is meant to be repeated in exactly the same way for all other data sets. First we move to directory "lysBr_cl_006". Then we run
+ <I>TRUNCATE</I>, using command lines, in the following way:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+ <FONT SIZE=4 COLOR="#008000">
+ cd lysBr_cl_006<br>
+ truncate HKLIN ../../merged_files/scaled_006.mtz HKLOUT truncate_cl_006.mtz
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ After having entered this line execution halts as <I>TRUNCATE</I> expects some keywords. We can use default values and
+ just type "END" (and hit the "Enter" key). After execution a file "truncate_cl_006.mtz" should appear in the directory. To translate this
+ file into a sca file we use <I>MTZ2SCA</I> in a very simple way:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+ <FONT SIZE=4 COLOR="#008000">
+ mtz2sca truncate_cl_006.mtz
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ Now also "truncate_cl_006.sca" should be present in the directory. As mentioned before, the procedure just applied on data set 6 should be
+ repeated for the other 6 data sets in the "anoproc" directory. Once all sca files have been obtained, programs <I>SHELXC</I> and
+ <I>SHELXD</I> can be executed to obtain the heavy atoms substructure. The heavy atom for this specific case is bromine (BR - 8 sites) and we have
+ tried 1000 trials in <I>SHELXD</I>. Results are tabulated as follows:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+ <table border="1" style="width:800px">
+  <tr>
+   <td><FONT COLOR="#0000ff">Data set</FONT></td>
+   <td><FONT COLOR="#0000ff">Sufficient d"/sig ?</FONT></td>
+   <td><FONT COLOR="#0000ff">Solution ?</FONT></td>
+   <td><FONT COLOR="#0000ff">CCall</FONT></td>
+   <td><FONT COLOR="#0000ff">CCweak</FONT></td>
+   <td><FONT COLOR="#0000ff">Cfom</FONT></td>
+  </tr>
+  <tr>
+   <td> ind_003 </td> <td> yes (-) </td> <td> yes (-) </td> <td>31.04</td> <td>16.85</td> <td>47.89</td> 
+  </tr>
+  <tr>
+   <td> cl_005 </td> <td> yes </td> <td> yes </td> <td>42.82</td> <td>26.07</td> <td>68.89</td> 
+  </tr>
+  <tr>
+   <td> cl_006 </td> <td> yes </td> <td> yes </td> <td>36.24</td> <td>20.73</td> <td>56.96</td> 
+  </tr>
+  <tr>
+   <td> cl_007 </td> <td> yes </td> <td> yes </td> <td>44.07</td> <td>27.38</td> <td>71.44</td> 
+  </tr>
+  <tr>
+   <td> cl_009 </td> <td> yes </td> <td> yes </td> <td>32.74</td> <td>19.55</td> <td>52.28</td> 
+  </tr>
+  <tr>
+   <td> cl_010 </td> <td> yes </td> <td> yes </td> <td>43.03</td> <td>26.80</td> <td>69.83</td> 
+  </tr>
+  <tr>
+   <td> cl_011 </td> <td> yes </td> <td> yes </td> <td>41.56</td> <td>26.83</td> <td>68.38</td> 
+  </tr>
+ </table>
+</P>
+<P>
+ <FONT SIZE=4>
+ The phasing power of bromine in a stable structure like lysozyme is clear from the relatively high CCall (> 30)
+ for the individual data set "ind_003".
+ It is also clear, though, that the anomalous 
+ signal becomes much more effective when multiple isomorphous crystals are merged together. Complete clusters which includes "ind_003",
+ i.e. cluster 006 and 009, improve the anomalous signal of "ind_003" alone.
+ Clusters 005, 007 and 010 perform better than the other clusters.
+ </FONT>
+</P>
+<A NAME="tutorial4"></A>
+<H2><U>TUTORIAL 4.</U></H2>
+<H3>28 SWEEPS OF LYSOZYME CRYSTALS</H3>
+<P>
+ <FONT SIZE=4 COLOR="#c90016">
+ Automated filtering of lysozyme crystals using the "cF" variant of the combination mode
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ Filtering for the 28 sweeps of lysozyme crystals was carried out manually in <A HREF="#tutorial2">Tutorial 2</A>. There BLEND
+ was executed in combination mode and filtering was done trying many combinations and selecting the ones giving improved R<SUB>meas</SUB>
+ values. It is also possible to let the program carry out filtering in automated way, using the "F" variant of combination mode (option
+ "-cF"). A starting cluster is first indicated by the user. This cluster will have to be redundant because filtering means "throwing
+ away" data sets, and this implies potentially decreasing completeness. The user will have to add to the keywords file the final completeness
+ that can be tolerated (default 95%), as well as the maximum number of iteration cycles (default 5). The program will, then, discard, at
+ every cycle, the single data set having largest overall R<SUB>merge</SUB>. 
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ Let's create a new directory for this tutorial, say "lysozyme2", and execute BLEND in analysis mode, pointing to directory "data/lysozyme".
+ Let's also create a keyword file, "bkeys.dat", with the following lines:
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4 COLOR="#0000ff">
+ RESO HIGH 1.9<br>
+ TOLERANCE 100<br>
+ COMPLETENESS 90<br>
+ MAXCYCLE 20
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ where the resolution has been fixed at 1.9 &Aring; to enable comparison with the filtering done at <A HREF="#tutorial2">Tutorial 2</A>.
+ Here we are also asking for completeness not to go below 90% and have increased the number of possible cycles to 20, so to make it
+ possible to filter out several data sets. Thus, for the analysis mode:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+ <FONT SIZE=4 COLOR="#008000">
+ blend -a ../data/lysozyme < bkeys.dat > blend_analysis.log
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ If we look at the dendrogram we notice that data sets 19 and 21 are very different from the other data sets. Thus, like done in 
+ <A HREF="#tutorial2">Tutorial 2</A>, we copy file "mtz_names.dat" into a new file named "original.dat" and delete lines 19 and 21.
+ Next we re-run BLEND in analysis mode as follows:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+ <FONT SIZE=4 COLOR="#008000">
+ blend -a original.dat < bkeys.dat > blend_analysis.log
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ The isomorphism, as measured by aLCV, for all clusters in this group of 28 data sets, can be displayed with a plot produced using
+ BLEND in graphics mode, with the type "DO":
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+ <FONT SIZE=4 COLOR="#008000">
+ blend -g DO 27 10
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ The plot produced can be found in sub-directory "graphics", and it is displayed here:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+<br>
+<img src="imagesBT/lyso2_aLCV.png">
+</P>
+<P>
+ <FONT SIZE=4>
+ Both left (cluster 23) and right (cluster 24) branches of the dendrogram have relatively small aLCV values. This means that all crystals
+ in each branch can be considered isomorphous. We can, then, delete some of the data sets in each branch so to bring R<SUB>meas</SUB>
+ (or, even better, R<SUB>pim</SUB>) down. As mentioned above, this is done using the option "-cF". In order to compare
+ results with the cluster before the filtering we will also run BLEND in simple combination mode. Thus, for the left branch, we use:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+ <FONT SIZE=4 COLOR="#008000">
+ blend -c [23] < bkeys.dat > blend_synthesis_23.log<br>
+ blend -cF [23] < bkeys.dat > blend_synthesisF_23.log
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ Results for both runs can be found in the directory "combined_files". More specifically, file "MERGING_STATISTICS.info" appears as follows:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+<br>
+<img src="imagesBT/lyso2_MERGING1.png">
+</P>
+<P>
+ <FONT SIZE=4>
+ By removing several data sets, R<SUB>pim</SUB> has dropped from 0.131 to 0.037. Completeness has dropped to 95.3%. Only 10 cycles were needed
+ for taking the statistics to this level; cycle 11 would have taken completeness to 82.9%, lower than our target 90%. This is why cycling was
+ interrupted by the program. More information can be found in the log file. We can repeat the same exercise for the right branch (cluster 24):
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+ <FONT SIZE=4 COLOR="#008000">
+ blend -c [24] < bkeys.dat > blend_synthesis_24.log<br>
+ blend -cF [24] < bkeys.dat > blend_synthesisF_24.log
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ This time results are given, in file "MERGING_STATISTICS.info", by the third and fourth group:
+ </FONT>
+</P>
+<P ALIGN=CENTER>
+<br>
+<img src="imagesBT/lyso2_MERGING2.png">
+</P>
+<P>
+ <FONT SIZE=4>
+ This time the R<SUB>pim</SUB> dropped from 0.166 to 0.114, completeness went to 93.1% and the job terminated after 3 cycles as the
+ fourth cycle would have taken completeness down to 89%, below the 90% set threshold.
+ </FONT>
+</P>
+<P>
+ <FONT SIZE=4>
+ It is clear that we could have started from the top cluster and removed automatically data sets down to the desired completeness. But
+ it is also clear that in so doing it i easy to remove also potentially useful information. Thus this variant of the combination mode
+ must be used with a little bit of caution.
+ </FONT>
+</P>
+<br>
+<br>
+<A NAME="references"></A>
+<H2>REFERENCES</H2>
+<P><FONT SIZE=3>(2010)
+G. M. Sheldrick, "Experimental phasing with SHELXC/D/E: combining chain
+tracing with density modification", Acta Cryst.
+<B>D</B>66, 479-485</FONT>
+</P>
+<P><FONT SIZE=3>(2011)
+Q. Liu, Z. Zhang and W.A. Hendrickson, "Multi-crystal anomalous
+diffraction for low-resolution macromolecular phasing", Acta Cryst.
+<B>D</B>67, 45-49</FONT>
+</P>
+<P><FONT SIZE=3>(2012)
+R. Giordano, R.M.F. Leal, G.P. Bourenkov, S. McSweeney and A.N.
+Popov, “The application of hierarchical cluster analysis to the
+selection of isomorphous crystals", Acta Cryst. <B>D</B>68, 649-658</FONT>
+</P>
+<P><FONT SIZE=3>(2012)
+D. Axford, R.L. Owen, J. Aishima, J. Foadi, A.W. Morgan, J.I.
+Robinson, J.E. Nettleship, R.J. Owens, I. Moraes, E.E. Fry, J.M.
+Grimes, K. Harlos, A. Kotecha, J. Ren, G. Sutton, T.S. Walter, D.I.
+Stuart and G. Evans, "In situ macromolecular crystallography using
+microbeams", Acta Cryst. <B>D</B>68, 592-600</FONT>
+</P>
+<P><FONT SIZE=3>(2012)
+M.A. Hanson, C.B. Roth, E. Jo, M.T. Griffith, F.L. Scott, G.
+Reinhart, H. Desale, B. Clemons, S.M. Cahalan, S.C. Schuerer, M.G.
+Sanna, G.W. Han, P. Kuhn, H. Rosen, R.C. Stevens, "Crystal
+structure of a lipid G protein-coupled receptor"</FONT>
+</P>
+<P><FONT SIZE=3>(2013)
+J. Foadi, P. Aller, Y. Alguel, A. Cameron, D. Axford, R.L. Owen, W.
+Armour, D.G. Waterman, S. Iwata and G. Evans, "Clustering
+procedures for the optimal selection of data sets from multiple
+crystals in macromolecular crystallography", Acta Cryst. <B>D</B>69,
+1617-1632, Science <B>335</B>, 851-855</FONT>
+</P>
+</BODY>
+</HTML>

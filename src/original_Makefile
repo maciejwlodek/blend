@@ -1,0 +1,84 @@
+
+DIR = ${PWD}
+
+CC = cc
+CXX=g++
+#CXX=c++
+#CFLAGS= -O2
+#LFLAGS= -O2
+CFLAGS= -g
+LFLAGS= -g
+
+CCFLAGS = -I${CLIBS}
+
+#XCPPFLAGS= -ftemplate-depth-120  -Wno-long-double
+XCPPFLAGS= -ftemplate-depth-120
+
+# CCTBX locations
+CCTBX=${CLIB}/cctbx
+CCTBX_sources=${CCTBX}/cctbx_sources
+
+# Clipper location
+CLPR=${CLIB}/clipper
+
+# Includes
+ICCP4=-I${CLIBS}
+
+ICLPR=-I${CLPR}
+
+ITBX=\
+-I${CCTBX_sources}/boost \
+-I${CCP4}/include \
+-I${CCTBX_sources}/cctbx/include \
+-I${CCTBX_sources}/scitbx/include \
+-I${CCTBX_sources}/cctbx_project
+
+ILIB =
+
+INCLUDE=-I. ${ILIB} ${ITBX} ${ICLPR} ${ICCP4}
+
+# Libraries
+LMIN=
+
+LCCP4=-L${CLIB} -lccp4f -lccp4c
+
+LCLPR=-L${CLIB} -lclipper-ccp4 -lclipper-core
+
+LTBX= -L${CLIB} -lcctbx 
+
+LDLIBS=${LMIN} ${LTBX} ${LCLPR} ${LCCP4}  -lrfftw -lfftw -lm
+
+CPPFLAGS=${XCPPFLAGS}  ${INCLUDE}
+
+EXE = blend
+#EXE = blend_part
+
+OBJECTS = ${EXE}.o \
+Output.o                hkl_unmerge.o           openinputfile.o \
+controls.o              icering.o               range.o \
+hash.o                  lattice.o               rotation.o \
+hkl_controls.o          matvec_utils.o          runthings.o \
+hkl_datatypes.o         mtz_unmerge_io.o        scala_util.o \
+hkl_symmetry.o          observationflags.o  mtz_utils.o \
+jiffy.o writeunmergedmtz.o cellgroup.o  normalise.o \
+pointgroup.o linearlsq.o zone.o average.o globalcontrols.o latsym.o \
+getsubgroups.o probfunctions.o score_datatypes.o spline.o numbercomplete.o \
+aux_blend.o
+#aux_blend_part.o
+
+
+${EXE}: ${OBJECTS}
+	${CXX} ${LFLAGS} -o ../${EXE} ${OBJECTS}  ${LDLIBS}
+
+
+.SUFFIXES: .cpp .o
+
+.cpp.o: ${HDR}
+	${CXX} -c $(CFLAGS) $(CPPFLAGS) $<
+
+.c.o:
+	${CC} -c $(CFLAGS) $(CCFLAGS) $<
+
+clean: 
+	rm *.o ${EXE} *.gch
+
