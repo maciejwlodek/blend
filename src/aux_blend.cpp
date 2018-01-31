@@ -156,7 +156,7 @@ std::vector<scala::hkl_unmerge_list> load_crystals(std::string filename,int runm
 // crystal_flag = 0:   crystal is accepted for further processing
 // crystal_flag = 1:   crystal is rejected because data file contains no reflections
 // crystal_flag = 2:   crystal is rejected because data file is made up of multiple runs
-// crystal_flag = 3:   crystal is rejected because data file is made up of multiple datasets
+// crystal_flag = 3:   crystal is rejected because data file is made up of multiple non-empty datasets
 // crystal_flag = 4;   crystal is rejected by user (Mode 2 and Mode 3)
 std::vector<int> label_crystals(const std::vector<scala::hkl_unmerge_list>& hkl_list,std::vector<int> crystal_flag_in)
 {
@@ -172,7 +172,19 @@ std::vector<int> label_crystals(const std::vector<scala::hkl_unmerge_list>& hkl_
   //std::cout << "Dataset " << i+1 << " number of runs " << hkl_list[i].num_runs() << std::endl;
   //std::cout << "Dataset " << i+1 << " number of datasets " << hkl_list[i].num_datasets() << std::endl;
   if (hkl_list[i].num_runs() != 1 && crystal_flag_in[i] != 4) crystal_flag_out[i]=2;
-  if (hkl_list[i].num_datasets() != 1 && crystal_flag_in[i] != 4) crystal_flag_out[i]=3;
+  if (hkl_list[i].num_datasets() > 1 && crystal_flag_in[i] != 4){
+    // Workaround an issue with xia2 in which some MTZs have an extra empty dataset attached
+    size_t num_non_empty = 0;
+    std::vector<Xdataset> all_datasets = hkl_list[i].AllXdatasets();
+    for(std::vector<Xdataset>::iterator it = all_datasets.begin(); it != all_datasets.end(); ++it) {
+       if ((*it).num_batches() != 0 || (*it).RunIndexList().size() != 0){
+         num_non_empty++;
+       }
+    }
+    if (num_non_empty != 1){
+      crystal_flag_out[i] = 3;
+    }
+  }
  } 
 
  return crystal_flag_out;

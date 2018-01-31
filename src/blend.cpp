@@ -10,6 +10,10 @@
 /********* included in the root directory of this package.                                          *********/
 /************************************************************************************************************/
 /************************************************************************************************************/
+// CHANGES IN VERSION 0.6.23  -  09/01/2018
+// - Set crystal_flag=3 only when the MTZ file contains multiple *non-empty*
+//   datasets. This works around a xia2 issue in which some MTZ files have an
+//   extra empty dataset that can be ignored.
 // CHANGES IN VERSION 0.6.22  -  16/09/2016
 // - Corrected a bug in function "pruning_plan", affecting runs in combination mode.
 //   (modules blend.cpp,version.hh,blend3.R)
@@ -1039,7 +1043,7 @@ int main(int argc, char* argv[])
    std::cout << "   crystal_flag = 0:   crystal is accepted for further processing" << std::endl;
    std::cout << "   crystal_flag = 1:   crystal is rejected because data file contains no reflections" << std::endl;
    std::cout << "   crystal_flag = 2:   crystal is rejected because data file is made up of multiple runs" << std::endl;
-   std::cout << "   crystal_flag = 3:   crystal is rejected because data file is made up of multiple datasets" << std::endl;
+   std::cout << "   crystal_flag = 3:   crystal is rejected because data file is made up of multiple non-empty datasets" << std::endl;
    std::cout << std::endl;
    // Load crystals in unmerged data structures
    std::vector<scala::hkl_unmerge_list> hkl_list=load_crystals(filename,runmode);   // This is the correct expression for a copy constructor. Defining hkl_list first
@@ -1049,7 +1053,7 @@ int main(int argc, char* argv[])
    // crystal_flag = 0:   crystal is accepted for further processing
    // crystal_flag = 1:   crystal is rejected because data file contains no reflections
    // crystal_flag = 2:   crystal is rejected because data file is made up of multiple runs
-   // crystal_flag = 3:   crystal is rejected because data file is made up of multiple datasets
+   // crystal_flag = 3:   crystal is rejected because data file is made up of multiple non-empty datasets
    
    // Initially all crystals are assumed to have valid datasets
    std::vector<int> crystal_flag(hkl_list.size(),0);
@@ -1221,6 +1225,7 @@ int main(int argc, char* argv[])
    // Output ascii files for R (only if there are at least 2 crystals)
    if (hkl_list.size() > 1)
    {
+    std::cout << "Building R files ........." << std::endl;
     if (mode_string == "-a") statistics_with_R(hkl_list,sg_to_crystal,crystal_to_centering,
                                                                         spacegroup_class,crystal_flag,R_program1,Rscp,mode_string);
     if (mode_string == "-aDO") statistics_with_R2(hkl_list,sg_to_crystal,crystal_to_centering,
