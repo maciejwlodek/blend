@@ -357,9 +357,11 @@ int main(int argc, char* argv[])
   std::string R_program0 = home+"/R/blend0.R";
   std::string R_program0NC = home+"/R/blend0NC.R";
   std::string R_program0SF = home+"/R/blend0SF.R";
+  std::string R_program0S6 = home+"/R/blend0S6.R";
   std::string R_program1 = home+"/R/blend1.R";
   std::string R_program1NC = home+"/R/blend1NC.R";
-  std::string R_program1SF = home+"/R/blend1NC.R";
+  std::string R_program1SF = home+"/R/blend1SF.R";
+  std::string R_program1S6 = home+"/R/blend1S6.R";
   std::string R_program2 = home+"/R/blend2.R";
   std::string R_program3 = home+"/R/blend3.R";
   std::string R_program4 = home+"/R/blend4.R";
@@ -389,20 +391,31 @@ int main(int argc, char* argv[])
   if (mode_string != "-a" && mode_string != "-aDO" &&                              // First argument after program name "blend" needs to be either "-a" or "-aDO"
       mode_string != "-aNC" && mode_string != "-aDONC" &&                          // possibly with NC appended
       mode_string != "-aSF" && mode_string != "-aDOSF" &&                          // possibly with SF appended
+      mode_string != "-aS6" && mode_string != "-aDOS6" &&                          // possibly with S6 appended
       mode_string != "-s" && mode_string != "-sLCV" && mode_string != "-saLCV" &&  // or "-s" or "-sLCV" or "-saLCV"
       mode_string != "-sNC" && mode_string != "-sLCVNC" && mode_string != "-saLCVNC" &&  // or "-sNC" or "-sLCVNC" or "-saLCVNC"
       mode_string != "-sSF" && mode_string != "-sLCVSF" && mode_string != "-saLCVSF" &&  // or "-sSF" or "-sLCVSF" or "-saLCVSF"
+      mode_string != "-sS6" && mode_string != "-sLCVS6" && mode_string != "-saLCVS6" &&  // or "-sS6" or "-sLCVS6" or "-saLCVS6"
       mode_string != "-c" && mode_string != "-cP" && mode_string != "-cF" &&       // or "-c" or "-cP" or "-cF"
       mode_string != "-cNC" && mode_string != "-cPNC" && mode_string != "-cFNC" && // or "-cNC" or "-cPNC" or "-cFNC"
       mode_string != "-cSF" && mode_string != "-cPSF" && mode_string != "-cFSF" && // or "-cSF" or "-cPSF" or "-cFSF"
+      mode_string != "-cS6" && mode_string != "-cPS6" && mode_string != "-cFS6" && // or "-cS6" or "-cPS6" or "-cFS6"
       mode_string != "-gNC" &&                                                     // or "-gNC
       mode_string != "-gSF" &&                                                     // or "-gSF
+      mode_string != "-gS6" &&                                                     // or "-gS6
       mode_string != "-g")                                                         // or "-g"
   {
    int nerr=1;
    throw nerr;
   }
-  if (mode_string == "-a" || mode_string == "-aDO" || mode_string == "-aNC" || mode_string == "-aDONC" || mode_string == "-aSF" || mode_string == "-aDOSF")     // Analysis pass
+  if (mode_string == "-a" 
+      || mode_string == "-aDO" 
+      || mode_string == "-aNC" 
+      || mode_string == "-aDONC" 
+      || mode_string == "-aSF" 
+      || mode_string == "-aDOSF"
+      || mode_string == "-aS6" 
+      || mode_string == "-aDOS6")     // Analysis pass
   {
    // In order to line up BLEND with the way ccp4i works (with stdin passed keywords) this is what has been added
 
@@ -620,7 +633,19 @@ int main(int argc, char* argv[])
     throw nerr;
    }
   }
-  if (mode_string == "-s" || mode_string == "-sLCV" || mode_string == "-saLCV")     // Synthesis pass
+  if (mode_string == "-s" 
+      || mode_string == "-sLCV" 
+      || mode_string == "-saLCV"
+      || mode_string == "-sNC" 
+      || mode_string == "-sLCVNC" 
+      || mode_string == "-saLCVNC"
+      || mode_string == "-sSF" 
+      || mode_string == "-sLCVSF" 
+      || mode_string == "-saLCVSF"
+      || mode_string == "-sS6" 
+      || mode_string == "-sLCVS6" 
+      || mode_string == "-saLCVS6"
+  )     // Synthesis pass
   {
    // In order to line up BLEND with the way ccp4i works (with stdin passed keywords) this is what has been added
 
@@ -984,7 +1009,10 @@ int main(int argc, char* argv[])
    // Turn arguments into a vector, "arbitrary_datasets", of characters to be later used in R code
    for (int i=2;i < argc;i++) arbitrary_datasets.push_back(argv[i]); 
   }
-  if (mode_string == "-g")     // Graphics mode
+  if (mode_string == "-g"
+      || mode_string == "-gNC"
+      || mode_string == "-gSF"
+      || mode_string == "-gS6")     // Graphics mode
   {
    runmode = 4;
 
@@ -1031,6 +1059,14 @@ int main(int argc, char* argv[])
    if (mode_string == "-aDOSF")
    {
      std::cout << "You are now running BLEND in dendrogram-only mode using SFDist." << std::endl;
+   }
+   if (mode_string == "-aS6")
+   {
+     std::cout << "You are now running BLEND in analysis mode using S6Dist." << std::endl;
+   }
+   if (mode_string == "-aDOS6")
+   {
+     std::cout << "You are now running BLEND in dendrogram-only mode using S6Dist." << std::endl;
    }
 
    std::cout << std::endl;
@@ -1238,6 +1274,10 @@ int main(int argc, char* argv[])
                                                     spacegroup_class,crystal_flag,R_program1SF,Rscp,mode_string);
     if (mode_string == "-aDOSF") statistics_with_R2(hkl_list,sg_to_crystal,crystal_to_centering,
                                                        spacegroup_class,crystal_flag,R_program0SF,Rscp,mode_string);
+    if (mode_string == "-aS6") statistics_with_R(hkl_list,sg_to_crystal,crystal_to_centering,
+                                                    spacegroup_class,crystal_flag,R_program1S6,Rscp,mode_string);
+    if (mode_string == "-aDOS6") statistics_with_R2(hkl_list,sg_to_crystal,crystal_to_centering,
+                                                       spacegroup_class,crystal_flag,R_program0S6,Rscp,mode_string);
    }
 
    // Delete BLEND_KEYWORDS.dat before termination
@@ -1414,31 +1454,32 @@ int main(int argc, char* argv[])
   if (nerr == 1)
   {
    std::cerr << "\n BLEND ERROR!\n"
+             << "In each of the following xx may be omitted, NC, SF or S6\n"
              << "Wrong command line format. Correct format is:\n"
              << "                                  \n"
-             << "   blend -aDO name_of_file.dat                                                 (dendrogram-only mode)\n"
+             << "   blend -aDOxx name_of_file.dat                                               (dendrogram-only mode)\n"
              << "                 or               \n"
-             << "   blend -aDO /path/to/directory                                               (dendrogram-only mode)\n"
+             << "   blend -aDOxx /path/to/directory                                             (dendrogram-only mode)\n"
              << "                 or               \n"
-             << "   blend -a name_of_file.dat                                                          (analysis mode)\n"
+             << "   blend -axx name_of_file.dat                                                        (analysis mode)\n"
              << "                 or               \n"
-             << "   blend -a /path/to/directory                                                        (analysis mode)\n"
+             << "   blend -axx /path/to/directory                                                      (analysis mode)\n"
              << "                 or               \n"
-             << "   blend -s l1 (numeric height in dendrogram)                                        (synthesis mode)\n"
-             << "   blend -sLCV l1 (LCV value) \n"
-             << "   blend -saLCV l1 (aLCV value) \n"
+             << "   blend -sxx l1 (numeric height in dendrogram)                                      (synthesis mode)\n"
+             << "   blend -sLCVxx l1 (LCV value) \n"
+             << "   blend -saLCVxx l1 (aLCV value) \n"
              << "                 or               \n"
-             << "   blend -s l1 l2 (numeric heights in dendrogram)                                    (synthesis mode)\n"
-             << "   blend -sLCV l1 l2 (LCV values) \n"
-             << "   blend -saLCV l1 (aLCV values) \n"
+             << "   blend -sxx l1 l2 (numeric heights in dendrogram)                                  (synthesis mode)\n"
+             << "   blend -sLCVxx l1 l2 (LCV values) \n"
+             << "   blend -saLCVxx l1 (aLCV values) \n"
              << "                 or               \n"
-             << "   blend -c  d1 d2 d3 ... (serial number of datasets)                              (combination mode)\n" 
-             << "   blend -cP d1 d2 d3 ... (serial number of datasets)                                                \n" 
-             << "   blend -cF d1 d2 d3 ... (serial number of datasets)                                                \n" 
+             << "   blend -cxx  d1 d2 d3 ... (serial number of datasets)                            (combination mode)\n" 
+             << "   blend -cPxx d1 d2 d3 ... (serial number of datasets)                                              \n" 
+             << "   blend -cFxx d1 d2 d3 ... (serial number of datasets)                                              \n" 
              << "                 or               \n"
-             << "   blend -g DO clN (cluster number) lN (level)             (graphics mode: aLCV annotated dendrogram)\n"
-             << "   blend -g D clN (cluster number) lN (level)    (graphics mode: merging stats. annotated dendrogram)\n"
-             //<< "   blend -g RM d1 d2 d3 ... (serial number of datasets)             (graphics mode: Rmerge means\n"
+             << "   blend -gxx DO clN (cluster number) lN (level)           (graphics mode: aLCV annotated dendrogram)\n"
+             << "   blend -gxx D clN (cluster number) lN (level)  (graphics mode: merging stats. annotated dendrogram)\n"
+             //<< "   blend -gxx RM d1 d2 d3 ... (serial number of datasets   )             (graphics mode: Rmerge means\n"
              << std::endl;
    return EXIT_FAILURE;
   }

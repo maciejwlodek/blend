@@ -1,0 +1,3 @@
+[submodule "ncdist"]
+	path = ncdist
+	url = http://github.com/yayahjb/ncdist.git
