@@ -116,7 +116,6 @@ merge_mtzs <- function(mtz_list,selection,mtzout,pointless_keys,hklref,rwin=FALS
  
  # Delete keywords file
  if (file.exists("pointless_keywords.dat")) emptyc <- file.remove("pointless_keywords.dat")
-
  return(exepointless)
 }
 
@@ -159,6 +158,7 @@ merge_datasets <- function(mtz_names,selection,suffix,pointless_keys,aimless_key
  if (length(fatal_error) == 0 &
      length(grep("FATAL ERROR message:",exemerge,fixed=TRUE)) == 0 &
      length(grep("Stopping",exemerge,fixed=TRUE)) == 0 &
+     length(grep("**** ERROR ****",exemerge,fixed=TRUE)) == 0 &
      length(exemerge) != 0)
  {
 
