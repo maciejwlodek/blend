@@ -1,3 +1,6 @@
 [submodule "ncdist"]
 	path = ncdist
 	url = http://github.com/yayahjb/ncdist.git
+[submodule "sfdist"]
+	path = sfdist
+	url = https://github.com/yayahjb/sfdist.git
