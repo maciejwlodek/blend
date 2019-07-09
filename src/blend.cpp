@@ -361,6 +361,7 @@ int main(int argc, char* argv[])
   std::string R_programK = home+"/R/blendK.R";
   std::string R_programKNC = home+"/R/blendKNC.R";
   std::string R_programKS6 = home+"/R/blendKS6.R";
+  std::string R_programKSF = home+"/R/blendKSF.R";
   std::string R_program1 = home+"/R/blend1.R";
   std::string R_program1NC = home+"/R/blend1NC.R";
   std::string R_program1SF = home+"/R/blend1SF.R";
@@ -395,8 +396,8 @@ int main(int argc, char* argv[])
       mode_string != "-aNC" && mode_string != "-aDONC" &&                          // possibly with NC appended
       mode_string != "-aSF" && mode_string != "-aDOSF" &&                          // possibly with SF appended
       mode_string != "-aS6" && mode_string != "-aDOS6" &&                          // possibly with S6 appended
-      mode_string != "-k" && mode_string != "-kNC" &&                              // or kmeans mode
-      mode_string != "-kS6" &&
+      mode_string != "-k" && mode_string != "-kNC" &&                              // or "-k" for kmeans mode
+      mode_string != "-kS6" && mode_string != "-kSF" &&                            // possibly with NC, SF, or S6 appended
       mode_string != "-s" && mode_string != "-sLCV" && mode_string != "-saLCV" &&  // or "-s" or "-sLCV" or "-saLCV"
       mode_string != "-sNC" && mode_string != "-sLCVNC" && mode_string != "-saLCVNC" &&  // or "-sNC" or "-sLCVNC" or "-saLCVNC"
       mode_string != "-sSF" && mode_string != "-sLCVSF" && mode_string != "-saLCVSF" &&  // or "-sSF" or "-sLCVSF" or "-saLCVSF"
@@ -423,7 +424,8 @@ int main(int argc, char* argv[])
       || mode_string == "-aDOS6"
       || mode_string == "-k"
       || mode_string == "-kNC"
-      || mode_string == "-kS6")     // Analysis pass
+      || mode_string == "-kS6"
+      || mode_string == "-kSF")     // Analysis pass
   {
    // In order to line up BLEND with the way ccp4i works (with stdin passed keywords) this is what has been added
 
@@ -437,7 +439,7 @@ int main(int argc, char* argv[])
    dvkeywdline.push_back("ISIGI     1.500");
    akeys.push_back("CPAR");
    dvkeywdline.push_back("CPARWT    1.000");
-   if(mode_string == "-k" || mode_string == "-kNC") {
+   if(mode_string == "-k" || mode_string == "-kNC" || mode_string == "-kS6" || mode_string == "-kSF") {
         akeys.push_back("K");
         dvkeywdline.push_back("K         3");
    }
@@ -1090,7 +1092,11 @@ int main(int argc, char* argv[])
    }
    if (mode_string == "-kS6")
    {
-     std::cout << "You are no running BLEND in k-means mode using S6Dist." << std::endl;
+     std::cout << "You are now running BLEND in k-means mode using S6Dist." << std::endl;
+   }
+   if (mode_string == "-kSF")
+   {
+     std::cout << "You are now running BLEND in k-means mode using SFDist." << std::endl;
    }
 
    std::cout << std::endl;
@@ -1308,6 +1314,8 @@ int main(int argc, char* argv[])
                                                         spacegroup_class, crystal_flag, R_programKNC, Rscp, mode_string);
     if (mode_string == "-kS6") statistics_with_R2(hkl_list, sg_to_crystal, crystal_to_centering,
                                                         spacegroup_class, crystal_flag, R_programKS6, Rscp, mode_string);
+    if (mode_string == "-kSF") statistics_with_R2(hkl_list, sg_to_crystal, crystal_to_centering,
+                                                        spacegroup_class, crystal_flag, R_programKSF, Rscp, mode_string);
    }
 
    // Delete BLEND_KEYWORDS.dat before termination

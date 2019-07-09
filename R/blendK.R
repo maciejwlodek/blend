@@ -32,7 +32,7 @@ distance <- function(p1, p2) {
     return(sqrt(sum_sq))
 }
 print_clusters <- function(datasets, k, labels) {
-    cat("CLUSTERS.txt\n")
+    cat("CLUSTERS\n")
     for(i in 1:k) {
         printf("Cluster %d\n", i)
         for(j in 1:nrow(datasets)) {
@@ -81,7 +81,7 @@ kmeans_clust <- function(datasets, k, num_iters) {
     rand_indices <- sample.int(npoints, k)
     centroids <- c()
     for(i in 1:k) {
-        centroids <- c(centroids, datasets[rand_indices[i], 2:7])
+        centroids <- c(centroids, datasets[rand_indices[i], ])
     }
     centroids <- matrix(as.vector(centroids), nrow=k, ncol=dim, byrow=TRUE)
     labels <- vector("list", npoints)
@@ -637,15 +637,10 @@ if (length(fullc) == 0 | cparweight < 1)
 
 # Cluster analysis
 
-#maindftest <- maindf[,3:4]
-#maindftest <- data.matrix(maindftest)
-#k <- 3
 niters <- 30
-#labels <- kmeans_clust(maindftest, k, niters)
-#print_clusters(maindftest, k, labels)
+k <- min(k, nrow(nparC))
 labels <- kmeans_clust(nparC, k, niters)
 print_clusters(nparC, k, labels)
-#groups <- listGroups(maindftest, k, labels)
 groups <- listGroups(nparC, k, labels)
 
 # Calculate LCV values for all clusters

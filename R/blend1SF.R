@@ -586,8 +586,8 @@ evaluateMaxChange <- function(maindf)
  return(dMat)
 }
 
-+# Compute matrix of cross-dataset distances based on mtz structure factor files
-+evaluateSFChange <- function(maindf)
+# Compute matrix of cross-dataset distances based on mtz structure factor files
+evaluateSFChange <- function(maindf)
 {
     filenames <- read.table("./NEW_list_of_files.dat",as.is=c(1))
     for (ii in 1:length(filenames[,1]))

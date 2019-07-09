@@ -51,7 +51,7 @@ furthest_point <- function(distMatrix, index, labels) {
 }
 
 print_clusters <- function(datasets, k, labels) {
-    cat("CLUSTERS.txt\n")
+    cat("CLUSTERS\n")
     for(i in 1:k) {
         printf("Cluster %d\n", i)
         for(j in 1:nrow(datasets)) {
@@ -84,13 +84,16 @@ nth_dataset_in_cluster <- function(cluster_number, n, labels) {
     return -1
 }
 
-nearest_to <- function(distMat, fp, fp_prime, labels) {
-    cluster_num <- labels[fp]
+nearest_to <- function(distMat, shell_points, labels) {
+    cluster_num <- labels[shell_points[1]]
     best_point <- -1
     best_score <- .Machine$double.xmax
-    for(i in 1:length(distMat[fp, ])) {
-        if(labels[[i]] != cluster_num) next;
-        score <- distMat[fp, i]*distMat[fp, i] + distMat[fp_prime, i]*distMat[fp_prime, i]
+    for(i in 1:length(distMat[shell_points[1]])) {
+        if(labels[[i]] != cluster_num) next
+        score <- 0
+        for(j in 1:length(shell_points)) {
+            score <- score + distMat[shell_points[j], i]
+        }
         if(score < best_score) {
             best_point <- i
             best_score <- score
@@ -98,14 +101,43 @@ nearest_to <- function(distMat, fp, fp_prime, labels) {
     }
     return(best_point)
 }
+#nearest_to <- function(distMat, fp, fp_prime, labels) {
+#    cluster_num <- labels[fp]
+#    best_point <- -1
+#    best_score <- .Machine$double.xmax
+#    for(i in 1:length(distMat[fp, ])) {
+#        if(labels[[i]] != cluster_num) next;
+#        score <- distMat[fp, i]*distMat[fp, i] + distMat[fp_prime, i]*distMat[fp_prime, i]
+#        if(score < best_score) {
+#            best_point <- i
+#            best_score <- score
+#        }
+#    }
+#    return(best_point)
+#}
 update_centroid <- function(distMat, cluster_number, labels) {
     size <- size_of_cluster(cluster_number, labels)
-    rand <- sample(1:size, 1)
-    index <- nth_dataset_in_cluster(cluster_number, rand, labels)
-    fp <- furthest_point(distMat, index, labels)
-    fp_prime <- furthest_point(distMat, fp, labels)
-    centroid <- nearest_to(distMat, fp, fp_prime, labels)
+#    rand <- sample(1:size, 1)
+#    index <- nth_dataset_in_cluster(cluster_number, rand, labels)
+
+    dim <- 6 #temporarily
+    dim <- min(dim, size)
+    rand_points <- sample(1:size, dim)
+    #indices <- c()
+    shell_points <- c()
+    for(i in 1:dim) {
+        #indices <- c(indices, nth_dataset_in_cluster(cluster_number, rand_points[i], labels)
+        index <- nth_dataset_in_cluster(cluster_number, rand_points[i], labels)
+        fp_prime <- furthest_point(distMat, furthest_point(distMat, index, labels), labels)
+        shell_points <- c(shell_points, fp_prime)
+    }
+    centroid <- nearest_to(distMat, shell_points, labels)
     return(centroid)
+
+#    fp <- furthest_point(distMat, index, labels)
+#    fp_prime <- furthest_point(distMat, fp, labels)
+#    centroid <- nearest_to(distMat, fp, fp_prime, labels)
+#    return(centroid)
 }
 
 update_labels <- function(distMat, centroids, labels) {
@@ -681,21 +713,12 @@ rownames(distMat) <- maindf$cn
 colnames(distMat) <- maindf$cn
 distAll <- as.dist(distMat)
 
-print(distMat)
-cat("maindf\n")
-print(maindf)
-
 # Cluster analysis
 
-#maindftest <- maindf[,3:4]
-#maindftest <- data.matrix(maindftest)
-#k <- 3
 niters <- 30
-#labels <- kmeans_clust(maindftest, k, niters)
-#print_clusters(maindftest, k, labels)
+k <- min(k, nrow(distMat))
 labels <- kmeans_clust(maindf, distMat, k, niters)
 print_clusters(maindf, k, labels)
-#groups <- listGroups(maindftest, k, labels)
 groups <- listGroups(maindf, k, labels)
 
 # Calculate LCV values for all clusters

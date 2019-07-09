@@ -19,15 +19,20 @@
 # Load libraries and auxiliary files
 require(MASS, quietly = TRUE, warn.conflicts = FALSE)  ## For rlm (robust regression)
 
-
 library("Rcpp")
+
 
 # Has CCP4 been set up?
 ccp4 <- Sys.getenv("CCP4")
 if (nchar(ccp4) == 0) stop("You need to set up environment for running ccp4 programs")
 
-cs6dist_lib_path <- paste0(ccp4,"/lib/librcpp_cs6dist.so")
-dyn.load(cs6dist_lib_path)
+ncdist_lib_path <- paste0(ccp4,"/lib/librcpp_ncdist.so")
+dyn.load(ncdist_lib_path)
+sfdist_lib_path <- paste0(ccp4,"/lib/librcpp_sfdist.so")
+dyn.load(sfdist_lib_path)
+
+# Functions
+
 
 # Functions
 
@@ -80,7 +85,7 @@ nth_dataset_in_cluster <- function(cluster_number, n, labels) {
             s <- s+1
         }
         if(s == n) return(i)
-    }   
+    }
     return -1
 }
 
@@ -107,7 +112,7 @@ update_centroid <- function(distMat, cluster_number, labels) {
 #    rand <- sample(1:size, 1)
 #    index <- nth_dataset_in_cluster(cluster_number, rand, labels)
 
-    dim <- 6
+    dim <- 6 
     dim <- min(dim, size)
     rand_points <- sample(1:size, dim)
     #indices <- c()
@@ -128,7 +133,7 @@ update_centroid <- function(distMat, cluster_number, labels) {
 }
 
 update_labels <- function(distMat, centroids, labels) {
-    for(x in 1:length(labels)) { 
+    for(x in 1:length(labels)) {
         min_dist <- .Machine$double.xmax
         for(i in 1:length(centroids)) {
             d <- distMat[i,x]
@@ -143,7 +148,7 @@ update_labels <- function(distMat, centroids, labels) {
 kmeans_clust <- function(datasets, distMat, k, num_iters) {
     npoints <- nrow(datasets)
     dim <- ncol(datasets)
-    centroids <- sample.int(npoints, k) 
+    centroids <- sample.int(npoints, k)
 #    rand_indices <- sample.int(npoints, k)
 #    centroids <- c()
 #    for(i in 1:k) {
@@ -192,6 +197,7 @@ listGroups <- function(datasets, k, labels) {
     return(groups)
 }
 
+
 # To extract a list with datasets to be merged, as many as the nodes of a dendrogram (htree)
 treeToList2 <- function(htree)
 {
@@ -224,6 +230,7 @@ nparCell <- function(data,cn,cumprob)
  # Normalize data
  model <- prcomp(data,scale=TRUE)
  smod <- summary(model)
+
  # Choose minimal number of variables that give enough statistical variability
  if (length(model$x[1,]) == 1) npar <- model$x
  if (length(model$x[1,]) > 1)
@@ -309,9 +316,60 @@ nparCell <- function(data,cn,cumprob)
 
 .dist_nblend <- function(cent1,a1,b1,c1,alpha1,beta1,gamma1,cent2,a2,b2,c2,alpha2,beta2,gamma2)
 {
-   dd <- as.double(.Call("rcpp_cs6dist", toString(cent1), a1,b1,c1,alpha1,beta1,gamma1,toString(cent2),a2,b2,c2,alpha2,beta2,gamma2))
+   dd <- as.double(.Call("rcpp_ncdist", toString(cent1), a1,b1,c1,alpha1,beta1,gamma1,cent2,a2,b2,c2,alpha2,beta2,gamma2))
    return(dd)
 }
+
+.dist_sfblend <- function(mtz_file1,mtz_file2)
+{
+    dd <- as.double(.Call("rcpp_sfdist", toString(mtz_file1), toString(mtz_file2)))
+    return(dd)
+}
+
+
+# Compute matrix of cross-cells distances
+evaluateMaxChange <- function(maindf)
+{
+ n <- length(maindf[,2])
+ dMat <- matrix(nrow=n,ncol=n)
+ for (i in 1:n)
+ {
+  for (j in 1:n)
+  {
+    dMat[i,j] <- .dist_nblend(maindf[i,8],maindf[i,2],maindf[i,3],maindf[i,4],maindf[i,5],maindf[i,6],maindf[i,7],maindf[j,8],maindf[j,2],maindf[j,3],maindf[j,4],maindf[j,5],maindf[j,6],maindf[j,7])
+  }
+ }
+
+ return(dMat)
+}
+
+# Compute matrix of cross-dataset distances based on mtz structure factor files
+evaluateSFChange <- function(maindf)
+{
+    filenames <- read.table("./NEW_list_of_files.dat",as.is=c(1))
+    for (ii in 1:length(filenames[,1]))
+    {
+        stmp <- normalizePath(filenames$V1[ii])
+        filenames$V1[ii] <- stmp
+    }
+
+    n <- length(maindf[,2])
+    dMat <- matrix(nrow=n,ncol=n)
+    for (i in 1:n)
+    {
+        for (j in i:n) 
+        {
+            dMat[i,j] <- .dist_sfblend(filenames$V1[i],filenames$V1[j])
+            if (j > i) dMat[j,i] <- dMat[i,j]
+        }
+    }
+
+    return(dMat)
+}
+
+
+
+# Functions to evaluate max change in linear dimensions for cell parameters
 
 # Diagonals along 3 independent faces of unit cell
 faceDiagonals <- function(a,b,c,aa,bb,cc)
@@ -321,18 +379,6 @@ faceDiagonals <- function(a,b,c,aa,bb,cc)
  dbc <- sqrt(b^2+c^2-2*b*c*cos(pi-aa*pi/180))
 
  return(c(dab,dac,dbc))
-}
-
-evaluateMaxChange <- function(maindf) {
-    n <- length(maindf[,2])
-    dMat <- matrix(nrow=n, ncol=n)
-    for (i in 1:n) {
-        for(j in 1:n) {
-            dMat[i,j] <- .dist_nblend(maindf[i,8], maindf[i,2], maindf[i,3], maindf[i,4], maindf[i,5], maindf[i,6], maindf[i,7], maindf[j,8], maindf[j,2], maindf[j,3], maindf[j,4], maindf[j,5], maindf[j,6], maindf[j,7])
-            if (j > i) dMat[j,i] <- dMat[i,j]
-        }
-    }
-    return(dMat)
 }
 
 distRatio <- function(v)
@@ -397,7 +443,7 @@ maxRatio <- function(macropar,idx)
 
  # Number of datasets
  n <- length(cpar[,1])
- 
+
  # 3 diagonal lengths for all datasets
  dab <- c()
  dac <- c()
@@ -442,7 +488,6 @@ maxRatio <- function(macropar,idx)
  #return(c(max(mab,mac,mbc),Mpar,cns[1],cns[2]))
  return(c(Mpar,max(mab,mac,mbc),cns[1],cns[2]))
 }
-
 
 find_nodes_coords <- function(clst, clns, cn)
 {
@@ -584,9 +629,10 @@ if (file.exists("BLEND_KEYWORDS.dat"))
    linea <- sprintf("CPARWT    %5.3f\n",as.numeric(cparweight))
    cat(linea,file="BLEND_KEYWORDS.dat",append=TRUE)
   }
-  if (!("K" %in% nomi) & !("k" %in% nomi)) {
-   linea <- sprintf("K         %d\n", as.integer(k))
-   cat(linea, file="BLEND_KEYWORDS.dat", append=TRUE)
+  if (!("K" %in% nomi) & !("k" %in% nomi))
+  {
+   linea <- sprintf("K        %d\n", as.integer(k))
+   cat(linea,file="BLEND_KEYWORDS.dat",append=TRUE)
   }
 
   # Turn indices back to their initial value for following section
@@ -605,8 +651,8 @@ if (file.exists("BLEND_KEYWORDS.dat"))
   cat(linea,file="BLEND_KEYWORDS.dat",append=TRUE)
   linea <- sprintf("CPARWT    %5.3f\n",as.numeric(cparweight))
   cat(linea,file="BLEND_KEYWORDS.dat",append=TRUE)
-  linea <- sprintf("K         %d\n", as.integer(k))
-  cat(linea,file="BLEND_KEYWORDS.dat", append=TRUE)
+  linea <- sprintf("K           %d\n",as.integer(k))
+  cat(linea,file="BLEND_KEYWORDS.dat",append=TRUE)
  }
 
  # Append rest of keywords
@@ -626,7 +672,8 @@ if (!file.exists("BLEND_KEYWORDS.dat"))
  cat(linea,file="BLEND_KEYWORDS.dat",append=TRUE)
  linea <- sprintf("CPARWT    %5.3f\n",as.numeric(cparweight))
  cat(linea,file="BLEND_KEYWORDS.dat",append=TRUE)
- linea <- sprintf("K         %d\n", as.integer(k))
+ linea <- sprintf("K           %d\n",as.integer(k))
+ cat(linea,file="BLEND_KEYWORDS.dat",append=TRUE)
 
  # Complete with keywords sections for POINTLESS and AIMLESS
  cat("POINTLESS KEYWORDS\n",file="BLEND_KEYWORDS.dat",append=TRUE)
@@ -649,7 +696,6 @@ macropar <- macropar[order(macropar$cn),]
 # Prepare data frame for cluster analysis
 cat("Preparing data for cluster analysis ...\n")
 maindf <- macropar[,c(1,2,3,4,5,6,7,11)]
-#maindf <- macropar[,1:7]
 
 # Decide which macroparameters can be used in cluster analysis
 cell_columns <- c()
@@ -684,6 +730,9 @@ if (sum(is.na(maindf$gamma)) == 0)
  if (tmp > 0.000001) cell_columns <- c(cell_columns,7)
 }
 
+#For NCdist, kill nParC
+cell_columns <- c(1)
+
 # Full list of descriptors used
 fullc <- cell_columns
 
@@ -695,10 +744,13 @@ fullc <- cell_columns
 # Enough information to start cluster analysis (add bit concerning cluster analysis here)
 cat("Cluster analysis initiated ...\n")
 
-distMat <- evaluateMaxChange(maindf)
+
+distMat<-evaluateSFChange(maindf)
 rownames(distMat) <- maindf$cn
 colnames(distMat) <- maindf$cn
 distAll <- as.dist(distMat)
+
+
 
 # Cluster analysis
 
